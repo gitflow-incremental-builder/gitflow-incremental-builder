@@ -6,11 +6,14 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class RepoMock {
 
@@ -26,7 +29,8 @@ public class RepoMock {
         Git git = new Git(new FileRepository(new File(workDir + "/.git")));
         configureRemote(git);
         System.setProperty("user.dir", workDir);
-        Main.main(new String[]{""});
+        final Path[] expected = {Paths.get(REPO.getPath() + "/parent/child1/src/resources/file1")};
+        Assert.assertArrayEquals(expected, DiffLister.act().toArray());
 //        Assert.assertEquals("parent", treeWalk.getPathString());
         remoteRepo.close();
         delete(REPO);

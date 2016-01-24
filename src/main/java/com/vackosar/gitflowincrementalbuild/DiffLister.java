@@ -2,7 +2,6 @@ package com.vackosar.gitflowincrementalbuild;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -13,10 +12,14 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public class Main {
-    public static void main(String[] args) throws GitAPIException, IOException {
+public class DiffLister {
+    public static List<Path> act() throws GitAPIException, IOException {
         final String workDir = System.getProperty("user.dir");
         Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
         git.fetch().call();
@@ -25,9 +28,11 @@ public class Main {
         treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
+        final ArrayList<Path> paths = new ArrayList<>();
         while (treeWalk.next()) {
-            System.out.println(treeWalk.getPathString());
+            paths.add(Paths.get(workDir + "/" + treeWalk.getPathString()));
         }
+        return paths;
     }
 
     private static RevTree getBranchTree(Git git, String branchName) throws IOException {
