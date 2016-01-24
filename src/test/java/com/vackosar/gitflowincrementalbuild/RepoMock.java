@@ -6,32 +6,27 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
-public class RepoMock {
+public class RepoMock implements AutoCloseable {
 
     private static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
     private static final File REPO = new File(TEST_WORK_DIR + "tmp/repo");
     private static final File ZIP = new File(TEST_WORK_DIR + "src/test/resources/template.zip");
+    private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
+    private Git git;
 
-    @Test
-    public void init() throws Exception {
-        String workDir = TEST_WORK_DIR + "tmp/repo/";
-        final RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
+    public RepoMock() throws IOException, URISyntaxException {
         new UnZiper().act(ZIP, REPO);
-        Git git = new Git(new FileRepository(new File(workDir + "/.git")));
+        String workDir = TEST_WORK_DIR + "tmp/repo/";
+        git = new Git(new FileRepository(new File(workDir + "/.git")));
         configureRemote(git);
-        System.setProperty("user.dir", workDir);
-        final Path[] expected = {Paths.get(REPO.getPath() + "/parent/child1/src/resources/file1")};
-        Assert.assertArrayEquals(expected, DiffLister.act().toArray());
-//        Assert.assertEquals("parent", treeWalk.getPathString());
+    }
+
+    public void close() throws Exception {
         remoteRepo.close();
         delete(REPO);
     }
