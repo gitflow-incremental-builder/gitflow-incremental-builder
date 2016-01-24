@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PomLister {
+public class ModuleDirLister {
 
     public List<Path> act(Path pom) {
-        return subPoms(pom).collect(Collectors.toList());
+        return subPoms(pom)
+                .map(Path::getParent)
+                .collect(Collectors.toList());
     }
 
     private Stream<Path> subPoms(Path pom) {
