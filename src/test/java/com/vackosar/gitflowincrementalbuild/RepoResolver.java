@@ -1,3 +1,5 @@
+package com.vackosar.gitflowincrementalbuild;
+
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;

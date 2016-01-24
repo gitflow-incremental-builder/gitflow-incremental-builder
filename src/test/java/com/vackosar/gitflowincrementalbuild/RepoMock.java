@@ -1,47 +1,35 @@
+package com.vackosar.gitflowincrementalbuild;
+
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.TreeFilter;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 public class RepoMock {
 
+    private static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
+    private static final File REPO = new File(TEST_WORK_DIR + "tmp/repo");
+    private static final File ZIP = new File(TEST_WORK_DIR + "src/test/resources/template.zip");
+
     @Test
     public void init() throws Exception {
+        String workDir = TEST_WORK_DIR + "tmp/repo/";
         final RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
-        new UnZiper().act(new File("src/test/resources/template.zip"), new File("tmp/repo"));
-        Git git = new Git(new FileRepository(new File("tmp/repo/.git")));
+        new UnZiper().act(ZIP, REPO);
+        Git git = new Git(new FileRepository(new File(workDir + "/.git")));
         configureRemote(git);
-        git.fetch().call();
-        final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, "HEAD"));
-        treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
-        treeWalk.setFilter(TreeFilter.ANY_DIFF);
-        Assert.assertTrue(treeWalk.next());
-        Assert.assertEquals("", treeWalk.getPathString());
+        System.setProperty("user.dir", workDir);
+        Main.main(new String[]{""});
+//        Assert.assertEquals("parent", treeWalk.getPathString());
         remoteRepo.close();
-    }
-
-    private RevTree getBranchTree(Git git, String branchName) throws IOException {
-        final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
-        final RevWalk walk = new RevWalk(git.getRepository());
-        final RevCommit commit = walk.parseCommit(allRefs.get(branchName).getObjectId());
-        return commit.getTree();
+        delete(REPO);
     }
 
     private void configureRemote(Git git) throws URISyntaxException, IOException {
@@ -58,5 +46,16 @@ public class RepoMock {
         remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
         remoteConfig.update(config);
         config.save();
+    }
+
+    private void delete(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles()) {
+                delete(c);
+            }
+        }
+        if (!f.delete()) {
+            throw new RuntimeException("Failed to delete file: " + f);
+        }
     }
 }

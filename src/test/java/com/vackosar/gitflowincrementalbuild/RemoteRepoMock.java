@@ -1,3 +1,5 @@
+package com.vackosar.gitflowincrementalbuild;
+
 import org.eclipse.jgit.transport.Daemon;
 
 import java.io.File;
