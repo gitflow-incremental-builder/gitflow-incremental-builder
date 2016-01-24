@@ -13,7 +13,8 @@ import java.net.URISyntaxException;
 
 public class RepoMock implements AutoCloseable {
 
-    private static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
+    public static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
+    public static final String WORK_DIR = TEST_WORK_DIR + "tmp/repo/";
     private static final File REPO = new File(TEST_WORK_DIR + "tmp/repo");
     private static final File ZIP = new File(TEST_WORK_DIR + "src/test/resources/template.zip");
     private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
@@ -21,8 +22,7 @@ public class RepoMock implements AutoCloseable {
 
     public RepoMock() throws IOException, URISyntaxException {
         new UnZiper().act(ZIP, REPO);
-        String workDir = TEST_WORK_DIR + "tmp/repo/";
-        git = new Git(new FileRepository(new File(workDir + "/.git")));
+        git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         configureRemote(git);
     }
 
