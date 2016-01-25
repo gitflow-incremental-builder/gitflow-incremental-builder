@@ -8,6 +8,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class ModuleDirLister {
                     readModules(pom).stream()
                             .map(this::pathize)
                             .map(parent::resolve)
+                            .map(this::standartize)
                             .flatMap(this::subPoms);
             return Stream.concat(Stream.of(pom), poms);
         } catch (Exception e) {
@@ -41,6 +43,14 @@ public class ModuleDirLister {
             return module;
         } else {
             return module + "/pom.xml";
+        }
+    }
+
+    private Path standartize(Path path) {
+        try {
+            return path.normalize().toAbsolutePath().toRealPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
