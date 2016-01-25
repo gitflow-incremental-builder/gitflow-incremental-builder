@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 public class DiffListerTest {
 
-    private static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
+    public static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
 
     @Test
     public void init() throws Exception {
