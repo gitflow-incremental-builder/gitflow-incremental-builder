@@ -16,7 +16,7 @@ public class DiffListerTest {
         String workDir = TEST_WORK_DIR + "tmp/repo/";
         System.setProperty("user.dir", workDir);
         final Path[] expected = {Paths.get(workDir + "/parent/child1/src/resources/file1")};
-        Assert.assertArrayEquals(expected, DiffLister.act().toArray());
+        Assert.assertArrayEquals(expected, new DiffLister().act().toArray());
         repoMock.close();
     }
 
