@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DiffLister {
-    public static List<Path> act() throws GitAPIException, IOException {
+    public List<Path> act() throws GitAPIException, IOException {
         final String workDir = System.getProperty("user.dir");
         Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
         git.fetch().call();
@@ -35,7 +35,7 @@ public class DiffLister {
         return paths;
     }
 
-    private static RevTree getBranchTree(Git git, String branchName) throws IOException {
+    private RevTree getBranchTree(Git git, String branchName) throws IOException {
         final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
         final RevWalk walk = new RevWalk(git.getRepository());
         final RevCommit commit = walk.parseCommit(allRefs.get(branchName).getObjectId());
