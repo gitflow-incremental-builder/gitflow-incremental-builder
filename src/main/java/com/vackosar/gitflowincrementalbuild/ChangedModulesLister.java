@@ -22,7 +22,8 @@ public class ChangedModulesLister {
                 path = path.getParent();
             }
             if (moduleDirs.contains(path)) {
-                changedModuleDirs.add(path);
+                final Path name = path.getName(path.getNameCount()-1);
+                changedModuleDirs.add(name);
             } else {
                 logger.warning("Change outside build project: " + diffPath);
             }

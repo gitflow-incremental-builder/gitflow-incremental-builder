@@ -1,12 +1,11 @@
 package com.vackosar.gitflowincrementalbuild;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ChangedModulesListerTest {
+public class MainTest {
     @Test
     public void list() throws Exception {
         RepoMock repoMock = new RepoMock();
@@ -14,7 +13,8 @@ public class ChangedModulesListerTest {
         String workDir = DiffListerTest.TEST_WORK_DIR + "tmp/repo/";
         System.setProperty("user.dir", workDir);
         Path[] expected = new Path[] {Paths.get("child1")};
-        Assert.assertArrayEquals(expected, new ChangedModulesLister().act(pom).toArray());
+        Main.main(new String[]{pom.toString()});
+//        Assert.assertArrayEquals("child1", );
         repoMock.close();
     }
 }
