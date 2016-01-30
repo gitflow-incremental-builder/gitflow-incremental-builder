@@ -1,4 +1,5 @@
 /.idea
 /target
+!/target/*.zip
 *.iml
 /tmp
