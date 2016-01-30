@@ -4,10 +4,12 @@ import org.eclipse.jgit.transport.Daemon;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.Random;
 
 public class RemoteRepoMock implements AutoCloseable {
 
-    public static final String REPO_URL = "git://localhost/repo.git";
+    private static int port = 9418;
+    public String repoUrl = null;
     private static final File DATA_ZIP = new File("src/test/resources/template.zip");
     private static final File REPO_DIR = new File("tmp/remote");
     private boolean bare;
@@ -22,7 +24,9 @@ public class RemoteRepoMock implements AutoCloseable {
         } else {
             prepareTestingData();
         }
+        repoUrl = "git://localhost:" + port + "/repo.git";
         start();
+        port++;
     }
 
     private void delete(File f) {
@@ -39,7 +43,7 @@ public class RemoteRepoMock implements AutoCloseable {
 
     private void start() {
         try {
-            server = new Daemon(new InetSocketAddress(9418));
+            server = new Daemon(new InetSocketAddress(port));
             server.getService("git-receive-pack").setEnabled(true);
             resolver = new RepoResolver(REPO_DIR, bare);
             server.setRepositoryResolver(resolver);

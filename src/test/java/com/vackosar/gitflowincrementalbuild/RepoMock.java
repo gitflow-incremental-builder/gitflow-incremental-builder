@@ -39,7 +39,7 @@ public class RepoMock implements AutoCloseable {
         config.setString("branch", "master", "merge", "refs/heads/master");
         config.setString("push", null, "default", "current");
         RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
-        URIish uri = new URIish(RemoteRepoMock.REPO_URL);
+        URIish uri = new URIish(remoteRepo.repoUrl);
         remoteConfig.addURI(uri);
         remoteConfig.addFetchRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
         remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
