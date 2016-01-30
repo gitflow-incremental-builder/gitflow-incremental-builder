@@ -6,11 +6,10 @@ import org.junit.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ModuleDirListerTest {
+public class ModuleDirListerTest extends RepoTest {
 
     @Test
     public void listPoms() throws Exception {
-        RepoMock repoMock = new RepoMock();
         final Path pom = Paths.get(RepoMock.WORK_DIR + "parent/pom.xml");
         Path[] expected = new Path[] {
                 Paths.get(RepoMock.WORK_DIR + "parent"),
@@ -21,7 +20,6 @@ public class ModuleDirListerTest {
                 Paths.get(RepoMock.WORK_DIR + "parent/child3"),
         };
         Assert.assertArrayEquals(expected, new ModuleDirLister().act(pom).toArray());
-        repoMock.close();
     }
 
 }

@@ -6,11 +6,10 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public class MainTest {
+public class MainTest extends RepoTest {
 
     @Test
     public void list() throws Exception {
-        RepoMock repoMock = new RepoMock();
         final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         final ByteArrayOutputStream errout = new ByteArrayOutputStream();
         System.setOut(new PrintStream(stdout));
@@ -18,6 +17,5 @@ public class MainTest {
         Main.main(new String[]{RepoMock.WORK_DIR + "/parent/pom.xml"});
         Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), stdout.toString());
         Assert.assertEquals("", errout.toString());
-        repoMock.close();
     }
 }

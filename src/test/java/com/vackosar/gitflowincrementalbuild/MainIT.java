@@ -6,20 +6,17 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-public class MainIT {
+public class MainIT extends RepoTest {
 
     @Test
     public void list() throws Exception {
-        RepoMock repoMock = new RepoMock();
         final Process process = execute();
         Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
-        repoMock.close();
     }
 
     @Test
     public void build() throws Exception {
-        RepoMock repoMock = new RepoMock();
         final Process process = execute();
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
@@ -34,7 +31,6 @@ public class MainIT {
 
         Assert.assertTrue(output.contains(" subchild2"));
         Assert.assertTrue(output.contains(" child3"));
-        repoMock.close();
     }
 
     private Process execute() throws IOException, InterruptedException {
