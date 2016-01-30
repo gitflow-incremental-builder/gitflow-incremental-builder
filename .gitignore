@@ -4,3 +4,4 @@
 *.iml
 /tmp
 /src/test/resources/template
+/src/test/resources/template.zip
