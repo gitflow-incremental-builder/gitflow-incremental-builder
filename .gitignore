@@ -3,3 +3,4 @@
 !/target/*.zip
 *.iml
 /tmp
+/src/test/resources/template
