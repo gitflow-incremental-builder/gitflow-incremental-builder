@@ -18,7 +18,7 @@ public class MainIT {
     }
 
     @Test
-    public void buildChild1() throws Exception {
+    public void build() throws Exception {
         RepoMock repoMock = new RepoMock();
         final Process process = execute();
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
@@ -27,8 +27,13 @@ public class MainIT {
         final String output = convertStreamToString(build.getInputStream());
         System.out.println(output);
         System.out.println(convertStreamToString(build.getErrorStream()));
+
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
         repoMock.close();
     }
 
