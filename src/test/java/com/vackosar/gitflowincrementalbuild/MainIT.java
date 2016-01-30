@@ -22,15 +22,13 @@ public class MainIT {
         RepoMock repoMock = new RepoMock();
         final Process process = execute();
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
-//        Process build = null;
-//        try {
-//            build = executeBuild(modules);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-//        System.out.println(convertStreamToString(build.getInputStream()));
-//        System.out.println(convertStreamToString(build.getErrorStream()));
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
+        Process build = executeBuild(modules);
+        final String output = convertStreamToString(build.getInputStream());
+        System.out.println(output);
+        System.out.println(convertStreamToString(build.getErrorStream()));
+        final String actual = output.split(System.lineSeparator())[3];
+        Assert.assertEquals("[INFO] Building child1 1.0-SNAPSHOT", actual);
         repoMock.close();
     }
 
@@ -46,8 +44,8 @@ public class MainIT {
 
     private Process executeBuild(String modules) throws IOException, InterruptedException {
         final Process process =
-                new ProcessBuilder("mvn", "-pl", modules, "parent/pom.xml")
-                        .directory(new File("tmp/repo"))
+                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-pl", modules)
+                        .directory(new File("tmp/repo/parent"))
                         .start();
         process.waitFor();
         return process;
