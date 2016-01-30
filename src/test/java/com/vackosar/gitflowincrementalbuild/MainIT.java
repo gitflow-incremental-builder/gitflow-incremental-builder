@@ -27,7 +27,6 @@ public class MainIT {
         final String output = convertStreamToString(build.getInputStream());
         System.out.println(output);
         System.out.println(convertStreamToString(build.getErrorStream()));
-        final String actual = output.split(System.lineSeparator())[3];
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
         repoMock.close();
