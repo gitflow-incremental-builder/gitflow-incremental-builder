@@ -14,7 +14,10 @@ public class DiffListerTest {
     public void init() throws Exception {
         final RepoMock repoMock = new RepoMock();
         String workDir = RepoMock.TEST_WORK_DIR + "tmp/repo/";
-        final Path[] expected = {Paths.get(workDir + "/parent/child1/src/resources/file1")};
+        final Path[] expected = {
+                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
+                Paths.get(workDir + "/parent/child3/src/resources/file1")
+        };
         Assert.assertArrayEquals(expected, new DiffLister().act().toArray());
         repoMock.close();
     }

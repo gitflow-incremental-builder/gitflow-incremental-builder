@@ -12,13 +12,13 @@ public class MainIT {
     public void list() throws Exception {
         RepoMock repoMock = new RepoMock();
         final Process process = execute();
-        Assert.assertEquals("child1" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
+        Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
         repoMock.close();
     }
 
     @Test
-    public void build() throws Exception {
+    public void buildChild1() throws Exception {
         RepoMock repoMock = new RepoMock();
         final Process process = execute();
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
@@ -28,7 +28,8 @@ public class MainIT {
         System.out.println(output);
         System.out.println(convertStreamToString(build.getErrorStream()));
         final String actual = output.split(System.lineSeparator())[3];
-        Assert.assertEquals("[INFO] Building child1 1.0-SNAPSHOT", actual);
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
         repoMock.close();
     }
 

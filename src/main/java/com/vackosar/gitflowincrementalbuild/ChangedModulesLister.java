@@ -13,17 +13,17 @@ public class ChangedModulesLister {
     private Logger logger = Logger.getLogger(getClass().getCanonicalName());;
 
     public List<Path> act(Path pom) throws GitAPIException, IOException {
+        Path canonicalPom = pom.toAbsolutePath().toRealPath().normalize();
         final List<Path> changedModuleDirs = new ArrayList<>();
         final List<Path> diffs = new DiffLister().act();
-        final List<Path> moduleDirs = new ModuleDirLister().act(pom);
+        final List<Path> moduleDirs = new ModuleDirLister().act(canonicalPom);
         for (final Path diffPath: diffs) {
             Path path = diffPath;
             while (path != null && ! moduleDirs.contains(path)) {
                 path = path.getParent();
             }
             if (moduleDirs.contains(path)) {
-                final Path name = path.getName(path.getNameCount()-1);
-                changedModuleDirs.add(name);
+                changedModuleDirs.add(canonicalPom.getParent().relativize(path));
             } else {
                 logger.warning("Change outside build project: " + diffPath);
             }
