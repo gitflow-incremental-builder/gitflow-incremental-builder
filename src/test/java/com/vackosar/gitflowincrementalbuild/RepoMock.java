@@ -24,6 +24,7 @@ public class RepoMock implements AutoCloseable {
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         configureRemote(git);
+        System.setProperty("user.dir", WORK_DIR);
     }
 
     public void close() throws Exception {
