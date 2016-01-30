@@ -5,19 +5,23 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class MainIT extends RepoTest {
 
     @Test
     public void list() throws Exception {
-        final Process process = execute();
+        final GIBMock gibMock = new GIBMock();
+        final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
         Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
+        gibMock.close();
     }
 
     @Test
     public void build() throws Exception {
-        final Process process = execute();
+        final GIBMock gibMock = new GIBMock();
+        final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
         Process build = executeBuild(modules);
@@ -31,16 +35,8 @@ public class MainIT extends RepoTest {
 
         Assert.assertTrue(output.contains(" subchild2"));
         Assert.assertTrue(output.contains(" child3"));
-    }
 
-    private Process execute() throws IOException, InterruptedException {
-        final Process process =
-                new ProcessBuilder()
-                        .command("java", "-cp", "../../target/*", "com.vackosar.gitflowincrementalbuild.Main", "parent/pom.xml")
-                        .directory(new File("tmp/repo"))
-                        .start();
-        process.waitFor();
-        return process;
+        gibMock.close();
     }
 
     private Process executeBuild(String modules) throws IOException, InterruptedException {
