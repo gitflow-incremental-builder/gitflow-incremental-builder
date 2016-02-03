@@ -22,10 +22,9 @@ public class DiffLister {
     public List<Path> act() throws GitAPIException, IOException {
         final String workDir = System.getProperty("user.dir");
         Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
-        git.fetch().call();
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
         treeWalk.addTree(getBranchTree(git, "HEAD"));
-        treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
+        treeWalk.addTree(getBranchTree(git, "refs/heads/develop"));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final ArrayList<Path> paths = new ArrayList<>();
