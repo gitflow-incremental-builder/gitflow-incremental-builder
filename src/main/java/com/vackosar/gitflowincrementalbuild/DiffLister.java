@@ -24,7 +24,7 @@ public class DiffLister {
         Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
         treeWalk.addTree(getBranchTree(git, "HEAD"));
-        treeWalk.addTree(getBranchTree(git, "refs/heads/develop"));
+        treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final ArrayList<Path> paths = new ArrayList<>();

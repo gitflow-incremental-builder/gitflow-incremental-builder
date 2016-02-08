@@ -1,6 +1,8 @@
 package com.vackosar.gitflowincrementalbuild;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
@@ -20,10 +22,11 @@ public class RepoMock implements AutoCloseable {
     private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
     private Git git;
 
-    public RepoMock() throws IOException, URISyntaxException {
+    public RepoMock() throws IOException, URISyntaxException, GitAPIException {
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         configureRemote(git);
+        git.fetch().call();
     }
 
     public void close() throws Exception {
