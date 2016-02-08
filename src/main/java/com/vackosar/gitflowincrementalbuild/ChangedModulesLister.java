@@ -4,17 +4,18 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class ChangedModulesLister {
 
     private Logger logger = Logger.getLogger(getClass().getCanonicalName());;
 
-    public List<Path> act(Path pom) throws GitAPIException, IOException {
+    public Set<Path> act(Path pom) throws GitAPIException, IOException {
         Path canonicalPom = pom.toAbsolutePath().toRealPath().normalize();
-        final List<Path> changedModuleDirs = new ArrayList<>();
+        final Set<Path> changedModuleDirs = new HashSet<>();
         final List<Path> diffs = new DiffLister().act();
         final List<Path> moduleDirs = new ModuleDirLister().act(canonicalPom);
         for (final Path diffPath: diffs) {
