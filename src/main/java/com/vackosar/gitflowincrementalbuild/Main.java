@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.google.inject.Guice;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -14,7 +15,8 @@ public class Main {
             System.out.println("Usage: [path to pom]\nWorkdirectory is expected to be in git root.");
         }
         final Path pom = Paths.get(args[0]);
-        final String modules = new ChangedModulesLister()
+        final String modules = Guice.createInjector()
+                .getInstance(ChangedModulesLister.class)
                 .act(pom)
                 .stream()
                 .sorted()

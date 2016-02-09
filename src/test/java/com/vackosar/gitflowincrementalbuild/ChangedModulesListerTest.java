@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.google.inject.Guice;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,6 +19,7 @@ public class ChangedModulesListerTest extends RepoTest {
                 Paths.get("child3"),
                 Paths.get("child4")
         ));
-        Assert.assertEquals(expected, new ChangedModulesLister().act(pom));
+        final Set<Path> actual = Guice.createInjector().getInstance(ChangedModulesLister.class).act(pom);
+        Assert.assertEquals(expected, actual);
     }
 }

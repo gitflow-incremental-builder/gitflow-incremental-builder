@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.google.inject.Singleton;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Singleton
 public class ModuleDirLister {
 
     public List<Path> act(Path pom) {

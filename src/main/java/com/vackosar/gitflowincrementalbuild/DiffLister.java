@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.google.inject.Singleton;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@Singleton
 public class DiffLister {
 
     public Set<Path> act() throws GitAPIException, IOException {
@@ -32,6 +34,8 @@ public class DiffLister {
         while (treeWalk.next()) {
             paths.add(Paths.get(workDir + "/" + treeWalk.getPathString()).normalize());
         }
+        git.getRepository().close();
+        git.close();
         return paths;
     }
 
