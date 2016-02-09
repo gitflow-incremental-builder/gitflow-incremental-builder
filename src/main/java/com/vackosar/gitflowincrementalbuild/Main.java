@@ -5,6 +5,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -16,9 +17,14 @@ public class Main {
         final String modules = new ChangedModulesLister()
                 .act(pom)
                 .stream()
-                .map(s -> "," + s)
+                .sorted()
+                .map(commaPrefix())
                 .collect(Collectors.joining())
                 .replaceFirst(",", "");
         System.out.println(modules);
+    }
+
+    private static Function<Path, String> commaPrefix() {
+        return s -> "," + s;
     }
 }

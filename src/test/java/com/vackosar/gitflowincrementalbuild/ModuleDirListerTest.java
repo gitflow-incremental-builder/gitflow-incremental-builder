@@ -18,6 +18,9 @@ public class ModuleDirListerTest extends RepoTest {
                 Paths.get(RepoMock.WORK_DIR + "parent/child2/subchild1"),
                 Paths.get(RepoMock.WORK_DIR + "parent/child2/subchild2"),
                 Paths.get(RepoMock.WORK_DIR + "parent/child3"),
+                Paths.get(RepoMock.WORK_DIR + "parent/child4"),
+                Paths.get(RepoMock.WORK_DIR + "parent/child4/subchild41"),
+                Paths.get(RepoMock.WORK_DIR + "parent/child4/subchild42"),
         };
         Assert.assertArrayEquals(expected, new ModuleDirLister().act(pom).toArray());
     }

@@ -16,17 +16,17 @@ public class ChangedModulesLister {
     public Set<Path> act(Path pom) throws GitAPIException, IOException {
         Path canonicalPom = pom.toAbsolutePath().toRealPath().normalize();
         final Set<Path> changedModuleDirs = new HashSet<>();
-        final List<Path> diffs = new DiffLister().act();
+        final Set<Path> diffs = new DiffLister().act();
         final List<Path> moduleDirs = new ModuleDirLister().act(canonicalPom);
         for (final Path diffPath: diffs) {
             Path path = diffPath;
             while (path != null && ! moduleDirs.contains(path)) {
                 path = path.getParent();
             }
-            if (moduleDirs.contains(path)) {
-                changedModuleDirs.add(canonicalPom.getParent().relativize(path));
-            } else {
+            if (path == null || ! moduleDirs.contains(path)) {
                 logger.warning("Change outside build project: " + diffPath);
+            } else if (! changedModuleDirs.stream().map(canonicalPom.getParent()::resolve).anyMatch(path::startsWith)) {
+                changedModuleDirs.add(canonicalPom.getParent().relativize(path));
             }
         }
         return changedModuleDirs;

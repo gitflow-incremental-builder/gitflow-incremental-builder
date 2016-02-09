@@ -14,12 +14,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DiffLister {
-    public List<Path> act() throws GitAPIException, IOException {
+
+    public Set<Path> act() throws GitAPIException, IOException {
         final String workDir = System.getProperty("user.dir");
         Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
@@ -27,9 +28,9 @@ public class DiffLister {
         treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
-        final ArrayList<Path> paths = new ArrayList<>();
+        final Set<Path> paths = new HashSet<>();
         while (treeWalk.next()) {
-            paths.add(Paths.get(workDir + "/" + treeWalk.getPathString()));
+            paths.add(Paths.get(workDir + "/" + treeWalk.getPathString()).normalize());
         }
         return paths;
     }

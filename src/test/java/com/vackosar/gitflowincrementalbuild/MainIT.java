@@ -13,7 +13,7 @@ public class MainIT extends RepoTest {
     public void list() throws Exception {
         final GIBMock gibMock = new GIBMock();
         final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
-        Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
+        Assert.assertEquals("child2\\subchild2,child3,child4" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
         Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
         gibMock.close();
     }
@@ -32,16 +32,19 @@ public class MainIT extends RepoTest {
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
         Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
 
         Assert.assertTrue(output.contains(" subchild2"));
         Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
 
         gibMock.close();
     }
 
     private Process executeBuild(String modules) throws IOException, InterruptedException {
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-pl", modules)
+                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-amd", "-pl", modules)
                         .directory(new File("tmp/repo/parent"))
                         .start();
         process.waitFor();

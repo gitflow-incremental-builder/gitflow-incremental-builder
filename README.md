@@ -6,9 +6,9 @@
 
 ## Example Bash Execution
 
-``` mvn -pl "$(gib.sh pom.xml)" pom.xml ```
+``` mvn -amd -pl "$(gib.sh pom.xml)" pom.xml ```
 
-Builds compared to "origin/develop" modules containing changes.
+Builds compared to "origin/develop" modules containing changes and all their dependents.
 
 ## Last Release
 

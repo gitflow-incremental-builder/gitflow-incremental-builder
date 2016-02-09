@@ -15,7 +15,7 @@ public class MainTest extends RepoTest {
         System.setOut(new PrintStream(stdout));
         System.setErr(new PrintStream(errout));
         Main.main(new String[]{RepoMock.WORK_DIR + "/parent/pom.xml"});
-        Assert.assertEquals("child2\\subchild2,child3" + System.lineSeparator(), stdout.toString());
+        Assert.assertEquals("child2\\subchild2,child3,child4" + System.lineSeparator(), stdout.toString());
         Assert.assertEquals("", errout.toString());
     }
 }
