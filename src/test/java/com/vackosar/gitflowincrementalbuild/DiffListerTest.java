@@ -23,4 +23,16 @@ public class DiffListerTest extends RepoTest {
         Assert.assertEquals(expected, new DiffLister().act());
     }
 
+    @Test
+    public void listInSubdir() throws Exception {
+        Path workDir = Paths.get(RepoMock.TEST_WORK_DIR).resolve("tmp/repo/parent/child2");
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                workDir.resolve("subchild2/src/resources/file2"),
+                workDir.resolve("subchild2/src/resources/file22"),
+                workDir.resolve("../child3/src/resources/file1").normalize(),
+                workDir.resolve("../child4/pom.xml").normalize()
+        ));
+        Assert.assertEquals(expected, new DiffLister().act());
+    }
+
 }
