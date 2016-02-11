@@ -42,10 +42,18 @@ public class MainIT extends RepoTest {
         gibMock.close();
     }
 
+    @Test
+    public void mavenTest() throws IOException, InterruptedException {
+        final Process build = executeBuild("child2/subchild2");
+        final String output = convertStreamToString(build.getInputStream());
+        System.out.println(output);
+        Assert.assertEquals(0, build.waitFor());
+    }
+
     private Process executeBuild(String modules) throws IOException, InterruptedException {
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-amd", "-pl", modules)
-                        .directory(new File("tmp/repo/parent"))
+                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-amd", "-pl", modules, "--file", "parent\\pom.xml")
+                        .directory(new File("tmp/repo"))
                         .start();
         process.waitFor();
         return process;

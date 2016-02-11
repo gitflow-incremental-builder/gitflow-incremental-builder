@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 @Singleton
 public class ChangedModulesLister {
 
-    private Logger logger = Logger.getLogger(getClass().getCanonicalName());;
+    private Logger logger = Logger.getLogger(getClass().getCanonicalName());
 
     @Inject private DiffLister diffLister;
     @Inject private ModuleDirLister moduleDirLister;

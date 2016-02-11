@@ -10,11 +10,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Main {
+
+    private static final String USER_DIR = "user.dir";
+
     public static void main(String[] args) throws GitAPIException, IOException {
         if (args.length != 1) {
             System.out.println("Usage: [path to pom]\nWorkdirectory is expected to be in git root.");
         }
-        final Path pom = Paths.get(args[0]);
+        final Path pom = Paths.get(System.getProperty(USER_DIR)).resolve(args[0]);
         final String modules = Guice.createInjector()
                 .getInstance(ChangedModulesLister.class)
                 .act(pom)
