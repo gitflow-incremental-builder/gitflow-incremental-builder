@@ -1,9 +1,9 @@
 package com.vackosar.gitflowincrementalbuild;
 
-import com.google.inject.Singleton;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import javax.inject.Singleton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathConstants;

@@ -1,9 +1,9 @@
 package com.vackosar.gitflowincrementalbuild;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;

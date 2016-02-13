@@ -1,9 +1,7 @@
 package com.vackosar.gitflowincrementalbuild;
 
-import com.google.inject.Singleton;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -11,7 +9,8 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
-import java.io.File;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,17 +21,21 @@ import java.util.Set;
 @Singleton
 public class DiffLister {
 
+    private static final String HEAD = "HEAD";
+    private static final String ORIGIN_DEVELOP = "refs/remotes/origin/develop";
+
+    @Inject private Git git;
+
     public Set<Path> act() throws GitAPIException, IOException {
-        final String workDir = System.getProperty("user.dir");
-        Git git = new Git(new FileRepository(new File(workDir + "/.git" )));
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, "HEAD"));
-        treeWalk.addTree(getBranchTree(git, "refs/remotes/origin/develop"));
+        treeWalk.addTree(getBranchTree(git, HEAD));
+        treeWalk.addTree(getBranchTree(git, ORIGIN_DEVELOP));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
+        final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
         final Set<Path> paths = new HashSet<>();
         while (treeWalk.next()) {
-            paths.add(Paths.get(workDir + "/" + treeWalk.getPathString()).normalize());
+            paths.add(gitDir.resolve(treeWalk.getPathString()).normalize());
         }
         git.getRepository().close();
         git.close();
