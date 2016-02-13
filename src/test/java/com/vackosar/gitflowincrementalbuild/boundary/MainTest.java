@@ -1,6 +1,7 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
-import com.vackosar.gitflowincrementalbuild.boundary.Main;
+import com.vackosar.gitflowincrementalbuild.mocks.RepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
 import org.junit.Test;

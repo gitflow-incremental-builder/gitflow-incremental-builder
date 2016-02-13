@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.mocks;
 
 import java.io.File;
 import java.io.IOException;

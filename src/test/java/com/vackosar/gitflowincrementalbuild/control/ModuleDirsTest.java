@@ -1,6 +1,7 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.control;
 
-import com.vackosar.gitflowincrementalbuild.control.ModuleDirs;
+import com.vackosar.gitflowincrementalbuild.mocks.RepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.junit.Assert;
 import org.junit.Test;
 

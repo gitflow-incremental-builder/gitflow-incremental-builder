@@ -1,5 +1,7 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
+import com.vackosar.gitflowincrementalbuild.mocks.GIBMock;
+import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.junit.Assert;
 import org.junit.Test;
 
