@@ -31,7 +31,7 @@ public class Module extends AbstractModule {
 
     @Provides
     @Singleton
-    public Arguments provideArguments(Path workDir) {
+    public Arguments provideArguments(Path workDir) throws IOException {
         return new Arguments(args, workDir);
     }
 
