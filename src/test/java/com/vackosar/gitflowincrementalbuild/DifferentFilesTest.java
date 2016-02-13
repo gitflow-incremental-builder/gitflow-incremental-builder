@@ -3,6 +3,8 @@ package com.vackosar.gitflowincrementalbuild;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.vackosar.gitflowincrementalbuild.boundary.Module;
+import com.vackosar.gitflowincrementalbuild.control.DifferentFiles;
 import org.eclipse.jgit.api.Git;
 import org.junit.Assert;
 import org.junit.Test;

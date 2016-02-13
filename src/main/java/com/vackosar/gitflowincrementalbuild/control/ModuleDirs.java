@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.control;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;

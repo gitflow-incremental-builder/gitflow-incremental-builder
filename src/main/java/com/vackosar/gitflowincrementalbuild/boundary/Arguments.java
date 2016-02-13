@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

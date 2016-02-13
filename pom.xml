@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.vackosar.gitflowincrementalbuild.Main</mainClass>
+                            <mainClass>com.vackosar.gitflowincrementalbuild.boundary.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

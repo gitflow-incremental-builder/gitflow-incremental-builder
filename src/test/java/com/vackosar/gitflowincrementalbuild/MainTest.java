@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.vackosar.gitflowincrementalbuild.boundary.Main;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
 import org.junit.Test;

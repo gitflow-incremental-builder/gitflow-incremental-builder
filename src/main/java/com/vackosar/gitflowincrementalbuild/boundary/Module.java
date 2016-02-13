@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

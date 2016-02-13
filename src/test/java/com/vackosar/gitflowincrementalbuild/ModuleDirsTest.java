@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import com.vackosar.gitflowincrementalbuild.control.ModuleDirs;
 import org.junit.Assert;
 import org.junit.Test;
 

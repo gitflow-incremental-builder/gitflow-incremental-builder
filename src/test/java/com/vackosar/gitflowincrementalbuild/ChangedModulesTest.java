@@ -1,6 +1,8 @@
 package com.vackosar.gitflowincrementalbuild;
 
 import com.google.inject.Guice;
+import com.vackosar.gitflowincrementalbuild.boundary.Module;
+import com.vackosar.gitflowincrementalbuild.control.ChangedModules;
 import org.junit.Assert;
 import org.junit.Test;
 

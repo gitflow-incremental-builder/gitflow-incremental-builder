@@ -1,5 +1,6 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
+import com.vackosar.gitflowincrementalbuild.control.ChangedModules;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.inject.Inject;

@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild;
+package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.Guice;
 import org.eclipse.jgit.api.errors.GitAPIException;
