@@ -19,14 +19,14 @@ import java.util.Map;
 import java.util.Set;
 
 @Singleton
-public class DiffLister {
+public class DifferentFiles {
 
     private static final String HEAD = "HEAD";
     private static final String ORIGIN_DEVELOP = "refs/remotes/origin/develop";
 
     @Inject private Git git;
 
-    public Set<Path> act() throws GitAPIException, IOException {
+    public Set<Path> list() throws GitAPIException, IOException {
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
         treeWalk.addTree(getBranchTree(git, HEAD));
         treeWalk.addTree(getBranchTree(git, ORIGIN_DEVELOP));

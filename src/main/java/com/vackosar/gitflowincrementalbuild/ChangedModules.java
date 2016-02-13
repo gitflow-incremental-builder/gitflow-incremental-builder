@@ -17,11 +17,11 @@ public class ChangedModules {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Inject private DiffLister diffLister;
+    @Inject private DifferentFiles differentFiles;
     @Inject private ModuleDirLister moduleDirLister;
 
     public Set<Path> list(Path pom) throws GitAPIException, IOException {
-        return diffLister.act().stream()
+        return differentFiles.list().stream()
                 .map(path -> findModulePath(path, pom))
                 .filter(modulePath -> modulePath != null)
                 .map(nonNullModulePath -> pom.getParent().relativize(nonNullModulePath))
