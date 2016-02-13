@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ModuleDirListerTest extends RepoTest {
+public class ModuleDirsTest extends RepoTest {
 
     @Test
     public void listPoms() throws Exception {
@@ -22,7 +22,7 @@ public class ModuleDirListerTest extends RepoTest {
                 Paths.get(RepoMock.WORK_DIR + "parent/child4/subchild41"),
                 Paths.get(RepoMock.WORK_DIR + "parent/child4/subchild42"),
         };
-        Assert.assertArrayEquals(expected, new ModuleDirLister().act(pom).toArray());
+        Assert.assertArrayEquals(expected, new ModuleDirs().list(pom).toArray());
     }
 
 }

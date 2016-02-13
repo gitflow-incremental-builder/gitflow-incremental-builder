@@ -18,7 +18,7 @@ public class ChangedModules {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject private DifferentFiles differentFiles;
-    @Inject private ModuleDirLister moduleDirLister;
+    @Inject private ModuleDirs moduleDirs;
 
     public Set<Path> list(Path pom) throws GitAPIException, IOException {
         return differentFiles.list().stream()
@@ -29,7 +29,7 @@ public class ChangedModules {
     }
 
     private Path findModulePath(Path diffPath, Path pom) {
-        final List<Path> moduleDirs = moduleDirLister.act(pom);
+        final List<Path> moduleDirs = this.moduleDirs.list(pom);
         Path path = diffPath;
         while (path != null && ! moduleDirs.contains(path)) {
             path = path.getParent();

@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class ModuleDirLister {
+public class ModuleDirs {
 
-    public List<Path> act(Path pom) {
+    public List<Path> list(Path pom) {
         return subPoms(pom)
                 .map(Path::getParent)
                 .collect(Collectors.toList());
