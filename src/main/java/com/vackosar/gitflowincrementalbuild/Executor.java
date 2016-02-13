@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 @Singleton
 public class Executor {
 
-    @Inject private ChangedModulesLister changedModulesLister;
+    @Inject private ChangedModules changedModules;
     @Inject private Arguments arguments;
 
     public void act() throws GitAPIException, IOException {
-        final String modules = changedModulesLister
-                .act(arguments.pom)
+        final String modules = changedModules
+                .list(arguments.pom)
                 .stream()
                 .sorted()
                 .map(commaPrefix())

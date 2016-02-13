@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ChangedModulesListerTest extends RepoTest {
+public class ChangedModulesTest extends RepoTest {
 
     private static final String USER_DIR = "user.dir";
 
@@ -22,7 +22,7 @@ public class ChangedModulesListerTest extends RepoTest {
                 Paths.get("child3"),
                 Paths.get("child4")
         ));
-        final Set<Path> actual = Guice.createInjector(new Module(new String[]{pom.toString()})).getInstance(ChangedModulesLister.class).act(pom);
+        final Set<Path> actual = Guice.createInjector(new Module(new String[]{pom.toString()})).getInstance(ChangedModules.class).list(pom);
         Assert.assertEquals(expected, actual);
     }
 }

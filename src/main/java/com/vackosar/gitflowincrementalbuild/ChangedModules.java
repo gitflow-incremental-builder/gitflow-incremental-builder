@@ -13,14 +13,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
-public class ChangedModulesLister {
+public class ChangedModules {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject private DiffLister diffLister;
     @Inject private ModuleDirLister moduleDirLister;
 
-    public Set<Path> act(Path pom) throws GitAPIException, IOException {
+    public Set<Path> list(Path pom) throws GitAPIException, IOException {
         return diffLister.act().stream()
                 .map(path -> findModulePath(path, pom))
                 .filter(modulePath -> modulePath != null)
