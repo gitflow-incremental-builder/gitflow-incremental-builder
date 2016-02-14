@@ -28,7 +28,6 @@ public class MainTest extends RepoTest {
         System.setOut(new PrintStream(stdout));
         System.setErr(new PrintStream(errout));
         Main.main(new String[]{pom});
-        Assert.assertEquals("", errout.toString());
         Assert.assertEquals("child2\\subchild2,child3,child4" + System.lineSeparator(), stdout.toString());
         return stdout.toString();
     }

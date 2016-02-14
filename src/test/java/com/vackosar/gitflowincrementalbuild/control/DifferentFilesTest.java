@@ -3,10 +3,12 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.vackosar.gitflowincrementalbuild.boundary.Arguments;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,8 +60,8 @@ public class DifferentFilesTest extends RepoTest {
             this.workDir = workDir;
         }
 
-        @Singleton @Provides public Git provideGit(Path workDir) throws IOException {
-            return module.provideGit(workDir);
+        @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {
+            return module.provideGit(workDir, new Arguments(new String[] {""}, workDir), null);
         }
 
         @Singleton @Provides public Path workDir() {

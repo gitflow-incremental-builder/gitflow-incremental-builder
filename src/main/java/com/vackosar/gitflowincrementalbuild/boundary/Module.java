@@ -2,8 +2,12 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.vackosar.gitflowincrementalbuild.control.SshTrasportCallback;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -11,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Module extends AbstractModule {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final String[] args;
 
@@ -20,13 +26,22 @@ public class Module extends AbstractModule {
 
     @Provides
     @Singleton
-    public Git provideGit(Path workDir) throws IOException {
+    public Git provideGit(Path workDir, Arguments arguments, SshTrasportCallback callback) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
         final FileRepositoryBuilder gitDir = builder.findGitDir(workDir.toFile());
         if (gitDir == null) {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + workDir + "'.");
         }
-        return Git.wrap(builder.build());
+        final Git git = Git.wrap(builder.build());
+        if (arguments.key.isPresent()) {
+            git
+                .fetch()
+                .setTransportConfigCallback(callback)
+                .call();
+        } else {
+            log.warn("Repository latest changes won't be fetched because key was not provided.");
+        }
+        return git;
     }
 
     @Provides
@@ -43,4 +58,5 @@ public class Module extends AbstractModule {
 
     @Override
     protected void configure() {}
+
 }

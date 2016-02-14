@@ -16,7 +16,6 @@ public class MainIT extends RepoTest {
         final GIBMock gibMock = new GIBMock();
         final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
         Assert.assertEquals("child2\\subchild2,child3,child4" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
-        Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
         gibMock.close();
     }
 
@@ -25,7 +24,6 @@ public class MainIT extends RepoTest {
         final GIBMock gibMock = new GIBMock();
         final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
         final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
-        Assert.assertEquals("", convertStreamToString(process.getErrorStream()));
         Process build = executeBuild(modules);
         final String output = convertStreamToString(build.getInputStream());
         System.out.println(output);
