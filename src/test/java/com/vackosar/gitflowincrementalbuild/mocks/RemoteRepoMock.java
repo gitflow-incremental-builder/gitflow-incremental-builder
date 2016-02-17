@@ -39,7 +39,6 @@ public class RemoteRepoMock implements AutoCloseable {
         }
     }
 
-
     private void start() {
         try {
             server = new Daemon(new InetSocketAddress(port));

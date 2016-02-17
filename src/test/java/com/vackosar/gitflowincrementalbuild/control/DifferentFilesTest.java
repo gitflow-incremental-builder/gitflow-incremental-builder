@@ -5,7 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Provides;
 import com.vackosar.gitflowincrementalbuild.boundary.Arguments;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
-import com.vackosar.gitflowincrementalbuild.mocks.RepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -27,7 +27,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void list() throws Exception {
-        Path workDir = Paths.get(RepoMock.TEST_WORK_DIR).resolve("tmp/repo/");
+        Path workDir = Paths.get(LocalRepoMock.TEST_WORK_DIR).resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
@@ -40,7 +40,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void listInSubdir() throws Exception {
-        Path workDir = Paths.get(RepoMock.TEST_WORK_DIR).resolve("tmp/repo/parent/child2");
+        Path workDir = Paths.get(LocalRepoMock.TEST_WORK_DIR).resolve("tmp/repo/parent/child2");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 workDir.resolve("subchild2/src/resources/file2"),

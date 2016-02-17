@@ -23,7 +23,7 @@ public class GIBMock {
 
     public GIBMock() throws IOException {
         final File zip =
-                Arrays.asList(Paths.get(RepoMock.TEST_WORK_DIR + "target")
+                Arrays.asList(Paths.get(LocalRepoMock.TEST_WORK_DIR + "target")
                         .toFile()
                         .listFiles())
                         .stream()
@@ -31,8 +31,8 @@ public class GIBMock {
                         .findFirst()
                         .get();
         System.out.println(zip);
-        new UnZiper().act(zip, new File(RepoMock.TEST_WORK_DIR + "tmp"));
-        dirName =  Paths.get(RepoMock.TEST_WORK_DIR + "tmp/" + zip.getName().replaceAll("-bin.zip$", "")).normalize().toAbsolutePath().toRealPath();
+        new UnZiper().act(zip, new File(LocalRepoMock.TEST_WORK_DIR + "tmp"));
+        dirName =  Paths.get(LocalRepoMock.TEST_WORK_DIR + "tmp/" + zip.getName().replaceAll("-bin.zip$", "")).normalize().toAbsolutePath().toRealPath();
     }
 
     public Process execute(Path pom) throws IOException, InterruptedException {

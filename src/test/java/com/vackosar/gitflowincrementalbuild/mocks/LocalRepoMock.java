@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class RepoMock implements AutoCloseable {
+public class LocalRepoMock implements AutoCloseable {
 
     public static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
     public static final String WORK_DIR = TEST_WORK_DIR + "tmp/repo/";
@@ -21,32 +21,42 @@ public class RepoMock implements AutoCloseable {
     private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
     private Git git;
 
-    public RepoMock() throws IOException, URISyntaxException, GitAPIException {
+    public LocalRepoMock() throws IOException, URISyntaxException, GitAPIException {
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
-        configureRemote(git);
+        configureRemote(git, remoteRepo.repoUrl);
         git.fetch().call();
     }
 
-    public void close() throws Exception {
-        remoteRepo.close();
-        delete(REPO);
+    public Git getGit() {
+        return git;
     }
 
-    private void configureRemote(Git git) throws URISyntaxException, IOException {
+    public void invalidateConfigration() throws IOException, URISyntaxException {
+        configureRemote(git, "git://localhost:8888/repo.git");
+    }
+
+    private void configureRemote(Git git, String repoUrl) throws URISyntaxException, IOException {
         StoredConfig config = git.getRepository().getConfig();
+        config.clear();
         config.setString("remote", "origin" ,"fetch", "+refs/heads/*:refs/remotes/origin/*");
         config.setString("remote", "origin" ,"push", "+refs/heads/*:refs/remotes/origin/*");
         config.setString("branch", "master", "remote", "origin");
         config.setString("branch", "master", "merge", "refs/heads/master");
         config.setString("push", null, "default", "current");
         RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
-        URIish uri = new URIish(remoteRepo.repoUrl);
+        URIish uri = new URIish(repoUrl);
         remoteConfig.addURI(uri);
         remoteConfig.addFetchRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
         remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
         remoteConfig.update(config);
         config.save();
+    }
+
+
+    public void close() throws Exception {
+        remoteRepo.close();
+        delete(REPO);
     }
 
     private void delete(File f) {

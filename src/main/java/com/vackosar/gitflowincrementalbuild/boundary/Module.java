@@ -5,7 +5,9 @@ import com.google.inject.Provides;
 import com.vackosar.gitflowincrementalbuild.control.SshTrasportCallback;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +35,14 @@ public class Module extends AbstractModule {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + workDir + "'.");
         }
         final Git git = Git.wrap(builder.build());
-        if (arguments.key.isPresent()) {
+        try {
             git
                 .fetch()
+                .setRefSpecs(new RefSpec().setSource("refs/heads/develop").setDestination("refs/remotes/origin/develop"))
                 .setTransportConfigCallback(callback)
                 .call();
-        } else {
-            log.warn("Repository latest changes won't be fetched because key was not provided.");
+        } catch (TransportException e) {
+            log.warn("Failed to connect to the remote. Will rely on current state.");
         }
         return git;
     }
