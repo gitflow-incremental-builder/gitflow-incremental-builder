@@ -10,7 +10,7 @@
      -b,--branch <branch>                        defaults to 'HEAD'
      -k,--key <path>                             path to repo private key
      -rb,--reference-branch <reference branch>   defaults to
-                                             'refs/remotes/origin/develop'
+                                                 'refs/remotes/origin/develop'
 
 ## Example Bash Execution
 
