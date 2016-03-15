@@ -69,6 +69,10 @@ public class DifferentFilesTest extends RepoTest {
             return workDir;
         }
 
+        @Singleton @Provides public Arguments arguments(Path workDir) throws IOException {
+            return new Arguments(new String[] {"."}, workDir);
+        }
+
         @Override
         protected void configure() {}
     }

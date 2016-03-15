@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import com.vackosar.gitflowincrementalbuild.boundary.Arguments;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -21,15 +22,13 @@ import java.util.Set;
 @Singleton
 public class DifferentFiles {
 
-    private static final String HEAD = "HEAD";
-    private static final String ORIGIN_DEVELOP = "refs/remotes/origin/develop";
-
     @Inject private Git git;
+    @Inject private Arguments arguments;
 
     public Set<Path> list() throws GitAPIException, IOException {
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, HEAD));
-        treeWalk.addTree(getBranchTree(git, ORIGIN_DEVELOP));
+        treeWalk.addTree(getBranchTree(git, arguments.branch));
+        treeWalk.addTree(getBranchTree(git, arguments.referenceBranch));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();

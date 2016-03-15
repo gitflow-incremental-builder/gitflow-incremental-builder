@@ -4,6 +4,14 @@
 - Useful for multi-module maven projects using Gitflow model, where "origin/develop" is always stable.
 - Don't forget to fetch first.
 
+## Usage
+
+usage: [path to pom] [OPTIONS]
+ -b,--branch <branch>                        defaults to 'HEAD'
+ -k,--key <path>                             path to repo private key
+ -rb,--reference-branch <reference branch>   defaults to
+                                             'refs/remotes/origin/develop'
+
 ## Example Bash Execution
 
 ``` mvn -amd -pl "$(gib.sh pom.xml)" --file pom.xml ```
