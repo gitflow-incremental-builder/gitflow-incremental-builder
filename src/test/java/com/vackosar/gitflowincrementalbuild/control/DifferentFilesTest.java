@@ -61,7 +61,7 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {
-            return module.provideGit(workDir, new Arguments(new String[] {""}, workDir), null);
+            return module.provideGit(workDir, new Arguments(new String[] {""}, workDir));
         }
 
         @Singleton @Provides public Path workDir() {
