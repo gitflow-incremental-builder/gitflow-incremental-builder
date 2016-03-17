@@ -6,15 +6,15 @@
 
 ## Usage
 
-usage: [path to pom] [OPTIONS]
- -b,--branch <branch>                        defaults to 'HEAD'
- -k,--key <path>                             path to repo private key
- -rb,--reference-branch <reference branch>   defaults to
-                                             'refs/remotes/origin/develop'
+    usage: [path to pom] [OPTIONS]
+     -b,--branch <branch>                        defaults to 'HEAD'
+     -k,--key <path>                             path to repo private key
+     -rb,--reference-branch <reference branch>   defaults to
+                                                 'refs/remotes/origin/develop'
 
 ## Example Bash Execution
 
-``` mvn -amd -pl "$(gib.sh pom.xml)" --file pom.xml ```
+    mvn -amd -pl "$(gib.sh pom.xml)" --file pom.xml
 
 Builds compared to "origin/develop" modules containing changes and all their dependents.
 
