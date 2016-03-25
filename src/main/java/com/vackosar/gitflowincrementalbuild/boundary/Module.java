@@ -25,14 +25,14 @@ public class Module extends AbstractModule {
 
     @Provides
     @Singleton
-    public Git provideGit(Path workDir, Arguments arguments) throws IOException, GitAPIException {
+    public Git provideGit(Path workDir) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        final FileRepositoryBuilder gitDir = builder.findGitDir(workDir.toFile());
-        if (gitDir == null) {
+        builder.findGitDir(workDir.toFile());
+        if (builder.getGitDir() == null) {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + workDir + "'.");
         }
-        final Git git = Git.wrap(builder.build());
-        return git;
+        log.info("Git root is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
+        return Git.wrap(builder.build());
     }
 
     @Provides
