@@ -39,7 +39,7 @@ public class Arguments {
     }
 
     private String parseBranch(CommandLine line) {
-        final String value = line.getOptionValue(OPT_REFERENCE_BRANCH);
+        final String value = line.getOptionValue(OPT_BRANCH);
         if (value != null) {
             return value;
         } else {
