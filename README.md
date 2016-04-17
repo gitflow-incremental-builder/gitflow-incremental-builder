@@ -1,13 +1,12 @@
 # gitflow-incremental-builder
 
 - Can be used as a extension in Maven build or stand alone to build only changed modules compared to "origin/develop" branch.
-- Returns names of maven modules which contain changes compared to "origin/develop" branch.
 - Useful for multi-module maven projects using Gitflow model, where "origin/develop" is always stable.
 - Don't forget to fetch first.
 
 ## Maven Usage
 
-- Copy correctly into corresponding maven repository directory.
+- [Install GIB into maven repo.](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html)
 - Add into build:
 
     <build>
