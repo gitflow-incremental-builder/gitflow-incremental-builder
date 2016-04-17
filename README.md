@@ -8,7 +8,7 @@
 
 - [Install GIB into maven repo.](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html)
 - Add into build:
-
+```xml
     <build>
         ...
         <extensions>
@@ -19,7 +19,7 @@
             </extension>
         </extensions>
     </build>
-
+```
 ## Commandline Usage
 
     usage: [path to pom] [OPTIONS]
