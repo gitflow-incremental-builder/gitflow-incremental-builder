@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,16 @@ public class Executor {
                 .collect(Collectors.joining())
                 .replaceFirst(",", "");
         System.out.println(modules);
+    }
+
+    public Set<String> getArtifactIds() throws GitAPIException, IOException {
+        return changedModules
+                .list(arguments.pom)
+                .stream()
+                .sorted()
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toSet());
     }
 
     private static Function<Path, String> commaPrefix() {
