@@ -68,7 +68,7 @@ public class MainIT extends RepoTest {
 
     private String executeSimplyBuild() throws IOException, InterruptedException {
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "compile", "--file", "parent\\pom.xml")
+                new ProcessBuilder("cmd", "/c", "mvn", "-Dgib=true", "compile", "--file", "parent\\pom.xml")
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());

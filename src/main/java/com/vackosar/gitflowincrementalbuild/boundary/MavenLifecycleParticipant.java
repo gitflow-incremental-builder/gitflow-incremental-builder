@@ -14,15 +14,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component( role = AbstractMavenLifecycleParticipant.class, hint = "beer")
+@Component(role = AbstractMavenLifecycleParticipant.class)
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-
+    public static final String GIB = "gib";
+    public static final String TRUE = "true";
     @Requirement
     private Logger logger;
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+        if (! TRUE.equalsIgnoreCase(System.getProperty(GIB))) {
+            logger.info("Skipping GIB because property '" + GIB + "' not set to '" + TRUE + "'.");
+            return;
+        }
         try {
             Set<String> moduleNames = Guice
                     .createInjector(new Module(new String[] {session.getTopLevelProject().getFile().getPath()}))
@@ -42,7 +47,6 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         } catch (Exception e) {
             throw new MavenExecutionException("Exception", e);
         }
-        super.afterProjectsRead(session);
     }
 
     private Set<MavenProject> getAllDependents(List<MavenProject> projects, MavenProject project) {
