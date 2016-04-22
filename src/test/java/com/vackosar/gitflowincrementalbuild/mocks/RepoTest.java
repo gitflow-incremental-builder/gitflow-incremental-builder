@@ -15,7 +15,7 @@ public abstract class RepoTest {
     @Before
     public void before() throws IOException, URISyntaxException, GitAPIException {
         localRepoMock = new LocalRepoMock();
-        System.setProperty("user.dir", LocalRepoMock.WORK_DIR);
+        System.setProperty("user.dir", LocalRepoMock.WORK_DIR.toString());
         System.setProperty(GIB_UNCOMMITED, Boolean.FALSE.toString());
     }
 

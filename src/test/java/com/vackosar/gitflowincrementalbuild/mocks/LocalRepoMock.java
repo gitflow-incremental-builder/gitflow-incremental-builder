@@ -11,13 +11,15 @@ import org.eclipse.jgit.transport.URIish;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class LocalRepoMock implements AutoCloseable {
 
-    public static final String TEST_WORK_DIR = System.getProperty("user.dir") + "/";
-    public static final String WORK_DIR = TEST_WORK_DIR + "tmp/repo/";
-    private static final File REPO = new File(TEST_WORK_DIR + "tmp/repo");
-    private static final File ZIP = new File(TEST_WORK_DIR + "src/test/resources/template.zip");
+    public static final Path TEST_WORK_DIR = Paths.get(System.getProperty("user.dir"));
+    public static final Path WORK_DIR = TEST_WORK_DIR.resolve("tmp/repo/");
+    private static final File REPO = WORK_DIR.toFile();
+    private static final File ZIP = TEST_WORK_DIR.resolve("src/test/resources/template.zip").toFile();
     private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
     private Git git;
 

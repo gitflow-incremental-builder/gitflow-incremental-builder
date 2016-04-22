@@ -43,7 +43,7 @@ public class DifferentFilesTest extends RepoTest {
     @Test
     public void listIncludingUncommited() throws GitAPIException, IOException {
         System.setProperty(GIB_UNCOMMITED, Boolean.TRUE.toString());
-        Path workDir = Paths.get(LocalRepoMock.TEST_WORK_DIR).resolve("tmp/repo/");
+        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
@@ -58,7 +58,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void list() throws Exception {
-        Path workDir = Paths.get(LocalRepoMock.TEST_WORK_DIR).resolve("tmp/repo/");
+        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
@@ -71,7 +71,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void listInSubdir() throws Exception {
-        Path workDir = Paths.get(LocalRepoMock.TEST_WORK_DIR).resolve("tmp/repo/parent/child2");
+        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/parent/child2");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 workDir.resolve("subchild2/src/resources/file2"),

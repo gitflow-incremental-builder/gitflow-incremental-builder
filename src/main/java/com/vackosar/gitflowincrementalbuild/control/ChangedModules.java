@@ -1,5 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -7,7 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,26 +18,27 @@ public class ChangedModules {
 
     @Inject private Logger logger;
     @Inject private DifferentFiles differentFiles;
-    @Inject private ModuleDirs moduleDirs;
+    @Inject private MavenSession mavenSession;
+    @Inject private Modules modules;
 
-    public Set<Path> list(Path pom) throws GitAPIException, IOException {
+    public Set<MavenProject> set() throws GitAPIException, IOException {
         return differentFiles.list().stream()
-                .map(path -> findModulePath(path, pom))
-                .filter(modulePath -> modulePath != null)
-                .map(nonNullModulePath -> pom.getParent().relativize(nonNullModulePath))
+                .map(path -> findProject(path, mavenSession))
+                .filter(project -> project != null)
                 .collect(Collectors.toSet());
     }
 
-    private Path findModulePath(Path diffPath, Path pom) {
-        final List<Path> moduleDirs = this.moduleDirs.list(pom);
+    private MavenProject findProject(Path diffPath, MavenSession mavenSession) {
+        Map<Path, MavenProject> map = modules.createPathMap(mavenSession);
         Path path = diffPath;
-        while (path != null && ! moduleDirs.contains(path)) {
+        while (path != null && ! map.containsKey(path)) {
             path = path.getParent();
         }
-        if (path == null) {
+        if (path != null) {
+            return map.get(path);
+        } else {
             logger.warn("File changed outside build project: " + diffPath);
+            return null;
         }
-        return path;
     }
-
 }

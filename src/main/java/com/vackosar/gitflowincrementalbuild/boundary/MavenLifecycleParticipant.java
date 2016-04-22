@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.Guice;
+import com.vackosar.gitflowincrementalbuild.control.ChangedModules;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -31,21 +32,21 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             return;
         }
         try {
-            Set<String> moduleNames = Guice
+            Set<MavenProject> changed = Guice
                     .createInjector(new Module(logger, session))
-                    .getInstance(Executor.class)
-                    .getArtifactIds();
-            logger.info("moduleNames:");
-            moduleNames.stream().forEach(logger::info);
-            Set<MavenProject> changedProjects = new HashSet<>();
+                    .getInstance(ChangedModules.class)
+                    .set();
+            logger.info("ChangedProjects:");
+            changed.stream().map(Object::toString).forEach(logger::info);
+            Set<MavenProject> rebuildProjects = new HashSet<>();
             for (MavenProject mavenProject: session.getProjects()) {
-                if (moduleNames.contains(mavenProject.getArtifactId())) {
-                    changedProjects.addAll(getAllDependents(session.getProjects(), mavenProject));
+                if (changed.contains(mavenProject)) {
+                    rebuildProjects.addAll(getAllDependents(session.getProjects(), mavenProject));
                 }
             }
-            logger.info("changedProjects:");
-            changedProjects.stream().map(MavenProject::toString).forEach(logger::info);
-            session.getProjects().retainAll(changedProjects);
+            logger.info("To be rebuild projects:");
+            rebuildProjects.stream().map(Object::toString).forEach(logger::info);
+            session.getProjects().retainAll(rebuildProjects);
         } catch (Exception e) {
             throw new MavenExecutionException("Exception", e);
         }
