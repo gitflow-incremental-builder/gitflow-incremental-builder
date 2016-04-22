@@ -14,14 +14,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
-public class ChangedModules {
+public class ChangedProjects {
 
     @Inject private Logger logger;
     @Inject private DifferentFiles differentFiles;
     @Inject private MavenSession mavenSession;
     @Inject private Modules modules;
 
-    public Set<MavenProject> set() throws GitAPIException, IOException {
+    public Set<MavenProject> get() throws GitAPIException, IOException {
         return differentFiles.list().stream()
                 .map(path -> findProject(path, mavenSession))
                 .filter(project -> project != null)

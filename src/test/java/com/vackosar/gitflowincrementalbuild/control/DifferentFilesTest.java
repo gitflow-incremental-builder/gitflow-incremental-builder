@@ -3,12 +3,12 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
-import com.vackosar.gitflowincrementalbuild.boundary.GibProperties;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
+import com.vackosar.gitflowincrementalbuild.boundary.Properties;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -16,11 +16,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.inject.Singleton;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -41,7 +39,7 @@ public class DifferentFilesTest extends RepoTest {
     }
 
     @Test
-    public void listIncludingUncommited() throws GitAPIException, IOException {
+    public void listIncludingUncommited() throws Exception {
         System.setProperty(GIB_UNCOMMITED, Boolean.TRUE.toString());
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
@@ -51,7 +49,9 @@ public class DifferentFilesTest extends RepoTest {
                 Paths.get(workDir + "/parent/child3/src/resources/file1"),
                 Paths.get(workDir + "/parent/child4/pom.xml"),
                 Paths.get(workDir + "/parent/child5/src/resources/file5"),
-                Paths.get(workDir + "/parent/child1/pom.xml")
+                Paths.get(workDir + "/parent/child1/pom.xml"),
+                Paths.get(workDir + "/parent/pom.xml"
+                )
         ));
         Assert.assertEquals(expected, differentFiles.list());
     }
@@ -86,7 +86,7 @@ public class DifferentFilesTest extends RepoTest {
         private final Module module;
         private Path workDir;
 
-        public ModuleFacade(Path workDir) {
+        public ModuleFacade(Path workDir) throws Exception {
             this.module = new Module(new ConsoleLogger(), getMavenSessionMock());
             this.workDir = workDir;
         }
@@ -100,17 +100,13 @@ public class DifferentFilesTest extends RepoTest {
             return workDir;
         }
 
-        @Singleton @Provides public GibProperties arguments(Path workDir) throws IOException {
+        @Singleton @Provides public Properties arguments(Path workDir) throws Exception {
             MavenSession mavenSession = getMavenSessionMock();
-            return new GibProperties(workDir, mavenSession);
+            return new Properties(workDir, mavenSession);
         }
 
-        private MavenSession getMavenSessionMock() {
-            MavenSession mavenSession = Mockito.mock(MavenSession.class);
-            MavenProject mavenProject = Mockito.mock(MavenProject.class);
-            Mockito.when(mavenProject.getFile()).thenReturn(new File("."));
-            Mockito.when(mavenSession.getCurrentProject()).thenReturn(mavenProject);
-            return mavenSession;
+        private MavenSession getMavenSessionMock() throws Exception {
+            return MavenSessionMock.get();
         }
 
         @Override

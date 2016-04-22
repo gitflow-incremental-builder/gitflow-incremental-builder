@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import com.vackosar.gitflowincrementalbuild.boundary.GibProperties;
+import com.vackosar.gitflowincrementalbuild.boundary.Properties;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -24,18 +24,17 @@ import java.util.stream.Collectors;
 public class DifferentFiles {
 
     @Inject private Git git;
-    @Inject private GibProperties gibProperties;
-    private boolean uncommited = Boolean.valueOf(System.getProperty("gib.uncommited", Boolean.TRUE.toString()));
+    @Inject private Properties properties;
 
     public Set<Path> list() throws GitAPIException, IOException {
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, gibProperties.branch));
-        treeWalk.addTree(getBranchTree(git, gibProperties.referenceBranch));
+        treeWalk.addTree(getBranchTree(git, properties.branch));
+        treeWalk.addTree(getBranchTree(git, properties.referenceBranch));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
         final Set<Path> paths = getDiff(treeWalk, gitDir);
-        if (uncommited) {
+        if (properties.uncommited) {
             paths.addAll(getUncommitedChanges(gitDir));
         }
         git.getRepository().close();

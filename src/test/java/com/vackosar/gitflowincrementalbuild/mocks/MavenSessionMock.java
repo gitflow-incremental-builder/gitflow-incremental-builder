@@ -1,12 +1,14 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.mockito.Mockito;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class MavenSessionMock {
@@ -26,14 +28,19 @@ public class MavenSessionMock {
         ).stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
         MavenSession mavenSession = Mockito.mock(MavenSession.class);
         Mockito.when(mavenSession.getProjects()).thenReturn(projects);
-        Mockito.when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
+        Mockito.when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
         return mavenSession;
     }
 
     private static MavenProject createProject(Path path) {
-        MavenProject mavenProject = new MavenProject();
-        mavenProject.setArtifactId(path.getFileName().toString());
-        mavenProject.setFile(path.resolve("pom.xml").toFile());
-        return mavenProject;
+        MavenProject project = new MavenProject();
+        Model model = new Model();
+        model.setProperties(new Properties());
+        project.setModel(model);
+        project.setArtifactId(path.getFileName().toString());
+        project.setGroupId(path.getFileName().toString());
+        project.setVersion("1");
+        project.setFile(path.resolve("pom.xml").toFile());
+        return project;
     }
 }
