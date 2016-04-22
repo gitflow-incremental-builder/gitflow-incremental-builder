@@ -7,15 +7,20 @@ import com.vackosar.gitflowincrementalbuild.boundary.GibProperties;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.inject.Singleton;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -82,7 +87,7 @@ public class DifferentFilesTest extends RepoTest {
         private Path workDir;
 
         public ModuleFacade(Path workDir) {
-            this.module = new Module();
+            this.module = new Module(new ConsoleLogger(), getMavenSessionMock());
             this.workDir = workDir;
         }
 
@@ -96,7 +101,16 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public GibProperties arguments(Path workDir) throws IOException {
-            return new GibProperties(workDir);
+            MavenSession mavenSession = getMavenSessionMock();
+            return new GibProperties(workDir, mavenSession);
+        }
+
+        private MavenSession getMavenSessionMock() {
+            MavenSession mavenSession = Mockito.mock(MavenSession.class);
+            MavenProject mavenProject = Mockito.mock(MavenProject.class);
+            Mockito.when(mavenProject.getFile()).thenReturn(new File("."));
+            Mockito.when(mavenSession.getCurrentProject()).thenReturn(mavenProject);
+            return mavenSession;
         }
 
         @Override

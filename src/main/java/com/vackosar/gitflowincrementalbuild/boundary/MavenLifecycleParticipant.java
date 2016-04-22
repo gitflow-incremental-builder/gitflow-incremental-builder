@@ -32,7 +32,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
         try {
             Set<String> moduleNames = Guice
-                    .createInjector(new Module())
+                    .createInjector(new Module(logger, session))
                     .getInstance(Executor.class)
                     .getArtifactIds();
             logger.info("moduleNames:");

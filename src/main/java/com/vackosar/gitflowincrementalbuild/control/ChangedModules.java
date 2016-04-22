@@ -1,8 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,8 +14,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class ChangedModules {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
+    @Inject private Logger logger;
     @Inject private DifferentFiles differentFiles;
     @Inject private ModuleDirs moduleDirs;
 

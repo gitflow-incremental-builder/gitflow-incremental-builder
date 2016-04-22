@@ -1,5 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import org.apache.maven.execution.MavenSession;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -9,7 +11,6 @@ import java.util.Optional;
 @Singleton
 public class GibProperties {
 
-    private static final GibProperty POM_PROP = new GibProperty("gib.pom", "pom.xml");
     private static final GibProperty KEY_PROP = new GibProperty("gib.key", null);
     private static final GibProperty REF_BRANCH_PROP = new GibProperty("gib.reference.branch", "refs/remotes/origin/develop");
     private static final GibProperty BASE_BRANCH_PROP = new GibProperty("gib.base.branch", "HEAD");
@@ -20,19 +21,15 @@ public class GibProperties {
     public final String branch;
 
     @Inject
-    public GibProperties(Path workDir) throws IOException {
+    public GibProperties(Path workDir, MavenSession session) throws IOException {
         try {
-            pom = parsePom(workDir);
+            pom = session.getCurrentProject().getFile().toPath();
             key = parseKey(workDir);
             referenceBranch = REF_BRANCH_PROP.getValue();
             branch = BASE_BRANCH_PROP.getValue();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Path parsePom(Path workDir) throws IOException {
-        return workDir.resolve(POM_PROP.getValue()).toAbsolutePath().toRealPath().normalize();
     }
 
     private Optional<Path> parseKey(Path workDir) throws IOException {

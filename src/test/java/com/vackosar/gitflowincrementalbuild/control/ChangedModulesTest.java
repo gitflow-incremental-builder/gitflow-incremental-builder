@@ -3,8 +3,12 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.Guice;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,7 +28,15 @@ public class ChangedModulesTest extends RepoTest {
                 Paths.get("child3"),
                 Paths.get("child4")
         ));
-        final Set<Path> actual = Guice.createInjector(new Module()).getInstance(ChangedModules.class).list(pom);
+        final Set<Path> actual = Guice.createInjector(new Module(new ConsoleLogger(), getMavenSessionMock(pom))).getInstance(ChangedModules.class).list(pom);
         Assert.assertEquals(expected, actual);
+    }
+
+    private MavenSession getMavenSessionMock(Path pom) {
+        MavenSession mavenSession = Mockito.mock(MavenSession.class);
+        MavenProject mavenProject = Mockito.mock(MavenProject.class);
+        Mockito.when(mavenProject.getFile()).thenReturn(pom.toFile());
+        Mockito.when(mavenSession.getCurrentProject()).thenReturn(mavenProject);
+        return mavenSession;
     }
 }
