@@ -1,23 +1,13 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import com.vackosar.gitflowincrementalbuild.mocks.GIBMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class MainIT extends RepoTest {
-
-    @Test
-    public void list() throws Exception {
-        final GIBMock gibMock = new GIBMock();
-        final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
-        Assert.assertEquals("child2\\subchild2,child3,child4" + System.lineSeparator(), convertStreamToString(process.getInputStream()));
-        gibMock.close();
-    }
 
     @Test
     public void buildWithExtension() throws Exception {
@@ -33,29 +23,6 @@ public class MainIT extends RepoTest {
         Assert.assertTrue(output.contains(" child3"));
         Assert.assertTrue(output.contains(" child4"));
         Assert.assertTrue(output.contains(" subchild41"));
-    }
-
-    @Test
-    public void build() throws Exception {
-        final GIBMock gibMock = new GIBMock();
-        final Process process = gibMock.execute(Paths.get("parent/pom.xml"));
-        final String modules = convertStreamToString(process.getInputStream()).replaceAll(System.lineSeparator(), "");
-        Process build = executeBuild(modules);
-        final String output = convertStreamToString(build.getInputStream());
-        System.out.println(output);
-        System.out.println(convertStreamToString(build.getErrorStream()));
-
-        Assert.assertFalse(output.contains(" child1"));
-        Assert.assertFalse(output.contains(" child2"));
-        Assert.assertFalse(output.contains(" subchild1"));
-        Assert.assertFalse(output.contains(" subchild42"));
-
-        Assert.assertTrue(output.contains(" subchild2"));
-        Assert.assertTrue(output.contains(" child3"));
-        Assert.assertTrue(output.contains(" child4"));
-        Assert.assertTrue(output.contains(" subchild41"));
-
-        gibMock.close();
     }
 
     @Test
