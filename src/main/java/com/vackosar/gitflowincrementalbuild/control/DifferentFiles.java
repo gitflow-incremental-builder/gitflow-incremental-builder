@@ -53,7 +53,11 @@ public class DifferentFiles {
     private RevTree getBranchTree(Git git, String branchName) throws IOException {
         final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
         final RevWalk walk = new RevWalk(git.getRepository());
-        final RevCommit commit = walk.parseCommit(allRefs.get(branchName).getObjectId());
+        Ref ref = allRefs.get(branchName);
+        if (ref == null) {
+            throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
+        }
+        final RevCommit commit = walk.parseCommit(ref.getObjectId());
         return commit.getTree();
     }
 
