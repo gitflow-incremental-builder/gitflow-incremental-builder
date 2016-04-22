@@ -17,13 +17,14 @@ import java.util.Set;
 @Component(role = AbstractMavenLifecycleParticipant.class)
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-    public static final String GIB = "gib.enabled";
+    public static final String GIB = "gib.enable";
     public static final String TRUE = "true";
-    @Requirement
-    private Logger logger;
+
+    @Requirement private Logger logger;
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+        mergeGibProperties(session);
         if (! TRUE.equalsIgnoreCase(System.getProperty(GIB))) {
             logger.info("Skipping GIB because property '" + GIB + "' not set to '" + TRUE + "'.");
             return;
@@ -47,6 +48,13 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         } catch (Exception e) {
             throw new MavenExecutionException("Exception", e);
         }
+    }
+
+    private void mergeGibProperties(MavenSession mavenSession) {
+        mavenSession.getTopLevelProject().getProperties().entrySet().stream()
+                .filter(e->e.getKey().toString().startsWith("gib."))
+                .filter(e->System.getProperty(e.getKey().toString()) == null)
+                .forEach(e->System.setProperty(e.getKey().toString(), e.getValue().toString()));
     }
 
     private Set<MavenProject> getAllDependents(List<MavenProject> projects, MavenProject project) {
