@@ -17,7 +17,7 @@ import java.util.Set;
 @Component(role = AbstractMavenLifecycleParticipant.class)
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-    public static final String GIB = "gib";
+    public static final String GIB = "gib.enabled";
     public static final String TRUE = "true";
     @Requirement
     private Logger logger;

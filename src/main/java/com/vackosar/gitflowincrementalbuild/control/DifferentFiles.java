@@ -18,12 +18,14 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
 public class DifferentFiles {
 
     @Inject private Git git;
     @Inject private Arguments arguments;
+    private boolean uncommited = Boolean.valueOf(System.getProperty("gib.uncommited", Boolean.TRUE.toString()));
 
     public Set<Path> list() throws GitAPIException, IOException {
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
@@ -32,12 +34,20 @@ public class DifferentFiles {
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
+        final Set<Path> paths = getDiff(treeWalk, gitDir);
+        if (uncommited) {
+            paths.addAll(getUncommitedChanges(gitDir));
+        }
+        git.getRepository().close();
+        git.close();
+        return paths;
+    }
+
+    private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {
         final Set<Path> paths = new HashSet<>();
         while (treeWalk.next()) {
             paths.add(gitDir.resolve(treeWalk.getPathString()).normalize());
         }
-        git.getRepository().close();
-        git.close();
         return paths;
     }
 
@@ -48,22 +58,9 @@ public class DifferentFiles {
         return commit.getTree();
     }
 
-    // Milestone: Collect archetype names
-    // input: vcs root with feature branch as current branch.
-    // Execute fetch if stable branch is pointed to a remote branch..
-    // Compare the two branches either as push-changes or complete diff.
-    // Find maven module archetype names
-
-    // Milestone: Reimplement into Maven plugin
-
-    // Don't compare push changes because incase of local build one could run into problems.
-    // Rather build new version.
-
-
-    // Implement first as a command line tool that returns project names.
-    // Next attempt to integrate as a plugin into maven.
-
-    // https://maven.apache.org/ref/3.3.9/maven-plugin-api/apidocs/index.html
-    // https://stackoverflow.com/questions/5984423/how-do-i-run-a-maven-plugin-on-all-modules
+    private Set<Path> getUncommitedChanges(Path gitDir) throws GitAPIException {
+        return git.status().call().getUncommittedChanges().stream()
+                .map(gitDir::resolve).map(Path::normalize).collect(Collectors.toSet());
+    }
 
 }

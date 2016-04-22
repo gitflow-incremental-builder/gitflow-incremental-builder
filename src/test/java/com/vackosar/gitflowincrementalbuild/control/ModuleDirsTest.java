@@ -7,13 +7,15 @@ import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 public class ModuleDirsTest extends RepoTest {
 
     @Test
     public void listPoms() throws Exception {
         final Path pom = Paths.get(LocalRepoMock.WORK_DIR + "parent/pom.xml");
-        Path[] expected = new Path[] {
+        final List<Path> expected = Arrays.asList(
                 Paths.get(LocalRepoMock.WORK_DIR + "parent"),
                 Paths.get(LocalRepoMock.WORK_DIR + "parent/child1"),
                 Paths.get(LocalRepoMock.WORK_DIR + "parent/child2"),
@@ -23,8 +25,9 @@ public class ModuleDirsTest extends RepoTest {
                 Paths.get(LocalRepoMock.WORK_DIR + "parent/child4"),
                 Paths.get(LocalRepoMock.WORK_DIR + "parent/child4/subchild41"),
                 Paths.get(LocalRepoMock.WORK_DIR + "parent/child4/subchild42"),
-        };
-        Assert.assertArrayEquals(expected, new ModuleDirs().list(pom).toArray());
+                Paths.get(LocalRepoMock.WORK_DIR + "parent/child5")
+        );
+        Assert.assertEquals(expected, new ModuleDirs().list(pom));
     }
 
 }

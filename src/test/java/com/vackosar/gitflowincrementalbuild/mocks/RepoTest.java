@@ -10,11 +10,13 @@ import java.net.URISyntaxException;
 public abstract class RepoTest {
 
     protected LocalRepoMock localRepoMock;
+    private static final String GIB_UNCOMMITED = "gib.uncommited";
 
     @Before
     public void before() throws IOException, URISyntaxException, GitAPIException {
         localRepoMock = new LocalRepoMock();
         System.setProperty("user.dir", LocalRepoMock.WORK_DIR);
+        System.setProperty(GIB_UNCOMMITED, Boolean.FALSE.toString());
     }
 
     @After
