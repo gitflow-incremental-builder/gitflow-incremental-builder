@@ -17,12 +17,6 @@ public class Module extends AbstractModule {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final String[] args;
-
-    public Module(String[] args) {
-        this.args = args;
-    }
-
     @Provides
     @Singleton
     public Git provideGit(Path workDir) throws IOException, GitAPIException {
@@ -37,8 +31,8 @@ public class Module extends AbstractModule {
 
     @Provides
     @Singleton
-    public Arguments provideArguments(Path workDir) throws IOException {
-        return new Arguments(args, workDir);
+    public GibProperties provideArguments(Path workDir) throws IOException {
+        return new GibProperties(workDir);
     }
 
     @Provides

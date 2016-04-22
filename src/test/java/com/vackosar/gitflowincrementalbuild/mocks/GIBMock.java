@@ -38,7 +38,7 @@ public class GIBMock {
     public Process execute(Path pom) throws IOException, InterruptedException {
         final Process process =
                 new ProcessBuilder()
-                        .command(dirName.toString() + "/gib.bat", pom.toString())
+                        .command(dirName.toString() + "/gib.bat", "-Dgib.pom=" + pom.toString())
                         .directory(new File("tmp/repo"))
                         .start();
         process.waitFor();

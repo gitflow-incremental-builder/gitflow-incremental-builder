@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 public class Executor {
 
     @Inject private ChangedModules changedModules;
-    @Inject private Arguments arguments;
+    @Inject private GibProperties gibProperties;
 
     public void act() throws GitAPIException, IOException {
         final String modules = changedModules
-                .list(arguments.pom)
+                .list(gibProperties.pom)
                 .stream()
                 .sorted()
                 .map(commaPrefix())
@@ -30,7 +30,7 @@ public class Executor {
 
     public Set<String> getArtifactIds() throws GitAPIException, IOException {
         return changedModules
-                .list(arguments.pom)
+                .list(gibProperties.pom)
                 .stream()
                 .sorted()
                 .map(Path::getFileName)

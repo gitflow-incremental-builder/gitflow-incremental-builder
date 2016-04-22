@@ -24,7 +24,7 @@ public class ChangedModulesTest extends RepoTest {
                 Paths.get("child3"),
                 Paths.get("child4")
         ));
-        final Set<Path> actual = Guice.createInjector(new Module(new String[]{pom.toString()})).getInstance(ChangedModules.class).list(pom);
+        final Set<Path> actual = Guice.createInjector(new Module()).getInstance(ChangedModules.class).list(pom);
         Assert.assertEquals(expected, actual);
     }
 }

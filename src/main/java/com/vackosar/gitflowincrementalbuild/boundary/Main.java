@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) throws GitAPIException, IOException {
         Guice
-                .createInjector(new Module(args))
+                .createInjector(new Module())
                 .getInstance(Executor.class)
                 .act();
     }

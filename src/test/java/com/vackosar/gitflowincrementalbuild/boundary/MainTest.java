@@ -23,6 +23,7 @@ public class MainTest extends RepoTest {
     }
 
     private String execute(String pom) throws GitAPIException, IOException {
+        System.setProperty("gib.pom", pom);
         final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         System.setOut(new PrintStream(stdout));
         Main.main(new String[]{pom});

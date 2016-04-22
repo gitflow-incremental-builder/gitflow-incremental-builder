@@ -25,13 +25,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         mergeGibProperties(session);
+        System.setProperty("gib.pom", session.getTopLevelProject().getFile().getPath());
         if (! TRUE.equalsIgnoreCase(System.getProperty(GIB))) {
             logger.info("Skipping GIB because property '" + GIB + "' not set to '" + TRUE + "'.");
             return;
         }
         try {
             Set<String> moduleNames = Guice
-                    .createInjector(new Module(new String[] {session.getTopLevelProject().getFile().getPath()}))
+                    .createInjector(new Module())
                     .getInstance(Executor.class)
                     .getArtifactIds();
             logger.info("moduleNames:");

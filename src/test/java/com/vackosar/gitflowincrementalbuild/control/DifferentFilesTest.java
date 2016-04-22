@@ -3,7 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
-import com.vackosar.gitflowincrementalbuild.boundary.Arguments;
+import com.vackosar.gitflowincrementalbuild.boundary.GibProperties;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
@@ -82,7 +82,7 @@ public class DifferentFilesTest extends RepoTest {
         private Path workDir;
 
         public ModuleFacade(Path workDir) {
-            this.module = new Module(null);
+            this.module = new Module();
             this.workDir = workDir;
         }
 
@@ -95,8 +95,8 @@ public class DifferentFilesTest extends RepoTest {
             return workDir;
         }
 
-        @Singleton @Provides public Arguments arguments(Path workDir) throws IOException {
-            return new Arguments(new String[] {"."}, workDir);
+        @Singleton @Provides public GibProperties arguments(Path workDir) throws IOException {
+            return new GibProperties(workDir);
         }
 
         @Override
