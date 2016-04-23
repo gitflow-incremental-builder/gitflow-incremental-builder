@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
+import com.vackosar.gitflowincrementalbuild.boundary.Properties;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.After;
 import org.junit.Before;
@@ -14,8 +15,9 @@ public abstract class RepoTest {
 
     @Before
     public void before() throws IOException, URISyntaxException, GitAPIException {
-        localRepoMock = new LocalRepoMock();
+        localRepoMock = new LocalRepoMock(false);
         System.setProperty("user.dir", LocalRepoMock.WORK_DIR.toString());
+        Properties.REF_BRANCH_PROP.setValue("refs/heads/develop");
         System.setProperty(GIB_UNCOMMITED, Boolean.FALSE.toString());
     }
 

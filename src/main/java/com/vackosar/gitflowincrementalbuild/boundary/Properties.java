@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.apache.maven.execution.MavenSession;
 
 import javax.inject.Inject;
@@ -11,12 +12,11 @@ import java.util.Optional;
 @Singleton
 public class Properties {
 
-    private static final String PREFIX = "gib.";
-    private static final GibProperty ENABLE_PROP = new GibProperty("enable", Boolean.TRUE.toString());
-    private static final GibProperty KEY_PROP = new GibProperty("key", null);
-    private static final GibProperty REF_BRANCH_PROP = new GibProperty("reference.branch", "refs/remotes/origin/develop");
-    private static final GibProperty BASE_BRANCH_PROP = new GibProperty("base.branch", "HEAD");
-    private static final GibProperty UNCOMMITED_PROP = new GibProperty("uncommited", Boolean.TRUE.toString());
+    public static final Property ENABLE_PROP = new Property("enable", Boolean.TRUE.toString());
+    public static final Property KEY_PROP = new Property("key", null);
+    public static final Property REF_BRANCH_PROP = new Property("reference.branch", "refs/remotes/origin/develop");
+    public static final Property BASE_BRANCH_PROP = new Property("base.branch", "HEAD");
+    public static final Property UNCOMMITED_PROP = new Property("uncommited", Boolean.TRUE.toString());
 
     public final boolean enabled;
     public final Optional<Path> key;
@@ -47,28 +47,9 @@ public class Properties {
         }
     }
 
-    private static class GibProperty {
-
-        public final String key;
-        public final String defaultValue;
-
-        public GibProperty(String key, String defaultValue) {
-            this.key = PREFIX + key;
-            this.defaultValue = defaultValue;
-        }
-
-        private String describe() {
-            return key + "  defaults to " + defaultValue;
-        }
-
-        public String getValue() {
-            return System.getProperty(key, defaultValue);
-        }
-    }
-
     private void mergeCurrentProjectProperties(MavenSession mavenSession) {
         mavenSession.getTopLevelProject().getProperties().entrySet().stream()
-                .filter(e->e.getKey().toString().startsWith(PREFIX))
+                .filter(e->e.getKey().toString().startsWith(Property.PREFIX))
                 .filter(e->System.getProperty(e.getKey().toString()) == null)
                 .forEach(e->System.setProperty(e.getKey().toString(), e.getValue().toString()));
     }

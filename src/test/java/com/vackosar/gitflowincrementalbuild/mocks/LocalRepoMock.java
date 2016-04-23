@@ -23,11 +23,13 @@ public class LocalRepoMock implements AutoCloseable {
     private RemoteRepoMock remoteRepo = new RemoteRepoMock(false);
     private Git git;
 
-    public LocalRepoMock() throws IOException, URISyntaxException, GitAPIException {
+    public LocalRepoMock(boolean remote) throws IOException, URISyntaxException, GitAPIException {
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
-        configureRemote(git, remoteRepo.repoUrl);
-        git.fetch().call();
+        if (remote) {
+            configureRemote(git, remoteRepo.repoUrl);
+            git.fetch().call();
+        }
     }
 
     public Git getGit() {
