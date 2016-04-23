@@ -14,7 +14,6 @@ import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -22,7 +21,6 @@ import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -32,17 +30,9 @@ import java.util.Set;
 @RunWith(MockitoJUnitRunner.class)
 public class DifferentFilesTest extends RepoTest {
 
-    public static final String GIB_UNCOMMITED = "gib.uncommited";
-
-    @Before
-    public void before() throws GitAPIException, IOException, URISyntaxException {
-        super.before();
-        System.setProperty("gib.uncommited", Boolean.FALSE.toString());
-    }
-
     @Test
     public void listIncludingUncommited() throws Exception {
-        System.setProperty(GIB_UNCOMMITED, Boolean.TRUE.toString());
+        Properties.UNCOMMITED_PROP.setValue(Boolean.TRUE.toString());
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(

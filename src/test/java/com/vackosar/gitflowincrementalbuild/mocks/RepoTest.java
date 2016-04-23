@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 public abstract class RepoTest {
 
     protected LocalRepoMock localRepoMock;
-    private static final String GIB_UNCOMMITED = "gib.uncommited";
     public StaticLoggerBinder staticLoggerBinder;
 
     @Before
@@ -22,7 +21,7 @@ public abstract class RepoTest {
         localRepoMock = new LocalRepoMock(false);
         System.setProperty("user.dir", LocalRepoMock.WORK_DIR.toString());
         Properties.REF_BRANCH_PROP.setValue("refs/heads/develop");
-        System.setProperty(GIB_UNCOMMITED, Boolean.FALSE.toString());
+        Properties.UNCOMMITED_PROP.setValue(Boolean.FALSE.toString());
     }
 
     @After
