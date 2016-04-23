@@ -6,7 +6,7 @@ A maven extension for incremental building of multi-module projects when using G
 - Extension is configured using maven POM properties or JVM properties.
 - Don't forget to git-fetch first.
 
-## Maven Usage
+## Usage
 
 - [Install GIB into maven repo.](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html)
 - Add into build:
