@@ -3,8 +3,8 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.boundary.Module;
-import com.vackosar.gitflowincrementalbuild.boundary.Properties;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
@@ -32,7 +32,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void listIncludingUncommited() throws Exception {
-        Properties.UNCOMMITED_PROP.setValue(Boolean.TRUE.toString());
+        Property.uncommited.setValue(Boolean.TRUE.toString());
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
         final Set<Path> expected = new HashSet<>(Arrays.asList(
@@ -92,9 +92,9 @@ public class DifferentFilesTest extends RepoTest {
             return workDir;
         }
 
-        @Singleton @Provides public Properties arguments(Path workDir) throws Exception {
+        @Singleton @Provides public Configuration arguments(Path workDir) throws Exception {
             MavenSession mavenSession = getMavenSessionMock();
-            return new Properties(workDir, mavenSession);
+            return new Configuration(workDir, mavenSession);
         }
 
         private MavenSession getMavenSessionMock() throws Exception {

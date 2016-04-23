@@ -1,26 +1,39 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-public class Property {
+public enum Property {
+    enabled("enable", "true"),
+    key("key", null),
+    referenceBranch("reference.branch", "refs/remotes/origin/develop"),
+    baseBranch("base.branch", "HEAD"),
+    uncommited("uncommited", "true");
 
     public static final String PREFIX = "gib.";
 
-    public final String key;
+    public final String name;
     public final String defaultValue;
 
-    public Property(String key, String defaultValue) {
-        this.key = PREFIX + key;
+    Property(String name, String defaultValue) {
+        this.name = PREFIX + name;
         this.defaultValue = defaultValue;
     }
 
     private String describe() {
-        return key + "  defaults to " + defaultValue;
+        return name + "  defaults to " + defaultValue;
     }
 
     public String getValue() {
-        return System.getProperty(key, defaultValue);
+        return System.getProperty(name, defaultValue);
     }
 
     public void setValue(String value) {
-        System.setProperty(key, value);
+        System.setProperty(name, value);
+    }
+
+    public String describeAll() {
+        StringBuilder builder = new StringBuilder();
+        for (Property value :Property.values()) {
+            builder.append(value.describe()).append("\n");
+        }
+        return builder.toString();
     }
 }

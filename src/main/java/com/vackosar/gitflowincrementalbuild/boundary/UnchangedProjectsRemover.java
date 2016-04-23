@@ -17,13 +17,13 @@ import java.util.Set;
 @Singleton
 public class UnchangedProjectsRemover {
 
-    @Inject private Properties properties;
+    @Inject private Configuration configuration;
     @Inject private Logger logger;
     @Inject private ChangedProjects changedProjects;
     @Inject private MavenSession mavenSession;
 
     public void act() throws GitAPIException, IOException {
-        if (!properties.enabled) {
+        if (!configuration.enabled) {
             logger.info("GIB is disabled.");
         } else {
             Set<MavenProject> changed = changedProjects.get();

@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import com.vackosar.gitflowincrementalbuild.boundary.Properties;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -24,17 +24,17 @@ import java.util.stream.Collectors;
 public class DifferentFiles {
 
     @Inject private Git git;
-    @Inject private Properties properties;
+    @Inject private Configuration configuration;
 
     public Set<Path> list() throws GitAPIException, IOException {
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, properties.branch));
-        treeWalk.addTree(getBranchTree(git, properties.referenceBranch));
+        treeWalk.addTree(getBranchTree(git, configuration.branch));
+        treeWalk.addTree(getBranchTree(git, configuration.referenceBranch));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
         final Set<Path> paths = getDiff(treeWalk, gitDir);
-        if (properties.uncommited) {
+        if (configuration.uncommited) {
             paths.addAll(getUncommitedChanges(gitDir));
         }
         git.getRepository().close();

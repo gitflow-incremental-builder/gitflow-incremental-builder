@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
-import com.vackosar.gitflowincrementalbuild.boundary.Properties;
+import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.After;
@@ -20,8 +20,8 @@ public abstract class RepoTest {
         staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         localRepoMock = new LocalRepoMock(false);
         System.setProperty("user.dir", LocalRepoMock.WORK_DIR.toString());
-        Properties.REF_BRANCH_PROP.setValue("refs/heads/develop");
-        Properties.UNCOMMITED_PROP.setValue(Boolean.FALSE.toString());
+        Property.referenceBranch.setValue("refs/heads/develop");
+        Property.uncommited.setValue(Boolean.FALSE.toString());
     }
 
     @After
