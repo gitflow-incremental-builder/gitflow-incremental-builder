@@ -10,6 +10,7 @@ import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
+import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -92,7 +94,7 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {
-            return module.provideGit(workDir);
+            return module.provideGit(workDir, new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
         }
 
         @Singleton @Provides public Path workDir() {

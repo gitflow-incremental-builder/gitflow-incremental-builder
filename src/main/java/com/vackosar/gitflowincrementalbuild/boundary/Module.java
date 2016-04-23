@@ -7,6 +7,7 @@ import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class Module extends AbstractModule {
 
     @Provides
     @Singleton
-    public Git provideGit(Path workDir) throws IOException, GitAPIException {
+    public Git provideGit(Path workDir, StaticLoggerBinder staticLoggerBinder) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
         builder.findGitDir(workDir.toFile());
         if (builder.getGitDir() == null) {
