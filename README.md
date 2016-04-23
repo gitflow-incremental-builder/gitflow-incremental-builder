@@ -1,8 +1,10 @@
 # gitflow-incremental-builder
 
-- A maven extension to build only modules changed compared to "origin/develop" branch.
+A maven extension for incremental building of multi-module projects when using Git Flow.
+- Builds only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
 - Useful for multi-module maven projects using Gitflow model, where "origin/develop" is always stable.
-- Don't forget to fetch first.
+- Extension is configured using maven POM properties or JVM properties.
+- Don't forget to git-fetch first.
 
 ## Maven Usage
 
@@ -20,8 +22,6 @@
         </extensions>
     </build>
 ```
-
-Builds compared to "origin/develop" modules containing changes and all their dependents.
 
 ## Last Release
 
