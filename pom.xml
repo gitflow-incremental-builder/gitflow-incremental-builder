@@ -7,11 +7,35 @@
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
     <version>1.1</version>
-
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A maven extension to build only modules changed compared to "origin/develop" or other reference branch.</description>
+    <url>https://github.com/vackosar/gitflow-incremental-builder</url>
+    <issueManagement>
+        <url>https://github.com/vackosar/gitflow-incremental-builder/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+    <scm>
+        <url>https://github.com/vackosar/gitflow-incremental-builder</url>
+        <connection>scm:git:git://github.com/vackosar/gitflow-incremental-builder.git</connection>
+        <developerConnection>scm:git:git@github.com:vackosar/gitflow-incremental-builder.git</developerConnection>
+    </scm>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Vaclav Kosar</name>
+            <url>https://github.com/vackosar</url>
+            <id>vackosar</id>
+        </developer>
+    </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
@@ -91,5 +115,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>
