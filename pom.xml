@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.1.0.201509280440-r</version>
+            <version>4.3.0.201604071810-r</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -130,13 +130,4 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>jgit-snapshot-repository</id>
-            <url>https://repo.eclipse.org/content/groups/jgit/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
