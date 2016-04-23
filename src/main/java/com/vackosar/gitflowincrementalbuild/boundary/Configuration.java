@@ -1,12 +1,14 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 @Singleton
@@ -22,6 +24,7 @@ public class Configuration {
     public Configuration(Path workDir, MavenSession session) throws IOException {
         try {
             mergeCurrentProjectProperties(session);
+            checkProperties();
             enabled = Boolean.valueOf(Property.enabled.getValue());
             key = parseKey(workDir);
             referenceBranch = Property.referenceBranch.getValue();
@@ -48,4 +51,15 @@ public class Configuration {
                 .forEach(e->System.setProperty(e.getKey().toString(), e.getValue().toString()));
     }
 
+    private void checkProperties() throws MavenExecutionException {
+        try {
+            System.getProperties().entrySet().stream().map(Map.Entry::getKey)
+                    .filter(o -> o instanceof String).map(o -> (String) o)
+                    .filter(s -> s.startsWith(Property.PREFIX))
+                    .map(s -> s.replaceFirst(Property.PREFIX, ""))
+                    .forEach(Property::valueOf);
+        } catch (IllegalArgumentException e) {
+            throw new MavenExecutionException("Invalid invalid GIB property found. Allowed properties: \n" + Property.describeAll(), e);
+        }
+    }
 }
