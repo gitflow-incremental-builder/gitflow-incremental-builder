@@ -36,7 +36,7 @@ public class Configuration {
     }
 
     private Optional<Path> parseKey(Path workDir) throws IOException {
-        String keyOptionValue = Property.key.getValue();
+        String keyOptionValue = Property.repositorySshKey.getValue();
         if (keyOptionValue != null) {
             return Optional.of(workDir.resolve(keyOptionValue).toAbsolutePath().toRealPath().normalize());
         } else {
@@ -59,7 +59,7 @@ public class Configuration {
                     .map(s -> s.replaceFirst(Property.PREFIX, ""))
                     .forEach(Property::valueOf);
         } catch (IllegalArgumentException e) {
-            throw new MavenExecutionException("Invalid invalid GIB property found. Allowed properties: \n" + Property.describeAll(), e);
+            throw new MavenExecutionException("Invalid invalid GIB property found. Allowed properties: \n" + Property.exemplifyAll(), e);
         }
     }
 }

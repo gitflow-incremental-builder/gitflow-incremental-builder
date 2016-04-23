@@ -1,39 +1,43 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 public enum Property {
-    enabled("enable", "true"),
-    key("key", null),
-    referenceBranch("referenceBranch", "refs/remotes/origin/develop"),
-    baseBranch("baseBranch", "HEAD"),
-    uncommited("uncommited", "true");
+    enabled("true"),
+    repositorySshKey(null),
+    referenceBranch("refs/remotes/origin/develop"),
+    baseBranch("HEAD"),
+    uncommited("true");
 
     public static final String PREFIX = "gib.";
 
-    public final String name;
     public final String defaultValue;
 
-    Property(String name, String defaultValue) {
-        this.name = PREFIX + name;
+    Property(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
-    private String describe() {
-        return name + "  defaults to " + defaultValue;
+    private String exemplify() {
+        return "<" + fullName() + ">" + ( defaultValue == null ? "" : defaultValue )+ "</" + fullName() + ">";
+    }
+
+    private String fullName() {
+        return PREFIX + this.name();
     }
 
     public String getValue() {
-        return System.getProperty(name, defaultValue);
+        return System.getProperty(fullName(), defaultValue);
     }
 
     public void setValue(String value) {
-        System.setProperty(name, value);
+        System.setProperty(fullName(), value);
     }
 
-    public static String describeAll() {
+    public static String exemplifyAll() {
         StringBuilder builder = new StringBuilder();
+        builder.append("<properties>\n");
         for (Property value :Property.values()) {
-            builder.append(value.describe()).append("\n");
+            builder.append("\t").append(value.exemplify()).append("\n");
         }
+        builder.append("</properties>\n");
         return builder.toString();
     }
 }
