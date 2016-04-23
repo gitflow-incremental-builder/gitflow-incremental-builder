@@ -22,6 +22,18 @@ A maven extension for incremental building of multi-module projects when using G
         </extensions>
     </build>
 ```
+## Configuration
+
+Properties with default values are below:
+```xml
+    <properties>
+        <gib.enable>true</gib.enable>
+        <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
+        <gib.baseBranch>HEAD</gib.baseBranch>
+        <gib.uncommited>true</gib.uncommited>
+        <gib.key></gib.key>
+    </properties>
+```
 
 ## Last Release
 
