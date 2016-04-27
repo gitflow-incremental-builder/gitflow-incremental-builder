@@ -11,7 +11,6 @@ A maven extension for incremental building of multi-module projects when using G
 - Add into build:
 ```xml
 <build>
-    ...
     <extensions>
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
@@ -19,6 +18,7 @@ A maven extension for incremental building of multi-module projects when using G
             <version>1.1</version>
         </extension>
     </extensions>
+    ...
 </build>
 ```
 ## Configuration
