@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
@@ -27,6 +28,8 @@ public class MavenSessionMock {
                 LocalRepoMock.WORK_DIR.resolve("parent/child5")
         ).stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
         MavenSession mavenSession = Mockito.mock(MavenSession.class);
+        MavenExecutionRequest request = Mockito.mock(MavenExecutionRequest.class);
+        Mockito.when(mavenSession.getRequest()).thenReturn(request);
         Mockito.when(mavenSession.getProjects()).thenReturn(projects);
         Mockito.when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
         return mavenSession;
