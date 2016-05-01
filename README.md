@@ -8,11 +8,9 @@ A maven extension for incremental building of multi-module projects when using G
 
 ## Usage
 
-- [Install GIB into maven repo.](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html)
 - Add into build:
 ```xml
 <build>
-    ...
     <extensions>
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
@@ -20,6 +18,7 @@ A maven extension for incremental building of multi-module projects when using G
             <version>1.1</version>
         </extension>
     </extensions>
+    ...
 </build>
 ```
 ## Configuration
@@ -34,7 +33,3 @@ Properties with default values are below:
     <gib.uncommited>true</gib.uncommited>
 </properties>
 ```
-
-## Last Release
-
-https://github.com/vackosar/gitflow-incremental-builder/raw/master/release/gitflow-incremental-builder-1.1.jar
