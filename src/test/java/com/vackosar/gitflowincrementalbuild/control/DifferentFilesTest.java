@@ -9,6 +9,7 @@ import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.apache.maven.execution.MavenSession;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
@@ -81,6 +82,10 @@ public class DifferentFilesTest extends RepoTest {
         public ModuleFacade(Path workDir) throws Exception {
             this.module = new Module(new ConsoleLogger(), getMavenSessionMock());
             this.workDir = workDir;
+        }
+
+        @Singleton @Provides public Logger provideLogger() {
+            return new ConsoleLoggerManager().getLoggerForComponent("Test");
         }
 
         @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {

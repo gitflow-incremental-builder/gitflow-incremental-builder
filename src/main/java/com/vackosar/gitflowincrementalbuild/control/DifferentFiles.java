@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -23,13 +24,19 @@ import java.util.stream.Collectors;
 @Singleton
 public class DifferentFiles {
 
+    private static final String HEAD = "HEAD";
     @Inject private Git git;
     @Inject private Configuration configuration;
+    @Inject private Logger logger;
 
     public Set<Path> list() throws GitAPIException, IOException {
+        if (! HEAD.equals(configuration.baseBranch)) {
+            logger.info("Checking out base branch " + configuration.baseBranch + "...");
+            git.checkout().setName(configuration.baseBranch).call();
+        }
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(git, configuration.branch));
-        treeWalk.addTree(getBranchTree(git, configuration.referenceBranch));
+        treeWalk.addTree(getBranchTree(configuration.baseBranch));
+        treeWalk.addTree(getBranchTree(configuration.referenceBranch));
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
@@ -50,7 +57,7 @@ public class DifferentFiles {
         return paths;
     }
 
-    private RevTree getBranchTree(Git git, String branchName) throws IOException {
+    private RevTree getBranchTree(String branchName) throws IOException {
         final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
         final RevWalk walk = new RevWalk(git.getRepository());
         Ref ref = allRefs.get(branchName);
