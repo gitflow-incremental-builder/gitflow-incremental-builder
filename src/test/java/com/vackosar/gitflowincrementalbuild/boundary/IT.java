@@ -6,12 +6,14 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-public class MainIT extends RepoTest {
+public class IT extends RepoTest {
 
     @Test
-    public void buildWithExtension() throws Exception {
-        final String output = executeSimplyBuild();
+    public void buildWithAlsoMake() throws Exception {
+        final String output = executeBuild(true);
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -23,34 +25,36 @@ public class MainIT extends RepoTest {
         Assert.assertTrue(output.contains(" child3"));
         Assert.assertTrue(output.contains(" child4"));
         Assert.assertTrue(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
     }
 
     @Test
-    public void mavenTest() throws IOException, InterruptedException {
-        final Process build = executeBuild("child2/subchild2");
-        final String output = convertStreamToString(build.getInputStream());
+    public void buildWithoutAlsoMake() throws Exception {
+        final String output = executeBuild(false);
         System.out.println(output);
-        Assert.assertEquals(0, build.waitFor());
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" child6"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
     }
 
-    private String executeSimplyBuild() throws IOException, InterruptedException {
+    private String executeBuild(boolean alsoMake) throws IOException, InterruptedException {
+        String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "compile", "--file", "parent\\pom.xml")
+                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version)
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
         System.out.println(convertStreamToString(process.getErrorStream()));
         process.waitFor();
         return output;
-    }
-
-    private Process executeBuild(String modules) throws IOException, InterruptedException {
-        final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "compile", "-amd", "-pl", modules, "--file", "parent\\pom.xml")
-                        .directory(new File("tmp/repo"))
-                        .start();
-        process.waitFor();
-        return process;
     }
 
     private static String convertStreamToString(java.io.InputStream is) {

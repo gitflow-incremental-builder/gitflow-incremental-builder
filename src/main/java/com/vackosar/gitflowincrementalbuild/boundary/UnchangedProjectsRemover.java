@@ -12,7 +12,10 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class UnchangedProjectsRemover {
@@ -29,12 +32,11 @@ public class UnchangedProjectsRemover {
             Set<MavenProject> changed = changedProjects.get();
             printDelimiter();
             logProjects(changed, "Changed Artifacts:");
-            Set<MavenProject> rebuildProjects = new HashSet<>();
-            for (MavenProject mavenProject: mavenSession.getProjects()) {
-                if (changed.contains(mavenProject)) {
-                    rebuildProjects.addAll(getAllDependents(mavenSession.getProjects(), mavenProject));
-                }
-            }
+            Set<MavenProject> rebuildProjects = mavenSession.getProjects().stream()
+                    .filter(changed::contains)
+                    .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
+                    .flatMap(this::ifMakeUpstreamGetDependencies)
+                    .collect(Collectors.toSet());
             mavenSession.getProjects().retainAll(rebuildProjects);
         }
     }
@@ -54,10 +56,8 @@ public class UnchangedProjectsRemover {
         Set<MavenProject> result = new HashSet<>();
         result.add(project);
         for (MavenProject possibleDependent: projects) {
-            for (Dependency dependency : possibleDependent.getDependencies()) {
-                if (equals(project, dependency)) {
-                    result.addAll(getAllDependents(projects, possibleDependent));
-                }
+            if (isDependentOf(possibleDependent, project)) {
+                result.addAll(getAllDependents(projects, possibleDependent));
             }
             if (project.equals(possibleDependent.getParent())) {
                 result.addAll(getAllDependents(projects, possibleDependent));
@@ -66,9 +66,33 @@ public class UnchangedProjectsRemover {
         return result;
     }
 
+    private Stream<MavenProject> ifMakeUpstreamGetDependencies(MavenProject mavenProject) {
+        if (configuration.makeUpstream) {
+            return getAllDependencies(mavenSession.getProjects(), mavenProject).stream();
+        } else {
+            return Stream.of(mavenProject);
+        }
+    }
+
+    private Set<MavenProject> getAllDependencies(List<MavenProject> projects, MavenProject project) {
+        Set<MavenProject> dependencies = project.getDependencies().stream().map(d -> convert(projects, d)).filter(Optional::isPresent).map(Optional::get)
+                .flatMap(p -> getAllDependencies(projects, p).stream())
+                .collect(Collectors.toSet());
+        dependencies.add(project);
+        return dependencies;
+    }
+
     private boolean equals(MavenProject project, Dependency dependency) {
         return dependency.getArtifactId().equals(project.getArtifactId())
                 && dependency.getGroupId().equals(project.getGroupId())
                 && dependency.getVersion().equals(project.getVersion());
+    }
+
+    private Optional<MavenProject> convert(List<MavenProject> projects, Dependency dependency) {
+        return projects.stream().filter(p -> equals(p, dependency)).findFirst();
+    }
+
+    private boolean isDependentOf(MavenProject possibleDependent, MavenProject project) {
+        return possibleDependent.getDependencies().stream().anyMatch(d -> equals(project, d));
     }
 }

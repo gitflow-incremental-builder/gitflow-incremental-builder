@@ -14,11 +14,14 @@ import java.util.Optional;
 @Singleton
 public class Configuration {
 
+    private static final String MAKE_UPSTREAM = "make-upstream";
+
     public final boolean enabled;
     public final Optional<Path> key;
     public final String referenceBranch;
     public final String branch;
     public final boolean uncommited;
+    public final boolean makeUpstream;
 
     @Inject
     public Configuration(Path workDir, MavenSession session) throws IOException {
@@ -30,6 +33,7 @@ public class Configuration {
             referenceBranch = Property.referenceBranch.getValue();
             branch = Property.baseBranch.getValue();
             uncommited = Boolean.valueOf(Property.uncommited.getValue());
+            makeUpstream = MAKE_UPSTREAM.equals(session.getRequest().getMakeBehavior());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
