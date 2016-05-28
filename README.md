@@ -15,7 +15,7 @@ A maven extension for incremental building of multi-module projects when using G
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>1.2</version>
+            <version>1.3</version>
         </extension>
     </extensions>
     ...
