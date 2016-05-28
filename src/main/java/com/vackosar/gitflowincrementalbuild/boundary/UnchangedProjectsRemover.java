@@ -32,13 +32,27 @@ public class UnchangedProjectsRemover {
             Set<MavenProject> changed = changedProjects.get();
             printDelimiter();
             logProjects(changed, "Changed Artifacts:");
-            Set<MavenProject> rebuildProjects = mavenSession.getProjects().stream()
+            Set<MavenProject> changedProjects = mavenSession.getProjects().stream()
                     .filter(changed::contains)
                     .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
-                    .flatMap(this::ifMakeUpstreamGetDependencies)
                     .collect(Collectors.toSet());
+            Set<MavenProject> rebuildProjects = getRebuildProjects(changedProjects);
             mavenSession.getProjects().retainAll(rebuildProjects);
         }
+    }
+
+    private Set<MavenProject> getRebuildProjects(Set<MavenProject> changedProjects) {
+        if (configuration.makeUpstream) {
+            return Stream.concat(changedProjects.stream(), collectDependencies(changedProjects)).collect(Collectors.toSet());
+        } else {
+            return changedProjects;
+        }
+    }
+
+    private Stream<MavenProject> collectDependencies(Set<MavenProject> changedProjects) {
+        return changedProjects.stream()
+                .flatMap(this::ifMakeUpstreamGetDependencies)
+                .filter(p -> ! changedProjects.contains(p));
     }
 
     private void logProjects(Set<MavenProject> projects, String title) {
@@ -67,11 +81,7 @@ public class UnchangedProjectsRemover {
     }
 
     private Stream<MavenProject> ifMakeUpstreamGetDependencies(MavenProject mavenProject) {
-        if (configuration.makeUpstream) {
-            return getAllDependencies(mavenSession.getProjects(), mavenProject).stream();
-        } else {
-            return Stream.of(mavenProject);
-        }
+        return getAllDependencies(mavenSession.getProjects(), mavenProject).stream();
     }
 
     private Set<MavenProject> getAllDependencies(List<MavenProject> projects, MavenProject project) {
