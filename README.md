@@ -26,10 +26,11 @@ A maven extension for incremental building of multi-module projects when using G
 Properties with default values are below:
 ```xml
 <properties>
-    <gib.enabled>true</gib.enabled>
-    <gib.repositorySshKey></gib.repositorySshKey>
-    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
-    <gib.baseBranch>HEAD</gib.baseBranch>
-    <gib.uncommited>true</gib.uncommited>
+	<gib.enabled>true</gib.enabled>
+	<gib.repositorySshKey></gib.repositorySshKey>
+	<gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
+	<gib.baseBranch>HEAD</gib.baseBranch>
+	<gib.uncommited>true</gib.uncommited>
+	<gib.skipDependenciesTest>false</gib.skipDependenciesTest>
 </properties>
 ```
