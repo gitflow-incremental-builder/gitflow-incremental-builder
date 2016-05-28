@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 @Singleton
 public class UnchangedProjectsRemover {
 
+    private static final String MAVEN_TEST_SKIP = "maven.test.skip";
+
     @Inject private Configuration configuration;
     @Inject private Logger logger;
     @Inject private ChangedProjects changedProjects;
@@ -36,8 +38,7 @@ public class UnchangedProjectsRemover {
                     .filter(changed::contains)
                     .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
                     .collect(Collectors.toSet());
-            Set<MavenProject> rebuildProjects = getRebuildProjects(changedProjects);
-            mavenSession.getProjects().retainAll(rebuildProjects);
+            mavenSession.getProjects().retainAll(getRebuildProjects(changedProjects));
         }
     }
 
@@ -52,7 +53,15 @@ public class UnchangedProjectsRemover {
     private Stream<MavenProject> collectDependencies(Set<MavenProject> changedProjects) {
         return changedProjects.stream()
                 .flatMap(this::ifMakeUpstreamGetDependencies)
-                .filter(p -> ! changedProjects.contains(p));
+                .filter(p -> ! changedProjects.contains(p))
+                .map(this::ifSkipDependenciesTest);
+    }
+
+    private MavenProject ifSkipDependenciesTest(MavenProject mavenProject) {
+        if (configuration.skipDependenciesTest) {
+            mavenProject.getProperties().setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
+        }
+        return mavenProject;
     }
 
     private void logProjects(Set<MavenProject> projects, String title) {
@@ -85,7 +94,8 @@ public class UnchangedProjectsRemover {
     }
 
     private Set<MavenProject> getAllDependencies(List<MavenProject> projects, MavenProject project) {
-        Set<MavenProject> dependencies = project.getDependencies().stream().map(d -> convert(projects, d)).filter(Optional::isPresent).map(Optional::get)
+        Set<MavenProject> dependencies = project.getDependencies().stream()
+                .map(d -> convert(projects, d)).filter(Optional::isPresent).map(Optional::get)
                 .flatMap(p -> getAllDependencies(projects, p).stream())
                 .collect(Collectors.toSet());
         dependencies.add(project);

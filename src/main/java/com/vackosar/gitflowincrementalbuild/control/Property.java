@@ -5,7 +5,8 @@ public enum Property {
     repositorySshKey(null),
     referenceBranch("refs/remotes/origin/develop"),
     baseBranch("HEAD"),
-    uncommited("true");
+    uncommited("true"),
+    skipDependenciesTest("false");
 
     public static final String PREFIX = "gib.";
 

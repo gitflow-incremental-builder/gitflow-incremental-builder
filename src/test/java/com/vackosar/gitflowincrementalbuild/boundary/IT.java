@@ -38,6 +38,7 @@ public class IT extends RepoTest {
         Assert.assertFalse(output.contains(" subchild1"));
         Assert.assertFalse(output.contains(" subchild42"));
         Assert.assertFalse(output.contains(" child6"));
+        Assert.assertTrue(output.contains("child6 ---\n[INFO] Tests are skipped."));
 
         Assert.assertTrue(output.contains(" subchild2"));
         Assert.assertTrue(output.contains(" child3"));
@@ -48,7 +49,7 @@ public class IT extends RepoTest {
     private String executeBuild(boolean alsoMake) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version)
+                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version, "-Dgib.skipDependenciesTest=true")
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
