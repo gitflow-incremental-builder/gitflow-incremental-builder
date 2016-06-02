@@ -40,6 +40,10 @@ public class UnchangedProjectsRemover {
                     .collect(Collectors.toSet());
             if (!configuration.buildAll) {
                 mavenSession.getProjects().retainAll(getRebuildProjects(changedProjects));
+            } else {
+                mavenSession.getAllProjects().stream()
+                        .filter(p -> !changedProjects.contains(p))
+                        .forEach(this::ifSkipDependenciesTest);
             }
         }
     }
