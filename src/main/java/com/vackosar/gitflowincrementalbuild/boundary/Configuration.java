@@ -23,6 +23,7 @@ public class Configuration {
     public final boolean uncommited;
     public final boolean makeUpstream;
     public final boolean skipTestsForNotImpactedModules;
+    public final boolean buildAll;
 
     @Inject
     public Configuration(Path workDir, MavenSession session) throws IOException {
@@ -36,6 +37,7 @@ public class Configuration {
             uncommited = Boolean.valueOf(Property.uncommited.getValue());
             makeUpstream = MAKE_UPSTREAM.equals(session.getRequest().getMakeBehavior());
             skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue());
+            buildAll = Boolean.valueOf(Property.buildAll.getValue());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -38,7 +38,9 @@ public class UnchangedProjectsRemover {
                     .filter(changed::contains)
                     .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
                     .collect(Collectors.toSet());
-            mavenSession.getProjects().retainAll(getRebuildProjects(changedProjects));
+            if (!configuration.buildAll) {
+                mavenSession.getProjects().retainAll(getRebuildProjects(changedProjects));
+            }
         }
     }
 

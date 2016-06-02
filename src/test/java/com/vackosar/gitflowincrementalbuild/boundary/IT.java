@@ -9,12 +9,37 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class IT extends RepoTest {
 
     @Test
+    public void buildAllSkipTest() throws Exception {
+        final String output = executeBuild(Arrays.asList(
+                "-Dgib." + Property.buildAll + "=true",
+                "-Dgib." + Property.skipTestsForNotImpactedModules.name() + "=true")
+        );
+        System.out.println(output);
+
+        Assert.assertTrue(output.contains(" child1"));
+        Assert.assertTrue(output.contains(" child2"));
+        Assert.assertTrue(output.contains(" subchild1"));
+        Assert.assertTrue(output.contains(" subchild42"));
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
+        Assert.assertTrue(output.contains("[INFO] Tests are skipped."));
+    }
+    
+    @Test
     public void buildWithAlsoMake() throws Exception {
-        final String output = executeBuild(true, false);
+        final String output = executeBuild(Collections.singletonList("-am"));
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -31,7 +56,10 @@ public class IT extends RepoTest {
 
     @Test
     public void buildWithAlsoMakeSkip() throws Exception {
-        final String output = executeBuild(true, true);
+        final String output = executeBuild(Arrays.asList(
+                "-am",
+                "-Dgib." + Property.skipTestsForNotImpactedModules.name() + "=true")
+        );
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -49,7 +77,7 @@ public class IT extends RepoTest {
 
     @Test
     public void buildWithoutAlsoMake() throws Exception {
-        final String output = executeBuild(false, false);
+        final String output = executeBuild(Collections.emptyList());
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -64,14 +92,15 @@ public class IT extends RepoTest {
         Assert.assertTrue(output.contains(" subchild41"));
     }
 
-    private String executeBuild(boolean alsoMake, Boolean skipTests) throws IOException, InterruptedException {
+    private String executeBuild(List<String> args) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
+        final List<String> command = Arrays.asList(
+                "cmd", "/c", "mvn",
+                "install",
+                "--file", "parent\\pom.xml",
+                "-DgibVersion=" + version);
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn",
-                        "install", alsoMake?"-am":"",
-                        "--file", "parent\\pom.xml",
-                        "-DgibVersion=" + version,
-                        "-Dgib." + Property.skipTestsForNotImpactedModules.name() + "=" + skipTests)
+                new ProcessBuilder(Stream.concat(command.stream(), args.stream()).collect(Collectors.toList()))
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
