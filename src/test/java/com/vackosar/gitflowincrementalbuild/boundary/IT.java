@@ -13,7 +13,7 @@ public class IT extends RepoTest {
 
     @Test
     public void buildWithAlsoMake() throws Exception {
-        final String output = executeBuild(true);
+        final String output = executeBuild(true, false);
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -29,8 +29,26 @@ public class IT extends RepoTest {
     }
 
     @Test
+    public void buildWithAlsoMakeSkip() throws Exception {
+        final String output = executeBuild(true, true);
+        System.out.println(output);
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
+        Assert.assertTrue(output.contains("[INFO] Tests are skipped."));
+    }
+
+    @Test
     public void buildWithoutAlsoMake() throws Exception {
-        final String output = executeBuild(false);
+        final String output = executeBuild(false, false);
         System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
@@ -38,7 +56,6 @@ public class IT extends RepoTest {
         Assert.assertFalse(output.contains(" subchild1"));
         Assert.assertFalse(output.contains(" subchild42"));
         Assert.assertFalse(output.contains(" child6"));
-        Assert.assertTrue(output.contains("child6 ---\n[INFO] Tests are skipped."));
 
         Assert.assertTrue(output.contains(" subchild2"));
         Assert.assertTrue(output.contains(" child3"));
@@ -46,10 +63,10 @@ public class IT extends RepoTest {
         Assert.assertTrue(output.contains(" subchild41"));
     }
 
-    private String executeBuild(boolean alsoMake) throws IOException, InterruptedException {
+    private String executeBuild(boolean alsoMake, Boolean skipTests) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version, "-Dgib.skipDependenciesTest=true")
+                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version, "-Dgib.skipDependenciesTest=" + skipTests)
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
