@@ -41,10 +41,7 @@ public class DifferentFilesTest extends RepoTest {
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
                 Paths.get(workDir + "/parent/child3/src/resources/file1"),
                 Paths.get(workDir + "/parent/child4/pom.xml"),
-                Paths.get(workDir + "/parent/child5/src/resources/file5"),
-                Paths.get(workDir + "/parent/child1/pom.xml"),
-                Paths.get(workDir + "/parent/pom.xml"
-                )
+                Paths.get(workDir + "/parent/child5/src/resources/file5")
         ));
         Assert.assertEquals(expected, differentFiles.list());
     }
