@@ -58,7 +58,7 @@ public class UnchangedProjectsRemover {
     }
 
     private MavenProject ifSkipDependenciesTest(MavenProject mavenProject) {
-        if (configuration.skipDependenciesTest) {
+        if (configuration.skipTestsForNotImpactedModules) {
             mavenProject.getProperties().setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
         }
         return mavenProject;

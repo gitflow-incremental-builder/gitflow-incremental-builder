@@ -6,7 +6,7 @@ public enum Property {
     referenceBranch("refs/remotes/origin/develop"),
     baseBranch("HEAD"),
     uncommited("true"),
-    skipDependenciesTest("false");
+    skipTestsForNotImpactedModules("false");
 
     public static final String PREFIX = "gib.";
 

@@ -22,7 +22,7 @@ public class Configuration {
     public final String baseBranch;
     public final boolean uncommited;
     public final boolean makeUpstream;
-    public final boolean skipDependenciesTest;
+    public final boolean skipTestsForNotImpactedModules;
 
     @Inject
     public Configuration(Path workDir, MavenSession session) throws IOException {
@@ -35,7 +35,7 @@ public class Configuration {
             baseBranch = Property.baseBranch.getValue();
             uncommited = Boolean.valueOf(Property.uncommited.getValue());
             makeUpstream = MAKE_UPSTREAM.equals(session.getRequest().getMakeBehavior());
-            skipDependenciesTest = Boolean.valueOf(Property.skipDependenciesTest.getValue());
+            skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

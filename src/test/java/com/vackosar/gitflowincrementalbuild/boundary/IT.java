@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +67,11 @@ public class IT extends RepoTest {
     private String executeBuild(boolean alsoMake, Boolean skipTests) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final Process process =
-                new ProcessBuilder("cmd", "/c", "mvn", "install", alsoMake?"-am":"", "--file", "parent\\pom.xml", "-DgibVersion=" + version, "-Dgib.skipDependenciesTest=" + skipTests)
+                new ProcessBuilder("cmd", "/c", "mvn",
+                        "install", alsoMake?"-am":"",
+                        "--file", "parent\\pom.xml",
+                        "-DgibVersion=" + version,
+                        "-Dgib." + Property.skipTestsForNotImpactedModules.name() + "=" + skipTests)
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
