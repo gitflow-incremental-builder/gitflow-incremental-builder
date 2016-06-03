@@ -15,7 +15,7 @@ A maven extension for incremental building of multi-module projects when using G
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
         </extension>
     </extensions>
     ...
@@ -31,6 +31,7 @@ Properties with default values are below:
 	<gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
 	<gib.baseBranch>HEAD</gib.baseBranch>
 	<gib.uncommited>true</gib.uncommited>
-	<gib.skipDependenciesTest>false</gib.skipDependenciesTest>
+	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
+	<gib.buildAll>false</gib.buildAll>
 </properties>
 ```
