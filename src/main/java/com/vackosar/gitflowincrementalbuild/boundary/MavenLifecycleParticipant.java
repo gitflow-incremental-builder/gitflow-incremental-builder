@@ -17,7 +17,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         try {
             Guice
-                    .createInjector(new Module(logger, session))
+                    .createInjector(new GuiceModule(logger, session))
                     .getInstance(UnchangedProjectsRemover.class)
                     .act();
         } catch (Exception e) {

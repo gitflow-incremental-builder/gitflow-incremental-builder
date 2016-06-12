@@ -4,13 +4,15 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
-import org.mockito.Mockito;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MavenSessionMock {
 
@@ -27,11 +29,12 @@ public class MavenSessionMock {
                 LocalRepoMock.WORK_DIR.resolve("parent/child4/subchild42"),
                 LocalRepoMock.WORK_DIR.resolve("parent/child5")
         ).stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
-        MavenSession mavenSession = Mockito.mock(MavenSession.class);
-        MavenExecutionRequest request = Mockito.mock(MavenExecutionRequest.class);
-        Mockito.when(mavenSession.getRequest()).thenReturn(request);
-        Mockito.when(mavenSession.getProjects()).thenReturn(projects);
-        Mockito.when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
+        MavenSession mavenSession = mock(MavenSession.class);
+        when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
+        MavenExecutionRequest request = mock(MavenExecutionRequest.class);
+        when(mavenSession.getRequest()).thenReturn(request);
+        when(mavenSession.getProjects()).thenReturn(projects);
+        when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
         return mavenSession;
     }
 

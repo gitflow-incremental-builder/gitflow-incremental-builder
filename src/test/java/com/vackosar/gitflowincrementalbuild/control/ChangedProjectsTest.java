@@ -1,7 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 import com.google.inject.Guice;
-import com.vackosar.gitflowincrementalbuild.boundary.Module;
+import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
@@ -27,7 +27,7 @@ public class ChangedProjectsTest extends RepoTest {
                 Paths.get("child3"),
                 Paths.get("child4")
         ));
-        final Set<Path> actual = Guice.createInjector(new Module(new ConsoleLogger(), MavenSessionMock.get()))
+        final Set<Path> actual = Guice.createInjector(new GuiceModule(new ConsoleLogger(), MavenSessionMock.get()))
                 .getInstance(ChangedProjects.class).get().stream()
                 .map(MavenProject::getBasedir).map(File::toPath).map(LocalRepoMock.WORK_DIR.resolve("parent")::relativize).collect(Collectors.toSet());
         Assert.assertEquals(expected, actual);

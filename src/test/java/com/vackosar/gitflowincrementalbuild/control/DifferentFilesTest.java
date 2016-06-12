@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.boundary.Module;
+import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
@@ -41,7 +41,9 @@ public class DifferentFilesTest extends RepoTest {
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
                 Paths.get(workDir + "/parent/child3/src/resources/file1"),
                 Paths.get(workDir + "/parent/child4/pom.xml"),
-                Paths.get(workDir + "/parent/child5/src/resources/file5")
+                Paths.get(workDir + "/parent/child5/src/resources/file5"),
+                Paths.get(workDir + "/parent/child1/pom.xml"),
+                Paths.get(workDir + "/parent/pom.xml")
         ));
         Assert.assertEquals(expected, differentFiles.list());
     }
@@ -73,11 +75,11 @@ public class DifferentFilesTest extends RepoTest {
     }
 
     private static class ModuleFacade extends AbstractModule {
-        private final Module module;
+        private final GuiceModule guiceModule;
         private Path workDir;
 
         public ModuleFacade(Path workDir) throws Exception {
-            this.module = new Module(new ConsoleLogger(), getMavenSessionMock());
+            this.guiceModule = new GuiceModule(new ConsoleLogger(), getMavenSessionMock());
             this.workDir = workDir;
         }
 
@@ -86,7 +88,7 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {
-            return module.provideGit(workDir, new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
+            return guiceModule.provideGit(workDir, new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
         }
 
         @Singleton @Provides public Path workDir() {

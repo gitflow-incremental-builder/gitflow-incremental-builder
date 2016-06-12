@@ -12,14 +12,13 @@ import org.slf4j.impl.StaticLoggerBinder;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-public class Module extends AbstractModule {
+public class GuiceModule extends AbstractModule {
 
     private final Logger logger;
     private final MavenSession mavenSession;
 
-    public Module(Logger logger, MavenSession mavenSession) {
+    public GuiceModule(Logger logger, MavenSession mavenSession) {
         this.logger = logger;
         this.mavenSession = mavenSession;
     }
@@ -41,7 +40,7 @@ public class Module extends AbstractModule {
     @Provides @Singleton public Logger provideLogger() { return logger; }
 
     @Provides @Singleton public Path provideWorkDir() {
-        return Paths.get(System.getProperty("user.dir"));
+        return mavenSession.getCurrentProject().getBasedir().toPath();
     }
 
     @Override
