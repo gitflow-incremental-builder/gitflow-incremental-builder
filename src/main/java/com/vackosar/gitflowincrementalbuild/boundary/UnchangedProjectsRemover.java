@@ -10,10 +10,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +36,7 @@ public class UnchangedProjectsRemover {
                     .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
                     .collect(Collectors.toSet());
             if (!configuration.buildAll) {
-                mavenSession.getProjects().retainAll(getRebuildProjects(changedProjects));
+                mavenSession.setProjects(new ArrayList<>(getRebuildProjects(changedProjects)));
             } else {
                 mavenSession.getAllProjects().stream()
                         .filter(p -> !changedProjects.contains(p))
