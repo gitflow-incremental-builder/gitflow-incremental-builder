@@ -38,7 +38,7 @@ public class UnchangedProjectsRemover {
             if (!configuration.buildAll) {
                 mavenSession.setProjects(new ArrayList<>(getRebuildProjects(changedProjects)));
             } else {
-                mavenSession.getAllProjects().stream()
+                mavenSession.getProjects().stream()
                         .filter(p -> !changedProjects.contains(p))
                         .forEach(this::ifSkipDependenciesTest);
             }
