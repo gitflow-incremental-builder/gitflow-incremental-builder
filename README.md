@@ -35,3 +35,8 @@ Properties with default values are below:
 	<gib.buildAll>false</gib.buildAll>
 </properties>
 ```
+
+
+## Requirements
+
+- Requires Maven version 3+.
