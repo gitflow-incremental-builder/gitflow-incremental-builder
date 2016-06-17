@@ -31,6 +31,10 @@ public abstract class RepoTest {
         resetProperties();
     }
 
+    protected LocalRepoMock getLocalRepoMock() {
+        return localRepoMock;
+    }
+
     private void resetConsoleOut() {
         consoleOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(consoleOut));
@@ -42,6 +46,7 @@ public abstract class RepoTest {
         }
         Property.uncommited.setValue("false");
         Property.referenceBranch.setValue("refs/heads/develop");
+        Property.compareToMergeBase.setValue("false");
     }
 
     @After

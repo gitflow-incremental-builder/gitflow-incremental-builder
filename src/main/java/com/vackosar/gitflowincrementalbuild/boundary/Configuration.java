@@ -24,6 +24,7 @@ public class Configuration {
     public final boolean makeUpstream;
     public final boolean skipTestsForNotImpactedModules;
     public final boolean buildAll;
+    public final boolean compareToMergeBase;
 
     @Inject
     public Configuration(MavenSession session) throws IOException {
@@ -38,6 +39,7 @@ public class Configuration {
             makeUpstream = MAKE_UPSTREAM.equals(session.getRequest().getMakeBehavior());
             skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue());
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
+            compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -24,6 +24,7 @@ public class LocalRepoMock implements AutoCloseable {
     private Git git;
 
     public LocalRepoMock(boolean remote) throws IOException, URISyntaxException, GitAPIException {
+        try {delete(REPO);} catch (Exception e) {}
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         if (remote) {

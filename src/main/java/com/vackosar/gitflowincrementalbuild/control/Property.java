@@ -7,7 +7,8 @@ public enum Property {
     baseBranch("HEAD"),
     uncommited("true"),
     skipTestsForNotImpactedModules("false"),
-    buildAll("false")
+    buildAll("false"),
+    compareToMergeBase("true")
     ;
 
     public static final String PREFIX = "gib.";

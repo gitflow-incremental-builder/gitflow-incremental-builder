@@ -6,8 +6,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
@@ -30,13 +30,17 @@ public class DifferentFiles {
     @Inject private Logger logger;
 
     public Set<Path> list() throws GitAPIException, IOException {
-        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getBranch().equals(configuration.baseBranch)) {
+        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
             logger.info("Checking out base branch " + configuration.baseBranch + "...");
             git.checkout().setName(configuration.baseBranch).call();
         }
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchTree(configuration.baseBranch));
-        treeWalk.addTree(getBranchTree(configuration.referenceBranch));
+        treeWalk.addTree(getBranchHead(configuration.baseBranch).getTree());
+        if (configuration.compareToMergeBase) {
+            treeWalk.addTree(getMergeBase().getTree());
+        } else {
+            treeWalk.addTree(getBranchHead(configuration.referenceBranch).getTree());
+        }
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
@@ -49,6 +53,14 @@ public class DifferentFiles {
         return paths;
     }
 
+    private RevCommit getMergeBase() throws IOException {
+        RevWalk walk = new RevWalk(git.getRepository());
+        walk.setRevFilter(RevFilter.MERGE_BASE);
+        walk.markStart(getBranchHead(configuration.baseBranch));
+        walk.markStart(getBranchHead(configuration.referenceBranch));
+        return walk.next();
+    }
+
     private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {
         final Set<Path> paths = new HashSet<>();
         while (treeWalk.next()) {
@@ -57,15 +69,14 @@ public class DifferentFiles {
         return paths;
     }
 
-    private RevTree getBranchTree(String branchName) throws IOException {
+    private RevCommit getBranchHead(String branchName) throws IOException {
         final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
         final RevWalk walk = new RevWalk(git.getRepository());
         Ref ref = allRefs.get(branchName);
         if (ref == null) {
             throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
         }
-        final RevCommit commit = walk.parseCommit(ref.getObjectId());
-        return commit.getTree();
+        return walk.parseCommit(ref.getObjectId());
     }
 
     private Set<Path> getUncommitedChanges(Path gitDir) throws GitAPIException {

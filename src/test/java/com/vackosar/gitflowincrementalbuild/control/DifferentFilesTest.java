@@ -13,6 +13,7 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,11 +29,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DifferentFilesTest extends RepoTest {
 
+    private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
+    private static final String HEAD = "HEAD";
     private Path workDir;
 
     @Before
@@ -45,31 +50,15 @@ public class DifferentFilesTest extends RepoTest {
     @Test
     public void listIncludingUncommited() throws Exception {
         Property.uncommited.setValue(Boolean.TRUE.toString());
-        final DifferentFiles differentFiles = getInstance();
-        final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
-                Paths.get(workDir + "/parent/child3/src/resources/file1"),
-                Paths.get(workDir + "/parent/child4/pom.xml"),
-                Paths.get(workDir + "/parent/child5/src/resources/file5"),
-                Paths.get(workDir + "/parent/child1/pom.xml"),
-                Paths.get(workDir + "/parent/pom.xml")
-        ));
-        Assert.assertEquals(expected, differentFiles.list());
+        Assert.assertTrue(getInstance().list().stream().anyMatch(p -> p.toString().contains("file5")));
     }
 
     @Test
     public void listWithCheckout() throws Exception {
-        Property.baseBranch.setValue("refs/heads/feature/1");
-        final DifferentFiles differentFiles = getInstance();
-        final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
-                Paths.get(workDir + "/parent/child3/src/resources/file1"),
-                Paths.get(workDir + "/parent/child4/pom.xml")
-        ));
-        Assert.assertEquals(expected, differentFiles.list());
-        Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/1"));
+        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        Property.baseBranch.setValue("refs/heads/feature/2");
+        getInstance().list();
+        Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/2"));
     }
 
     @Test
@@ -96,6 +85,26 @@ public class DifferentFilesTest extends RepoTest {
                 workDir.resolve("../child4/pom.xml").normalize()
         ));
         Assert.assertEquals(expected, differentFiles.list());
+    }
+
+    @Test
+    public void listComparedToMergeBase() throws Exception {
+        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        getLocalRepoMock().getGit().checkout().setName(REFS_HEADS_FEATURE_2).call();
+        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        Property.baseBranch.setValue(REFS_HEADS_FEATURE_2);
+        Property.compareToMergeBase.setValue("true");
+        final DifferentFiles differentFiles = getInstance();
+        final List<Path> expected =
+                Arrays.asList(
+                        "parent/feature2-only-file.txt",
+                        "parent/child1/pom.xml").stream()
+                        .map(workDir::resolve).sorted().collect(Collectors.toList());
+        Assert.assertEquals(expected, differentFiles.list().stream().sorted().filter(this::filterIgnored).collect(Collectors.toList()));
+    }
+
+    private boolean filterIgnored(Path p) {
+        return ! p.toString().contains("target") && ! p.toString().contains(".iml");
     }
 
     private ModuleFacade module() throws Exception {
