@@ -10,8 +10,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class GuiceModule extends AbstractModule {
 
@@ -25,11 +25,12 @@ public class GuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Git provideGit(Path workDir, StaticLoggerBinder staticLoggerBinder) throws IOException, GitAPIException {
+    public Git provideGit(final StaticLoggerBinder staticLoggerBinder) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        builder.findGitDir(workDir.toFile());
+        File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
+        builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
-            throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + workDir + "'.");
+            throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + pomDir + "'.");
         }
         logger.info("Git root is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
@@ -38,10 +39,6 @@ public class GuiceModule extends AbstractModule {
     @Provides @Singleton public MavenSession provideMavenSession() { return mavenSession; }
 
     @Provides @Singleton public Logger provideLogger() { return logger; }
-
-    @Provides @Singleton public Path provideWorkDir() {
-        return mavenSession.getCurrentProject().getBasedir().toPath();
-    }
 
     @Override
     protected void configure() {}

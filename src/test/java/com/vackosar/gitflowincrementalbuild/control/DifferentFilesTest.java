@@ -15,6 +15,7 @@ import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -22,6 +23,7 @@ import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -31,11 +33,19 @@ import java.util.Set;
 @RunWith(MockitoJUnitRunner.class)
 public class DifferentFilesTest extends RepoTest {
 
+    private Path workDir;
+
+    @Before
+    public void before() throws GitAPIException, IOException, URISyntaxException {
+        workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
+        setWorkDir(workDir);
+        super.before();
+    }
+
     @Test
     public void listIncludingUncommited() throws Exception {
         Property.uncommited.setValue(Boolean.TRUE.toString());
-        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
-        final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
+        final DifferentFiles differentFiles = getInstance();
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
@@ -49,9 +59,22 @@ public class DifferentFilesTest extends RepoTest {
     }
 
     @Test
+    public void listWithCheckout() throws Exception {
+        Property.baseBranch.setValue("refs/heads/feature/1");
+        final DifferentFiles differentFiles = getInstance();
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
+                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
+                Paths.get(workDir + "/parent/child3/src/resources/file1"),
+                Paths.get(workDir + "/parent/child4/pom.xml")
+        ));
+        Assert.assertEquals(expected, differentFiles.list());
+        Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/1"));
+    }
+
+    @Test
     public void list() throws Exception {
-        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
-        final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
+        final DifferentFiles differentFiles = getInstance();
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
@@ -64,7 +87,8 @@ public class DifferentFilesTest extends RepoTest {
     @Test
     public void listInSubdir() throws Exception {
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/parent/child2");
-        final DifferentFiles differentFiles = Guice.createInjector(new ModuleFacade(workDir)).getInstance(DifferentFiles.class);
+        setWorkDir(workDir);
+        final DifferentFiles differentFiles = getInstance();
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 workDir.resolve("subchild2/src/resources/file2"),
                 workDir.resolve("subchild2/src/resources/file22"),
@@ -74,31 +98,28 @@ public class DifferentFilesTest extends RepoTest {
         Assert.assertEquals(expected, differentFiles.list());
     }
 
+    private ModuleFacade module() throws Exception {
+        return new ModuleFacade();
+    }
+
     private static class ModuleFacade extends AbstractModule {
         private final GuiceModule guiceModule;
-        private Path workDir;
 
-        public ModuleFacade(Path workDir) throws Exception {
+        public ModuleFacade() throws Exception {
             this.guiceModule = new GuiceModule(new ConsoleLogger(), getMavenSessionMock());
-            this.workDir = workDir;
         }
 
         @Singleton @Provides public Logger provideLogger() {
             return new ConsoleLoggerManager().getLoggerForComponent("Test");
         }
 
-        @Singleton @Provides public Git provideGit(Path workDir) throws IOException, GitAPIException {
-            return guiceModule.provideGit(workDir, new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
+        @Singleton @Provides public Git provideGit() throws IOException, GitAPIException {
+            return guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
         }
 
-        @Singleton @Provides public Path workDir() {
-            System.setProperty("user.dir", workDir.toString());
-            return workDir;
-        }
-
-        @Singleton @Provides public Configuration arguments(Path workDir) throws Exception {
+        @Singleton @Provides public Configuration arguments() throws Exception {
             MavenSession mavenSession = getMavenSessionMock();
-            return new Configuration(workDir, mavenSession);
+            return new Configuration(mavenSession);
         }
 
         private MavenSession getMavenSessionMock() throws Exception {
@@ -107,5 +128,13 @@ public class DifferentFilesTest extends RepoTest {
 
         @Override
         protected void configure() {}
+    }
+
+    private DifferentFiles getInstance() throws Exception {
+        return Guice.createInjector(module()).getInstance(DifferentFiles.class);
+    }
+
+    private void setWorkDir(final Path path) {
+        System.setProperty("user.dir", path.toString());
     }
 }

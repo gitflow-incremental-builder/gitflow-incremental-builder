@@ -26,12 +26,12 @@ public class Configuration {
     public final boolean buildAll;
 
     @Inject
-    public Configuration(Path workDir, MavenSession session) throws IOException {
+    public Configuration(MavenSession session) throws IOException {
         try {
             mergeCurrentProjectProperties(session);
             checkProperties();
             enabled = Boolean.valueOf(Property.enabled.getValue());
-            key = parseKey(workDir);
+            key = parseKey(session);
             referenceBranch = Property.referenceBranch.getValue();
             baseBranch = Property.baseBranch.getValue();
             uncommited = Boolean.valueOf(Property.uncommited.getValue());
@@ -43,10 +43,11 @@ public class Configuration {
         }
     }
 
-    private Optional<Path> parseKey(Path workDir) throws IOException {
+    private Optional<Path> parseKey(MavenSession session) throws IOException {
+        Path pomDir = session.getCurrentProject().getBasedir().toPath();
         String keyOptionValue = Property.repositorySshKey.getValue();
-        if (keyOptionValue != null) {
-            return Optional.of(workDir.resolve(keyOptionValue).toAbsolutePath().toRealPath().normalize());
+        if (keyOptionValue != null && ! keyOptionValue.isEmpty()) {
+            return Optional.of(pomDir.resolve(keyOptionValue).toAbsolutePath().toRealPath().normalize());
         } else {
             return Optional.empty();
         }

@@ -36,6 +36,25 @@ public class IT extends RepoTest {
         Assert.assertTrue(output.contains(" child6"));
         Assert.assertTrue(output.contains("[INFO] Tests are skipped."));
     }
+
+    @Test
+    public void buildChangeBaseBranch() throws Exception {
+        final String output = executeBuild(Arrays.asList(
+                "-Dgib." + Property.baseBranch + "=refs/heads/feature/1"
+        ));
+        System.out.println(output);
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" child6"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+    }
     
     @Test
     public void buildWithAlsoMake() throws Exception {

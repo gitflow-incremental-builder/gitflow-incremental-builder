@@ -30,7 +30,7 @@ public class DifferentFiles {
     @Inject private Logger logger;
 
     public Set<Path> list() throws GitAPIException, IOException {
-        if (! HEAD.equals(configuration.baseBranch)) {
+        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getBranch().equals(configuration.baseBranch)) {
             logger.info("Checking out base branch " + configuration.baseBranch + "...");
             git.checkout().setName(configuration.baseBranch).call();
         }
