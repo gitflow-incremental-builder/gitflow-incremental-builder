@@ -25,6 +25,7 @@ public class Configuration {
     public final boolean skipTestsForNotImpactedModules;
     public final boolean buildAll;
     public final boolean compareToMergeBase;
+    public final boolean fetchReferenceBranch;
 
     @Inject
     public Configuration(MavenSession session) throws IOException {
@@ -40,6 +41,7 @@ public class Configuration {
             skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue());
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
+            fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

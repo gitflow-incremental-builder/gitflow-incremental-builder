@@ -52,6 +52,7 @@ public abstract class RepoTest {
     @After
     public void after() throws Exception {
         localRepoMock.close();
+        System.setOut(normalOut);
         normalOut.print(consoleOut.toString());
     }
 }

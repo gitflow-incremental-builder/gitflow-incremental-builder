@@ -8,7 +8,8 @@ public enum Property {
     uncommited("true"),
     skipTestsForNotImpactedModules("false"),
     buildAll("false"),
-    compareToMergeBase("true")
+    compareToMergeBase("true"),
+    fetchReferenceBranch("false")
     ;
 
     public static final String PREFIX = "gib.";

@@ -8,6 +8,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
@@ -30,6 +31,9 @@ public class DifferentFiles {
     @Inject private Logger logger;
 
     public Set<Path> list() throws GitAPIException, IOException {
+        if (configuration.fetchReferenceBranch) {
+            git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
+        }
         if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
             logger.info("Checking out base branch " + configuration.baseBranch + "...");
             git.checkout().setName(configuration.baseBranch).call();
