@@ -6,7 +6,7 @@ Builds or tests only changed maven modules compared to reference branch in Git (
 
 ## Usage
 
-- Add into build:
+- Add into maven pom file:
 ```xml
 <build>
     <extensions>
@@ -21,7 +21,7 @@ Builds or tests only changed maven modules compared to reference branch in Git (
 ```
 ## Configuration
 
-Properties with default values are below:
+Maven pom properties configuration with default values is below:
 ```xml
 <properties>
 	<gib.enabled>true</gib.enabled>
