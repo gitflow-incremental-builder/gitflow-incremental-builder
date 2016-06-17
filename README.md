@@ -34,8 +34,6 @@ Properties with default values are below:
 </properties>
 ```
 
-
 ## Requirements
 
 - Maven version 3+.
-- Develop branch always stable.
