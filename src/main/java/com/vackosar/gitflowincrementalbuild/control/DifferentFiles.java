@@ -32,6 +32,7 @@ public class DifferentFiles {
 
     public Set<Path> list() throws GitAPIException, IOException {
         if (configuration.fetchReferenceBranch) {
+            logger.info("Fetching reference branch " + configuration.referenceBranch);
             git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
         }
         if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
@@ -62,7 +63,9 @@ public class DifferentFiles {
         walk.setRevFilter(RevFilter.MERGE_BASE);
         walk.markStart(getBranchHead(configuration.baseBranch));
         walk.markStart(getBranchHead(configuration.referenceBranch));
-        return walk.next();
+        RevCommit commit = walk.next();
+        logger.info("Using merge base of id: " + commit.getId());
+        return commit;
     }
 
     private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {

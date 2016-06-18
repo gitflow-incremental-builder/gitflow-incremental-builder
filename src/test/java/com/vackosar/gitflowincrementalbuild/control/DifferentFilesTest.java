@@ -101,6 +101,7 @@ public class DifferentFilesTest extends RepoTest {
                         "parent/child1/pom.xml").stream()
                         .map(workDir::resolve).sorted().collect(Collectors.toList());
         Assert.assertEquals(expected, differentFiles.list().stream().sorted().filter(this::filterIgnored).collect(Collectors.toList()));
+        Assert.assertTrue(consoleOut.toString().contains("a580cb9c711fc2dd83729fa05d9fbb6c10c6584a"));
     }
 
     private boolean filterIgnored(Path p) {
