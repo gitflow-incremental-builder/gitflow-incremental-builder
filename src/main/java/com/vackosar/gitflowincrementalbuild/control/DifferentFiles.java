@@ -35,10 +35,12 @@ public class DifferentFiles {
             logger.info("Fetching reference branch " + configuration.referenceBranch);
             git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
         }
+        // TODO Fetch base branch
         if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
             logger.info("Checking out base branch " + configuration.baseBranch + "...");
             git.checkout().setName(configuration.baseBranch).call();
         }
+        // TODO extract method to be called with commits to be compared
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
         treeWalk.addTree(getBranchHead(configuration.baseBranch).getTree());
         if (configuration.compareToMergeBase) {
@@ -83,7 +85,9 @@ public class DifferentFiles {
         if (ref == null) {
             throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
         }
-        return walk.parseCommit(ref.getObjectId());
+        RevCommit commit = walk.parseCommit(ref.getObjectId());
+        logger.info("Head of branch " + branchName + " is commit of id: " + commit.getId());
+        return commit;
     }
 
     private Set<Path> getUncommitedChanges(Path gitDir) throws GitAPIException {
