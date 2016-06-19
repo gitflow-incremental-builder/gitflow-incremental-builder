@@ -30,24 +30,13 @@ public class DifferentFiles {
     @Inject private Configuration configuration;
     @Inject private Logger logger;
 
-    public Set<Path> list() throws GitAPIException, IOException {
-        if (configuration.fetchReferenceBranch) {
-            logger.info("Fetching reference branch " + configuration.referenceBranch);
-            git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
-        }
-        // TODO Fetch base branch
-        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
-            logger.info("Checking out base branch " + configuration.baseBranch + "...");
-            git.checkout().setName(configuration.baseBranch).call();
-        }
-        // TODO extract method to be called with commits to be compared
+    public Set<Path> get() throws GitAPIException, IOException {
+        fetch();
+        checkout();
+        RevCommit base = getBranchHead(configuration.baseBranch);
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(getBranchHead(configuration.baseBranch).getTree());
-        if (configuration.compareToMergeBase) {
-            treeWalk.addTree(getMergeBase().getTree());
-        } else {
-            treeWalk.addTree(getBranchHead(configuration.referenceBranch).getTree());
-        }
+        treeWalk.addTree(base.getTree());
+        treeWalk.addTree(resolveReference(base).getTree());
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
         final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
@@ -55,17 +44,37 @@ public class DifferentFiles {
         if (configuration.uncommited) {
             paths.addAll(getUncommitedChanges(gitDir));
         }
+        treeWalk.close();
         git.getRepository().close();
         git.close();
         return paths;
     }
 
-    private RevCommit getMergeBase() throws IOException {
+    private void checkout() throws IOException, GitAPIException {
+        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
+            logger.info("Checking out base branch " + configuration.baseBranch + "...");
+            git.checkout().setName(configuration.baseBranch).call();
+        }
+    }
+
+    private void fetch() {
+        if (configuration.fetchReferenceBranch) {
+            logger.info("Fetching reference branch " + configuration.referenceBranch);
+            git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
+        }
+        if (configuration.fetchBaseBranch) {
+            logger.info("Fetching base branch " + configuration.baseBranch);
+            git.fetch().setRefSpecs(new RefSpec(":" + configuration.baseBranch));
+        }
+    }
+
+    private RevCommit getMergeBase(RevCommit baseCommit, RevCommit referenceHeadCommit) throws IOException {
         RevWalk walk = new RevWalk(git.getRepository());
         walk.setRevFilter(RevFilter.MERGE_BASE);
-        walk.markStart(getBranchHead(configuration.baseBranch));
-        walk.markStart(getBranchHead(configuration.referenceBranch));
+        walk.markStart(baseCommit);
+        walk.markStart(referenceHeadCommit);
         RevCommit commit = walk.next();
+        walk.close();
         logger.info("Using merge base of id: " + commit.getId());
         return commit;
     }
@@ -86,6 +95,7 @@ public class DifferentFiles {
             throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
         }
         RevCommit commit = walk.parseCommit(ref.getObjectId());
+        walk.close();
         logger.info("Head of branch " + branchName + " is commit of id: " + commit.getId());
         return commit;
     }
@@ -93,6 +103,15 @@ public class DifferentFiles {
     private Set<Path> getUncommitedChanges(Path gitDir) throws GitAPIException {
         return git.status().call().getUncommittedChanges().stream()
                 .map(gitDir::resolve).map(Path::normalize).collect(Collectors.toSet());
+    }
+
+    private RevCommit resolveReference(RevCommit base) throws IOException {
+        RevCommit refHead = getBranchHead(configuration.referenceBranch);
+        if (configuration.compareToMergeBase) {
+            return getMergeBase(base, refHead);
+        } else {
+            return refHead;
+        }
     }
 
 }

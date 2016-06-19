@@ -9,6 +9,7 @@ public enum Property {
     skipTestsForNotImpactedModules("false"),
     buildAll("false"),
     compareToMergeBase("true"),
+    fetchBaseBranch("false"),
     fetchReferenceBranch("false")
     ;
 

@@ -22,7 +22,7 @@ public class ChangedProjects {
     @Inject private Modules modules;
 
     public Set<MavenProject> get() throws GitAPIException, IOException {
-        return differentFiles.list().stream()
+        return differentFiles.get().stream()
                 .map(path -> findProject(path, mavenSession))
                 .filter(project -> project != null)
                 .collect(Collectors.toSet());

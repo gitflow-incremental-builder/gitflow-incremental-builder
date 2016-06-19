@@ -50,14 +50,14 @@ public class DifferentFilesTest extends RepoTest {
     @Test
     public void listIncludingUncommited() throws Exception {
         Property.uncommited.setValue(Boolean.TRUE.toString());
-        Assert.assertTrue(getInstance().list().stream().anyMatch(p -> p.toString().contains("file5")));
+        Assert.assertTrue(getInstance().get().stream().anyMatch(p -> p.toString().contains("file5")));
     }
 
     @Test
     public void listWithCheckout() throws Exception {
         getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         Property.baseBranch.setValue("refs/heads/feature/2");
-        getInstance().list();
+        getInstance().get();
         Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/2"));
     }
 
@@ -70,7 +70,7 @@ public class DifferentFilesTest extends RepoTest {
                 Paths.get(workDir + "/parent/child3/src/resources/file1"),
                 Paths.get(workDir + "/parent/child4/pom.xml")
                 ));
-        Assert.assertEquals(expected, differentFiles.list());
+        Assert.assertEquals(expected, differentFiles.get());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class DifferentFilesTest extends RepoTest {
                 workDir.resolve("../child3/src/resources/file1").normalize(),
                 workDir.resolve("../child4/pom.xml").normalize()
         ));
-        Assert.assertEquals(expected, differentFiles.list());
+        Assert.assertEquals(expected, differentFiles.get());
     }
 
     @Test
@@ -94,13 +94,12 @@ public class DifferentFilesTest extends RepoTest {
         getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         Property.baseBranch.setValue(REFS_HEADS_FEATURE_2);
         Property.compareToMergeBase.setValue("true");
-        final DifferentFiles differentFiles = getInstance();
         final List<Path> expected =
                 Arrays.asList(
                         "parent/feature2-only-file.txt",
                         "parent/child1/pom.xml").stream()
                         .map(workDir::resolve).sorted().collect(Collectors.toList());
-        Assert.assertEquals(expected, differentFiles.list().stream().sorted().filter(this::filterIgnored).collect(Collectors.toList()));
+        Assert.assertEquals(expected, getInstance().get().stream().sorted().filter(this::filterIgnored).collect(Collectors.toList()));
         Assert.assertTrue(consoleOut.toString().contains("a580cb9c711fc2dd83729fa05d9fbb6c10c6584a"));
     }
 

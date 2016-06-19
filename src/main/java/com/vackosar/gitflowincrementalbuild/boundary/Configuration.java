@@ -25,6 +25,7 @@ public class Configuration {
     public final boolean skipTestsForNotImpactedModules;
     public final boolean buildAll;
     public final boolean compareToMergeBase;
+    public final boolean fetchBaseBranch;
     public final boolean fetchReferenceBranch;
 
     @Inject
@@ -42,6 +43,7 @@ public class Configuration {
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
             fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue());
+            fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
