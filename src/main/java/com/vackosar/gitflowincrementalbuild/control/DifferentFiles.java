@@ -71,8 +71,8 @@ public class DifferentFiles {
     private RevCommit getMergeBase(RevCommit baseCommit, RevCommit referenceHeadCommit) throws IOException {
         RevWalk walk = new RevWalk(git.getRepository());
         walk.setRevFilter(RevFilter.MERGE_BASE);
-        walk.markStart(baseCommit);
-        walk.markStart(referenceHeadCommit);
+        walk.markStart(walk.lookupCommit(baseCommit));
+        walk.markStart(walk.lookupCommit(referenceHeadCommit));
         RevCommit commit = walk.next();
         walk.close();
         logger.info("Using merge base of id: " + commit.getId());

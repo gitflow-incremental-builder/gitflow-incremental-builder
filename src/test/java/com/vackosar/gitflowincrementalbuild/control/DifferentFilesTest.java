@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,6 +48,7 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void listIncludingUncommited() throws Exception {
+        workDir.resolve("file5").toFile().createNewFile();
         Property.uncommited.setValue(Boolean.TRUE.toString());
         Assert.assertTrue(getInstance().get().stream().anyMatch(p -> p.toString().contains("file5")));
     }
@@ -94,13 +94,8 @@ public class DifferentFilesTest extends RepoTest {
         getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         Property.baseBranch.setValue(REFS_HEADS_FEATURE_2);
         Property.compareToMergeBase.setValue("true");
-        final List<Path> expected =
-                Arrays.asList(
-                        "parent/feature2-only-file.txt",
-                        "parent/child1/pom.xml").stream()
-                        .map(workDir::resolve).sorted().collect(Collectors.toList());
-        Assert.assertEquals(expected, getInstance().get().stream().sorted().filter(this::filterIgnored).collect(Collectors.toList()));
-        Assert.assertTrue(consoleOut.toString().contains("a580cb9c711fc2dd83729fa05d9fbb6c10c6584a"));
+        Assert.assertTrue(getInstance().get().stream().collect(Collectors.toSet()).contains(workDir.resolve("parent/feature2-only-file.txt")));
+        Assert.assertTrue(consoleOut.toString().contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }
 
     private boolean filterIgnored(Path p) {
