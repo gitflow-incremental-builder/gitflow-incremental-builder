@@ -1,12 +1,18 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -16,6 +22,35 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class IT extends RepoTest {
+
+    private static final String FETCH_FILE = "fetch-file";
+    private static final String DEVELOP = "develop";
+
+    @Before
+    public void before() throws GitAPIException, IOException, URISyntaxException {
+        super.before();
+        localRepoMock = new LocalRepoMock(true);
+    }
+
+    @Test
+    public void fetch() throws Exception {
+        Git remoteGit = localRepoMock.getRemoteRepo().getGit();
+        remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        remoteGit.checkout().setName(DEVELOP).call();
+        remoteGit.getRepository().getDirectory().toPath().resolve(FETCH_FILE).toFile().createNewFile();
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage(FETCH_FILE).call();
+        Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        final String output = executeBuild(Arrays.asList(
+                "-Dgib." + Property.fetchReferenceBranch + "=true",
+                "-Dgib." + Property.referenceBranch.name() + "=refs/remotes/origin/develop")
+        );
+        System.out.println(output);
+        Git localGit = localRepoMock.getGit();
+        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        localGit.checkout().setName(DEVELOP).call();
+        Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+    }
 
     @Test
     public void buildAllSkipTest() throws Exception {

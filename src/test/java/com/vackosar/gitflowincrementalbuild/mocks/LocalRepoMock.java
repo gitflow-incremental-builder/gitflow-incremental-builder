@@ -28,7 +28,7 @@ public class LocalRepoMock implements AutoCloseable {
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         if (remote) {
-            configureRemote(git, remoteRepo.repoUrl);
+            configureRemote(remoteRepo.repoUrl);
             git.fetch().call();
         }
     }
@@ -37,11 +37,7 @@ public class LocalRepoMock implements AutoCloseable {
         return git;
     }
 
-    public void invalidateConfigration() throws IOException, URISyntaxException {
-        configureRemote(git, "git://localhost:8888/repo.git");
-    }
-
-    private void configureRemote(Git git, String repoUrl) throws URISyntaxException, IOException {
+    public void configureRemote(String repoUrl) throws URISyntaxException, IOException, GitAPIException {
         StoredConfig config = git.getRepository().getConfig();
         config.clear();
         config.setString("remote", "origin" ,"fetch", "+refs/heads/*:refs/remotes/origin/*");
@@ -56,6 +52,7 @@ public class LocalRepoMock implements AutoCloseable {
         remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
         remoteConfig.update(config);
         config.save();
+        git.fetch().call();
     }
 
 
@@ -74,4 +71,9 @@ public class LocalRepoMock implements AutoCloseable {
             throw new RuntimeException("Failed to delete file: " + f);
         }
     }
+
+    public RemoteRepoMock getRemoteRepo() {
+        return remoteRepo;
+    }
+
 }
