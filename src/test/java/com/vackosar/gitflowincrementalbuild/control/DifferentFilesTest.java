@@ -37,6 +37,8 @@ public class DifferentFilesTest extends RepoTest {
 
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
+    private static final String FETCH_FILE = "fetch-file";
+    private static final String DEVELOP = "develop";
     private Path workDir;
 
     @Before
@@ -44,6 +46,7 @@ public class DifferentFilesTest extends RepoTest {
         workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         setWorkDir(workDir);
         super.before();
+        localRepoMock = new LocalRepoMock(true);
     }
 
     @Test
@@ -97,6 +100,25 @@ public class DifferentFilesTest extends RepoTest {
         Assert.assertTrue(getInstance().get().stream().collect(Collectors.toSet()).contains(workDir.resolve("parent/feature2-only-file.txt")));
         Assert.assertTrue(consoleOut.toString().contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }
+
+    @Test
+    public void fetch() throws Exception {
+        Git remoteGit = localRepoMock.getRemoteRepo().getGit();
+        remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        remoteGit.checkout().setName(DEVELOP).call();
+        remoteGit.getRepository().getDirectory().toPath().resolve(FETCH_FILE).toFile().createNewFile();
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage(FETCH_FILE).call();
+        Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        Property.fetchReferenceBranch.setValue("true");
+        Property.referenceBranch.setValue("refs/remotes/origin/develop");
+        getInstance().get();
+        Git localGit = localRepoMock.getGit();
+        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        localGit.checkout().setName(DEVELOP).call();
+        Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+    }
+
 
     private boolean filterIgnored(Path p) {
         return ! p.toString().contains("target") && ! p.toString().contains(".iml");

@@ -83,7 +83,7 @@ public class DifferentFiles {
     }
 
     private String extractShortName(String remoteName, String branchName) {
-        return branchName.replaceFirst(REFS_REMOTES + "/" + remoteName + "/", "");
+        return branchName.replaceFirst(REFS_REMOTES + remoteName + "/", "");
     }
 
     private RevCommit getMergeBase(RevCommit baseCommit, RevCommit referenceHeadCommit) throws IOException {
