@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class DifferentFiles {
 
     private static final String HEAD = "HEAD";
+    private static final String REFS_REMOTES = "refs/remotes/";
+    private static final String REFS_HEADS = "refs/heads/";
     @Inject private Git git;
     @Inject private Configuration configuration;
     @Inject private Logger logger;
@@ -57,15 +59,31 @@ public class DifferentFiles {
         }
     }
 
-    private void fetch() {
+    private void fetch() throws GitAPIException {
         if (configuration.fetchReferenceBranch) {
-            logger.info("Fetching reference branch " + configuration.referenceBranch);
-            git.fetch().setRefSpecs(new RefSpec(":" + configuration.referenceBranch));
+            fetch(configuration.referenceBranch);
         }
         if (configuration.fetchBaseBranch) {
-            logger.info("Fetching base branch " + configuration.baseBranch);
-            git.fetch().setRefSpecs(new RefSpec(":" + configuration.baseBranch));
+            fetch(configuration.baseBranch);
         }
+    }
+
+    private void fetch(String branchName) throws GitAPIException {
+        logger.info("Fetching branch " + branchName);
+        if (!branchName.startsWith(REFS_REMOTES)) {
+            throw new IllegalArgumentException("Branch name '" + branchName + "' is not tracking branch name since it does not start " + REFS_REMOTES);
+        }
+        String remoteName = extractRemoteName(branchName);
+        String shortName = extractShortName(remoteName, branchName);
+        git.fetch().setRemote(remoteName).setRefSpecs(new RefSpec(REFS_HEADS + shortName)).call();
+    }
+
+    private String extractRemoteName(String branchName) {
+        return branchName.split("/")[2];
+    }
+
+    private String extractShortName(String remoteName, String branchName) {
+        return branchName.replaceFirst(REFS_REMOTES + "/" + remoteName + "/", "");
     }
 
     private RevCommit getMergeBase(RevCommit baseCommit, RevCommit referenceHeadCommit) throws IOException {
