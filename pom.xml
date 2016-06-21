@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>

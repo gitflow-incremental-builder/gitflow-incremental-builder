@@ -58,7 +58,7 @@ public class LocalRepoMock implements AutoCloseable {
 
     public void close() throws Exception {
         remoteRepo.close();
-        delete(REPO);
+        try {delete(REPO);} catch (Exception e) {}
     }
 
     private void delete(File f) {

@@ -75,7 +75,7 @@ public class DifferentFiles {
         }
         String remoteName = extractRemoteName(branchName);
         String shortName = extractShortName(remoteName, branchName);
-        git.fetch().setRemote(remoteName).setRefSpecs(new RefSpec(REFS_HEADS + shortName)).call();
+        git.fetch().setRemote(remoteName).setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + REFS_HEADS + shortName)).call();
     }
 
     private String extractRemoteName(String branchName) {
