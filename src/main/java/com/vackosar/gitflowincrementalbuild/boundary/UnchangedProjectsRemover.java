@@ -25,23 +25,19 @@ public class UnchangedProjectsRemover {
     @Inject private MavenSession mavenSession;
 
     public void act() throws GitAPIException, IOException {
-        if (!configuration.enabled) {
-            logger.info("GIB is disabled.");
+        Set<MavenProject> changed = changedProjects.get();
+        printDelimiter();
+        logProjects(changed, "Changed Artifacts:");
+        Set<MavenProject> changedProjects = mavenSession.getProjects().stream()
+                .filter(changed::contains)
+                .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
+                .collect(Collectors.toSet());
+        if (!configuration.buildAll) {
+            mavenSession.setProjects(new ArrayList<>(getRebuildProjects(changedProjects)));
         } else {
-            Set<MavenProject> changed = changedProjects.get();
-            printDelimiter();
-            logProjects(changed, "Changed Artifacts:");
-            Set<MavenProject> changedProjects = mavenSession.getProjects().stream()
-                    .filter(changed::contains)
-                    .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
-                    .collect(Collectors.toSet());
-            if (!configuration.buildAll) {
-                mavenSession.setProjects(new ArrayList<>(getRebuildProjects(changedProjects)));
-            } else {
-                mavenSession.getProjects().stream()
-                        .filter(p -> !changedProjects.contains(p))
-                        .forEach(this::ifSkipDependenciesTest);
-            }
+            mavenSession.getProjects().stream()
+                    .filter(p -> !changedProjects.contains(p))
+                    .forEach(this::ifSkipDependenciesTest);
         }
     }
 
