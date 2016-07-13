@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.Guice;
+import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -16,10 +17,15 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         try {
-            Guice
-                    .createInjector(new GuiceModule(logger, session))
-                    .getInstance(UnchangedProjectsRemover.class)
-                    .act();
+            if (!Boolean.valueOf(Property.enabled.getValue())) {
+                logger.info("gitflow-incremental-builder is disabled.");
+            } else {
+                logger.info("gitflow-incremental-builder is enabled.");
+                Guice
+                        .createInjector(new GuiceModule(logger, session))
+                        .getInstance(UnchangedProjectsRemover.class)
+                        .act();
+            }
         } catch (Exception e) {
             throw new MavenExecutionException("Exception", e);
         }
