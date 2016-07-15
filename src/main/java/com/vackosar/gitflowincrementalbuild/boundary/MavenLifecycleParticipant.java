@@ -23,7 +23,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             if (Boolean.valueOf(Property.enabled.getValue())) {
                 logger.info("gitflow-incremental-builder starting...");
                 execute(session);
-                logger.info("gitflow-incremental-builder exitting...");
+                logger.info("gitflow-incremental-builder exiting...");
             } else {
                 logger.info("gitflow-incremental-builder is disabled.");
             }
