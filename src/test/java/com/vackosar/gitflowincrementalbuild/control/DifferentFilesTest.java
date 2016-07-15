@@ -24,7 +24,6 @@ import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -38,14 +37,16 @@ public class DifferentFilesTest extends RepoTest {
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
     private static final String FETCH_FILE = "fetch-file";
-    private static final String DEVELOP = "develop";
+    private static final String DEVELOP = "refs/heads/develop";
+    private static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
     private Path workDir;
 
     @Before
-    public void before() throws GitAPIException, IOException, URISyntaxException {
+    public void before() throws Exception {
         workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         setWorkDir(workDir);
         super.before();
+        localRepoMock.close();
         localRepoMock = new LocalRepoMock(true);
     }
 
@@ -110,12 +111,32 @@ public class DifferentFilesTest extends RepoTest {
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage(FETCH_FILE).call();
         Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
-        Property.fetchReferenceBranch.setValue("true");
-        Property.referenceBranch.setValue("refs/remotes/origin/develop");
+        Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
+        Property.referenceBranch.setValue(REMOTE_DEVELOP);
         getInstance().get();
         Git localGit = localRepoMock.getGit();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(DEVELOP).call();
+        localGit.checkout().setName(REMOTE_DEVELOP).call();
+        Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+    }
+
+    @Test
+    public void fetchNonExistent() throws Exception {
+        Git remoteGit = localRepoMock.getRemoteRepo().getGit();
+        remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        remoteGit.checkout().setName(DEVELOP).call();
+        remoteGit.getRepository().getDirectory().toPath().resolve(FETCH_FILE).toFile().createNewFile();
+        remoteGit.add().addFilepattern(".").call();
+        remoteGit.commit().setMessage(FETCH_FILE).call();
+        Git localGit = localRepoMock.getGit();
+        localGit.branchDelete().setBranchNames(DEVELOP).call();
+        localGit.branchDelete().setBranchNames(REMOTE_DEVELOP).call();
+        Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
+        Property.referenceBranch.setValue(REMOTE_DEVELOP);
+        getInstance().get();
+        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        localGit.checkout().setName(REMOTE_DEVELOP).call();
         Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
     }
 

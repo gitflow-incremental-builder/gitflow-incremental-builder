@@ -2,15 +2,12 @@ package com.vackosar.gitflowincrementalbuild.mocks;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URISyntaxException;
 
 public abstract class RepoTest {
 
@@ -24,7 +21,7 @@ public abstract class RepoTest {
     }
 
     @Before
-    public void before() throws IOException, URISyntaxException, GitAPIException {
+    public void before() throws Exception {
         staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         localRepoMock = new LocalRepoMock(false);
         resetConsoleOut();
