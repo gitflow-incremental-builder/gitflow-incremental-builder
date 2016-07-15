@@ -2,6 +2,8 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,6 +55,27 @@ public class IT extends RepoTest {
         Assert.assertTrue(output.contains(" subchild41"));
         Assert.assertTrue(output.contains(" child6"));
     }
+
+    @Test
+    public void buildNoChanged() throws Exception {
+        Git git = localRepoMock.getGit();
+        git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
+        git.checkout().setName("develop").call();
+        final String output = executeBuild(Collections.singletonList("-Dgib." + Property.baseBranch.name() + "=refs/heads/develop"));
+        System.out.println(output);
+
+        Assert.assertTrue(output.contains("Executing validate goal only."));
+        Assert.assertTrue(output.contains(" child1"));
+        Assert.assertTrue(output.contains(" child2"));
+        Assert.assertTrue(output.contains(" subchild1"));
+        Assert.assertTrue(output.contains(" subchild42"));
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
+    }
+
 
     @Test
     public void buildWithAlsoMakeSkip() throws Exception {

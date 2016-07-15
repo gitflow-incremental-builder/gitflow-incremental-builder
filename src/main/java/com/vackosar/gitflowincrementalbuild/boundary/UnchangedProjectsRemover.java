@@ -33,7 +33,14 @@ public class UnchangedProjectsRemover {
                 .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
                 .collect(Collectors.toSet());
         if (!configuration.buildAll) {
-            mavenSession.setProjects(new ArrayList<>(getRebuildProjects(changedProjects)));
+            Set<MavenProject> rebuildProjects = getRebuildProjects(changedProjects);
+            if (rebuildProjects.isEmpty()) {
+                logger.info("No changed artifacts to build. Executing validate goal only.");
+                mavenSession.getGoals().clear();
+                mavenSession.getGoals().add("validate");
+            } else {
+                mavenSession.setProjects(new ArrayList<>(rebuildProjects));
+            }
         } else {
             mavenSession.getProjects().stream()
                     .filter(p -> !changedProjects.contains(p))
