@@ -8,6 +8,9 @@ import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.eclipse.jgit.api.errors.GitAPIException;
+
+import java.io.IOException;
 
 @Component(role = AbstractMavenLifecycleParticipant.class)
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
@@ -17,18 +20,23 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         try {
-            if (!Boolean.valueOf(Property.enabled.getValue())) {
-                logger.info("gitflow-incremental-builder is disabled.");
+            if (Boolean.valueOf(Property.enabled.getValue())) {
+                logger.info("gitflow-incremental-builder starting...");
+                execute(session);
+                logger.info("gitflow-incremental-builder exitting...");
             } else {
-                logger.info("gitflow-incremental-builder is enabled.");
-                Guice
-                        .createInjector(new GuiceModule(logger, session))
-                        .getInstance(UnchangedProjectsRemover.class)
-                        .act();
+                logger.info("gitflow-incremental-builder is disabled.");
             }
         } catch (Exception e) {
-            throw new MavenExecutionException("Exception", e);
+            throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occured.", e);
         }
+    }
+
+    private void execute(MavenSession session) throws GitAPIException, IOException {
+        Guice
+                .createInjector(new GuiceModule(logger, session))
+                .getInstance(UnchangedProjectsRemover.class)
+                .act();
     }
 
 
