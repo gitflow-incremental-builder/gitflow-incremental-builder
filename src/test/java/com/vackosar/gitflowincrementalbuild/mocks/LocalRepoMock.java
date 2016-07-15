@@ -58,7 +58,9 @@ public class LocalRepoMock implements AutoCloseable {
 
     public void close() throws Exception {
         remoteRepo.close();
-        try {delete(REPO);} catch (Exception e) {}
+        git.getRepository().close();
+        git.close();
+        delete(REPO);
     }
 
     private void delete(File f) {

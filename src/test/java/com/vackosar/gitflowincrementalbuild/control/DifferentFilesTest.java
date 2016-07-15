@@ -43,10 +43,9 @@ public class DifferentFilesTest extends RepoTest {
 
     @Before
     public void before() throws Exception {
+        super.init();
         workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         setWorkDir(workDir);
-        super.before();
-        localRepoMock.close();
         localRepoMock = new LocalRepoMock(true);
     }
 

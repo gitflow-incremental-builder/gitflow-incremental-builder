@@ -22,8 +22,12 @@ public abstract class RepoTest {
 
     @Before
     public void before() throws Exception {
-        staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
+        init();
         localRepoMock = new LocalRepoMock(false);
+    }
+
+    protected void init() {
+        staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         resetConsoleOut();
         resetProperties();
     }

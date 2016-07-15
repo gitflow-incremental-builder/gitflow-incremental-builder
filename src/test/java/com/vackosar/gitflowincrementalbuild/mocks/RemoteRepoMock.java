@@ -64,7 +64,9 @@ public class RemoteRepoMock implements AutoCloseable {
     public void close() throws Exception {
         server.stop();
         resolver.close();
-        try {delete(REPO_DIR);} catch (Exception e) {}
+        git.getRepository().close();
+        git.close();
+        delete(REPO_DIR);
     }
 
     public Git getGit() {
