@@ -20,6 +20,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         try {
+            mergeCurrentProjectProperties(session);
             if (Boolean.valueOf(Property.enabled.getValue())) {
                 logger.info("gitflow-incremental-builder starting...");
                 execute(session);
@@ -39,5 +40,11 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
                 .act();
     }
 
+    private void mergeCurrentProjectProperties(MavenSession mavenSession) {
+        mavenSession.getTopLevelProject().getProperties().entrySet().stream()
+                .filter(e->e.getKey().toString().startsWith(Property.PREFIX))
+                .filter(e->System.getProperty(e.getKey().toString()) == null)
+                .forEach(e->System.setProperty(e.getKey().toString(), e.getValue().toString()));
+    }
 
 }

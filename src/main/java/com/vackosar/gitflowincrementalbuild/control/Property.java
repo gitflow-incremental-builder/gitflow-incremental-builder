@@ -25,7 +25,7 @@ public enum Property {
         return "<" + fullName() + ">" + ( defaultValue == null ? "" : defaultValue )+ "</" + fullName() + ">";
     }
 
-    private String fullName() {
+    public String fullName() {
         return PREFIX + this.name();
     }
 

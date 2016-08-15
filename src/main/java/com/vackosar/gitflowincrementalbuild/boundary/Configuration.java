@@ -31,7 +31,6 @@ public class Configuration {
     @Inject
     public Configuration(MavenSession session) throws IOException {
         try {
-            mergeCurrentProjectProperties(session);
             checkProperties();
             enabled = Boolean.valueOf(Property.enabled.getValue());
             key = parseKey(session);
@@ -57,13 +56,6 @@ public class Configuration {
         } else {
             return Optional.empty();
         }
-    }
-
-    private void mergeCurrentProjectProperties(MavenSession mavenSession) {
-        mavenSession.getTopLevelProject().getProperties().entrySet().stream()
-                .filter(e->e.getKey().toString().startsWith(Property.PREFIX))
-                .filter(e->System.getProperty(e.getKey().toString()) == null)
-                .forEach(e->System.setProperty(e.getKey().toString(), e.getValue().toString()));
     }
 
     private void checkProperties() throws MavenExecutionException {
