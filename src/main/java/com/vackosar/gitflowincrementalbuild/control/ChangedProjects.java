@@ -35,9 +35,10 @@ public class ChangedProjects {
             path = path.getParent();
         }
         if (path != null) {
+            logger.debug("Changed file: " + diffPath);
             return map.get(path);
         } else {
-            logger.warn("File changed outside build project: " + diffPath);
+            logger.warn("Changed file outside build project: " + diffPath);
             return null;
         }
     }
