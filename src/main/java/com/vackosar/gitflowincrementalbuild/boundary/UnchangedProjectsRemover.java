@@ -28,22 +28,22 @@ public class UnchangedProjectsRemover {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
-        Set<MavenProject> changedProjects = mavenSession.getProjects().stream()
+        Set<MavenProject> impacted = mavenSession.getProjects().stream()
                 .filter(changed::contains)
                 .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
                 .collect(Collectors.toSet());
         if (!configuration.buildAll) {
-            Set<MavenProject> rebuildProjects = getRebuildProjects(changedProjects);
-            if (rebuildProjects.isEmpty()) {
+            Set<MavenProject> rebuild = getRebuildProjects(impacted);
+            if (rebuild.isEmpty()) {
                 logger.info("No changed artifacts to build. Executing validate goal only.");
                 mavenSession.getGoals().clear();
                 mavenSession.getGoals().add("validate");
             } else {
-                mavenSession.setProjects(new ArrayList<>(rebuildProjects));
+                mavenSession.setProjects(new ArrayList<>(rebuild));
             }
         } else {
             mavenSession.getProjects().stream()
-                    .filter(p -> !changedProjects.contains(p))
+                    .filter(p -> !impacted.contains(p))
                     .forEach(this::ifSkipDependenciesTest);
         }
     }
