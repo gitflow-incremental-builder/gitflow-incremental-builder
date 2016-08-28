@@ -20,6 +20,13 @@ import java.util.stream.Stream;
 public class IT extends RepoTest {
 
     @Test
+    public void logChanges() throws Exception {
+        final String output = executeBuild(Collections.singletonList("-X"));
+        System.out.println(output);
+        Assert.assertTrue(output.contains("[DEBUG] Changed file: "));
+    }
+
+    @Test
     public void buildAllSkipTest() throws Exception {
         final String output = executeBuild(Arrays.asList(
                 "-Dgib." + Property.buildAll + "=true",
