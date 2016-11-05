@@ -12,6 +12,8 @@ import org.slf4j.impl.StaticLoggerBinder;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class GuiceModule extends AbstractModule {
 
@@ -25,14 +27,26 @@ public class GuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Git provideGit(final StaticLoggerBinder staticLoggerBinder) throws IOException, GitAPIException {
+    public Git provideGit(final StaticLoggerBinder staticLoggerBinder, final Configuration configuration) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
         File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
         builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + pomDir + "'.");
         }
-        logger.info("Git root is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
+        if (builder.getGitDir().toPath().toString().contains(".git" + File.separator + "worktree")) {
+            logger.info("Separate worktree checkout detected.");
+            Path worktreeGitDir = builder.getGitDir().toPath();
+            builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).toAbsolutePath().getParent().toFile());
+            logger.info("Git worktree dir is: " + builder.getWorkTree());
+            builder.setGitDir(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("commondir")).findAny().get()).normalize().toAbsolutePath().toFile());
+            if (configuration.baseBranch.equals("HEAD")) {
+                String fixedHeadRef = "worktrees/" + worktreeGitDir.getFileName().toString() + "/HEAD";
+                logger.info("Replacing HEAD with " + fixedHeadRef + " to compensate for worktree usage.");
+                configuration.baseBranch = fixedHeadRef;
+            }
+        }
+        logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
     }
 

@@ -13,7 +13,7 @@ Builds or tests only changed maven modules compared to reference branch in Git (
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>2.4</version>
+            <version>2.5</version>
         </extension>
     </extensions>
     ...

@@ -50,6 +50,14 @@ public class DifferentFilesTest extends RepoTest {
     }
 
     @Test
+    public void worktree() throws Exception {
+        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/wrkf2");
+        setWorkDir(workDir);
+        getInstance(workDir).get();
+        Assert.assertTrue(consoleOut.toString().contains("Head of branch worktrees/wrkf2/HEAD is commit of id: commit f120ea1c7d8cd9670cdb2f3a04a4f588dd976275"));
+    }
+
+    @Test
     public void listIncludingUncommited() throws Exception {
         workDir.resolve("file5").toFile().createNewFile();
         Property.uncommited.setValue(Boolean.TRUE.toString());
@@ -144,32 +152,28 @@ public class DifferentFilesTest extends RepoTest {
         return ! p.toString().contains("target") && ! p.toString().contains(".iml");
     }
 
-    private ModuleFacade module() throws Exception {
-        return new ModuleFacade();
-    }
-
     private static class ModuleFacade extends AbstractModule {
         private final GuiceModule guiceModule;
 
+        public ModuleFacade(Path dir) throws Exception {
+            this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get(dir));
+        }
+
         public ModuleFacade() throws Exception {
-            this.guiceModule = new GuiceModule(new ConsoleLogger(), getMavenSessionMock());
+            this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get());
         }
 
         @Singleton @Provides public Logger provideLogger() {
             return new ConsoleLoggerManager().getLoggerForComponent("Test");
         }
 
-        @Singleton @Provides public Git provideGit() throws IOException, GitAPIException {
-            return guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")));
+        @Singleton @Provides public Git provideGit(Configuration configuration) throws IOException, GitAPIException {
+            return guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")), configuration);
         }
 
-        @Singleton @Provides public Configuration arguments() throws Exception {
-            MavenSession mavenSession = getMavenSessionMock();
+        @Singleton @Provides public Configuration configuration() throws Exception {
+            MavenSession mavenSession = MavenSessionMock.get();
             return new Configuration(mavenSession);
-        }
-
-        private MavenSession getMavenSessionMock() throws Exception {
-            return MavenSessionMock.get();
         }
 
         @Override
@@ -177,7 +181,11 @@ public class DifferentFilesTest extends RepoTest {
     }
 
     private DifferentFiles getInstance() throws Exception {
-        return Guice.createInjector(module()).getInstance(DifferentFiles.class);
+        return Guice.createInjector(new ModuleFacade()).getInstance(DifferentFiles.class);
+    }
+
+    private DifferentFiles getInstance(Path dir) throws Exception {
+        return Guice.createInjector(new ModuleFacade(dir)).getInstance(DifferentFiles.class);
     }
 
     private void setWorkDir(final Path path) {

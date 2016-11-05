@@ -19,7 +19,7 @@ public class Configuration {
     public final boolean enabled;
     public final Optional<Path> key;
     public final String referenceBranch;
-    public final String baseBranch;
+    public String baseBranch;
     public final boolean uncommited;
     public final boolean makeUpstream;
     public final boolean skipTestsForNotImpactedModules;

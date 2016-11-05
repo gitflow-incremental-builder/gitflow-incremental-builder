@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,7 @@ public class DifferentFiles {
     }
 
     private void checkout() throws IOException, GitAPIException {
-        if (! HEAD.equals(configuration.baseBranch) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
+        if (! (HEAD.equals(configuration.baseBranch) || configuration.baseBranch.startsWith("worktrees/")) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
             logger.info("Checking out base branch " + configuration.baseBranch + "...");
             git.checkout().setName(configuration.baseBranch).call();
         }
@@ -106,12 +105,11 @@ public class DifferentFiles {
     }
 
     private RevCommit getBranchHead(String branchName) throws IOException {
-        final Map<String, Ref> allRefs = git.getRepository().getAllRefs();
-        final RevWalk walk = new RevWalk(git.getRepository());
-        Ref ref = allRefs.get(branchName);
+        Ref ref = git.getRepository().findRef(branchName);
         if (ref == null) {
             throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
         }
+        final RevWalk walk = new RevWalk(git.getRepository());
         RevCommit commit = walk.parseCommit(ref.getObjectId());
         walk.close();
         logger.info("Head of branch " + branchName + " is commit of id: " + commit.getId());

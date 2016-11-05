@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.3.0.201604071810-r</version>
+            <version>4.5.0.201609210915-r</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>

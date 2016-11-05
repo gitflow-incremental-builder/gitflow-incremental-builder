@@ -17,17 +17,21 @@ import static org.mockito.Mockito.when;
 public class MavenSessionMock {
 
     public static MavenSession get() throws Exception {
+        return get(LocalRepoMock.WORK_DIR);
+    }
+
+    public static MavenSession get(Path workDir) throws Exception {
         List<MavenProject> projects = Arrays.asList(
-                LocalRepoMock.WORK_DIR.resolve("parent"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child1"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child2"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child2/subchild1"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child2/subchild2"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child3"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child4"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child4/subchild41"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child4/subchild42"),
-                LocalRepoMock.WORK_DIR.resolve("parent/child5")
+                workDir.resolve("parent"),
+                workDir.resolve("parent/child1"),
+                workDir.resolve("parent/child2"),
+                workDir.resolve("parent/child2/subchild1"),
+                workDir.resolve("parent/child2/subchild2"),
+                workDir.resolve("parent/child3"),
+                workDir.resolve("parent/child4"),
+                workDir.resolve("parent/child4/subchild41"),
+                workDir.resolve("parent/child4/subchild42"),
+                workDir.resolve("parent/child5")
         ).stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
         MavenSession mavenSession = mock(MavenSession.class);
         when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
