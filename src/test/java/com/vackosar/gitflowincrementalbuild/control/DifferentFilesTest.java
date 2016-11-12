@@ -15,6 +15,7 @@ import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +41,7 @@ public class DifferentFilesTest extends RepoTest {
     private static final String DEVELOP = "refs/heads/develop";
     private static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
     private Path workDir;
+    private ModuleFacade moduleFacade;
 
     @Before
     public void before() throws Exception {
@@ -47,6 +49,12 @@ public class DifferentFilesTest extends RepoTest {
         workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
         setWorkDir(workDir);
         localRepoMock = new LocalRepoMock(true);
+    }
+
+    @After
+    public void after() throws Exception {
+        moduleFacade.close();
+        super.after();
     }
 
     @Test
@@ -154,6 +162,7 @@ public class DifferentFilesTest extends RepoTest {
 
     private static class ModuleFacade extends AbstractModule {
         private final GuiceModule guiceModule;
+        private Git git;
 
         public ModuleFacade(Path dir) throws Exception {
             this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get(dir));
@@ -168,7 +177,8 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public Git provideGit(Configuration configuration) throws IOException, GitAPIException {
-            return guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")), configuration);
+            git = guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")), configuration);
+            return git;
         }
 
         @Singleton @Provides public Configuration configuration() throws Exception {
@@ -178,14 +188,22 @@ public class DifferentFilesTest extends RepoTest {
 
         @Override
         protected void configure() {}
+
+        public void close() {
+            git.getRepository().close();
+            git.close();
+        }
+
     }
 
     private DifferentFiles getInstance() throws Exception {
-        return Guice.createInjector(new ModuleFacade()).getInstance(DifferentFiles.class);
+        moduleFacade = new ModuleFacade();
+        return Guice.createInjector(moduleFacade).getInstance(DifferentFiles.class);
     }
 
     private DifferentFiles getInstance(Path dir) throws Exception {
-        return Guice.createInjector(new ModuleFacade(dir)).getInstance(DifferentFiles.class);
+        moduleFacade = new ModuleFacade(dir);
+        return Guice.createInjector(moduleFacade).getInstance(DifferentFiles.class);
     }
 
     private void setWorkDir(final Path path) {

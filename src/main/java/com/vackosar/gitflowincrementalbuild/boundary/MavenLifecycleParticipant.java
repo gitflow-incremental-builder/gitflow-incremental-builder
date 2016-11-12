@@ -22,7 +22,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         try {
             mergeCurrentProjectProperties(session);
             if (Boolean.valueOf(Property.enabled.getValue())) {
-                logger.info("gitflow-incremental-builder starting...");
+                logger.info("gitflow-incremental-builder starting..."); //TODO Print version.
                 execute(session);
                 logger.info("gitflow-incremental-builder exiting...");
             } else {

@@ -70,7 +70,7 @@ public class LocalRepoMock implements AutoCloseable {
             }
         }
         if (!f.delete()) {
-            throw new RuntimeException("Failed to delete file: " + f);
+            new RuntimeException("Failed to delete file: " + f).printStackTrace();
         }
     }
 

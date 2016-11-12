@@ -34,20 +34,29 @@ public class GuiceModule extends AbstractModule {
         if (builder.getGitDir() == null) {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + pomDir + "'.");
         }
-        if (builder.getGitDir().toPath().toString().contains(".git" + File.separator + "worktree")) {
-            logger.info("Separate worktree checkout detected.");
-            Path worktreeGitDir = builder.getGitDir().toPath();
-            builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).toAbsolutePath().getParent().toFile());
-            logger.info("Git worktree dir is: " + builder.getWorkTree());
-            builder.setGitDir(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("commondir")).findAny().get()).normalize().toAbsolutePath().toFile());
-            if (configuration.baseBranch.equals("HEAD")) {
-                String fixedHeadRef = "worktrees/" + worktreeGitDir.getFileName().toString() + "/HEAD";
-                logger.info("Replacing HEAD with " + fixedHeadRef + " to compensate for worktree usage.");
-                configuration.baseBranch = fixedHeadRef;
-            }
+        if (isWorktree(builder)) {
+            reconfigureForWorktree(configuration, builder);
         }
         logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
+    }
+
+    private void reconfigureForWorktree(Configuration configuration, FileRepositoryBuilder builder) throws IOException {
+        logger.info("Separate worktree checkout detected.");
+        Path worktreeGitDir = builder.getGitDir().toPath();
+        builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).toAbsolutePath().getParent().toFile());
+        logger.info("Git worktree dir is: " + builder.getWorkTree());
+        builder.setGitDir(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("commondir")).findAny().get()).normalize().toAbsolutePath().toFile());
+        if (configuration.baseBranch.equals("HEAD")) {
+            String fixedHeadRef = "worktrees/" + worktreeGitDir.getFileName().toString() + "/HEAD";
+            logger.info("Replacing HEAD with " + fixedHeadRef + " to compensate for worktree usage.");
+            configuration.baseBranch = fixedHeadRef;
+        }
+    }
+
+    private boolean isWorktree(FileRepositoryBuilder builder) {
+        return builder.getGitDir().toPath().getParent().getFileName().toString().equals("worktrees")
+                && builder.getGitDir().toPath().getParent().getParent().getFileName().toString().equals(".git");
     }
 
     @Provides @Singleton public MavenSession provideMavenSession() { return mavenSession; }
