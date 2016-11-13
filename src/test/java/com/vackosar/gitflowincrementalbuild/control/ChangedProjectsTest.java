@@ -25,7 +25,8 @@ public class ChangedProjectsTest extends RepoTest {
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get("child2/subchild2"),
                 Paths.get("child3"),
-                Paths.get("child4")
+                Paths.get("child4"),
+                Paths.get("testJarDependent")
         ));
         final Set<Path> actual = Guice.createInjector(new GuiceModule(new ConsoleLogger(), MavenSessionMock.get()))
                 .getInstance(ChangedProjects.class).get().stream()

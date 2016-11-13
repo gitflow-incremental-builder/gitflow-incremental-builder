@@ -5,8 +5,13 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -21,18 +26,9 @@ public class MavenSessionMock {
     }
 
     public static MavenSession get(Path workDir) throws Exception {
-        List<MavenProject> projects = Arrays.asList(
-                workDir.resolve("parent"),
-                workDir.resolve("parent/child1"),
-                workDir.resolve("parent/child2"),
-                workDir.resolve("parent/child2/subchild1"),
-                workDir.resolve("parent/child2/subchild2"),
-                workDir.resolve("parent/child3"),
-                workDir.resolve("parent/child4"),
-                workDir.resolve("parent/child4/subchild41"),
-                workDir.resolve("parent/child4/subchild42"),
-                workDir.resolve("parent/child5")
-        ).stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
+        PomFinder finder = new PomFinder();
+        Files.walkFileTree(workDir, finder);
+        List<MavenProject> projects = finder.projects.stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
         MavenSession mavenSession = mock(MavenSession.class);
         when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
@@ -53,4 +49,33 @@ public class MavenSessionMock {
         project.setFile(path.resolve("pom.xml").toFile());
         return project;
     }
+
+    private static class PomFinder implements FileVisitor<Path> {
+
+        public List<Path> projects = new ArrayList<>();
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if ("pom.xml".equals(file.getFileName().toString())) {
+                projects.add(file.getParent());
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            return null;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+    }
+
 }

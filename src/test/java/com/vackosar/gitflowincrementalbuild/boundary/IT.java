@@ -34,6 +34,8 @@ public class IT extends RepoTest {
         );
         System.out.println(output);
 
+        Assert.assertTrue(output.contains(UnchangedProjectsRemover.TEST_JAR_DETECTED));
+
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
         Assert.assertTrue(output.contains(" subchild1"));
@@ -91,6 +93,8 @@ public class IT extends RepoTest {
                 "-Dgib." + Property.skipTestsForNotImpactedModules.name() + "=true")
         );
         System.out.println(output);
+
+        Assert.assertTrue(output.contains(UnchangedProjectsRemover.TEST_JAR_DETECTED));
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));

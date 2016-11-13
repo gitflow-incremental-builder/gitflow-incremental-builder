@@ -18,6 +18,9 @@ import java.util.stream.Stream;
 public class UnchangedProjectsRemover {
 
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";
+    public static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Adding test-compile goal.";
+    private static final String GOAL_TEST_COMPILE = "test-compile";
+    private static final String GOAL_TEST_JAR = "test-jar";
 
     @Inject private Configuration configuration;
     @Inject private Logger logger;
@@ -66,8 +69,21 @@ public class UnchangedProjectsRemover {
     private MavenProject ifSkipDependenciesTest(MavenProject mavenProject) {
         if (configuration.skipTestsForNotImpactedModules) {
             mavenProject.getProperties().setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
+            if (! mavenSession.getGoals().contains(GOAL_TEST_COMPILE) && projectDeclaresTestJarGoal(mavenProject)) {
+                logger.info(TEST_JAR_DETECTED);
+                logger.info("");
+                mavenSession.getGoals().add(GOAL_TEST_COMPILE);
+            }
         }
         return mavenProject;
+    }
+
+    private boolean projectDeclaresTestJarGoal(MavenProject mavenProject) {
+        return mavenProject.getBuildPlugins().stream()
+                .flatMap(p -> p.getExecutions().stream())
+                .flatMap(e -> e.getGoals().stream())
+                .filter(GOAL_TEST_JAR::equals).findAny()
+                .isPresent();
     }
 
     private void logProjects(Set<MavenProject> projects, String title) {
