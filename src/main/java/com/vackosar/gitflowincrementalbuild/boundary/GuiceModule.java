@@ -44,7 +44,7 @@ public class GuiceModule extends AbstractModule {
     private void reconfigureForWorktree(Configuration configuration, FileRepositoryBuilder builder) throws IOException {
         Path worktreeGitDir = builder.getGitDir().toPath().normalize().toAbsolutePath();
         logger.info("Separate worktree checkout detected from current git dir: " + worktreeGitDir);
-        builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).toAbsolutePath().getParent().toFile());
+        builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).normalize().toAbsolutePath().toFile());
         logger.info("Git worktree dir is: " + builder.getWorkTree());
         builder.setGitDir(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("commondir")).findAny().get()).normalize().toAbsolutePath().toFile());
         if (configuration.baseBranch.equals("HEAD")) {

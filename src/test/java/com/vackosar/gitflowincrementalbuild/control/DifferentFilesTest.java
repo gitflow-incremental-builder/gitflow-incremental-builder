@@ -61,7 +61,9 @@ public class DifferentFilesTest extends RepoTest {
     public void worktree() throws Exception {
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/wrkf2");
         setWorkDir(workDir);
-        getInstance(workDir).get();
+        Property.uncommited.setValue(Boolean.TRUE.toString());
+        workDir.resolve("parent/worktree-changed-file").toFile().createNewFile();
+        Assert.assertTrue(getInstance(workDir).get().stream().anyMatch(p -> p.toString().contains("worktree-changed-file")));
         Assert.assertTrue(consoleOut.toString().contains("Head of branch worktrees/wrkf2/HEAD is commit of id: commit f120ea1c7d8cd9670cdb2f3a04a4f588dd976275"));
     }
 

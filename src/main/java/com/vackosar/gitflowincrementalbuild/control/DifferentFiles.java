@@ -16,7 +16,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,10 +39,10 @@ public class DifferentFiles {
         treeWalk.addTree(resolveReference(base).getTree());
         treeWalk.setFilter(TreeFilter.ANY_DIFF);
         treeWalk.setRecursive(true);
-        final Path gitDir = Paths.get(git.getRepository().getDirectory().getCanonicalPath()).getParent();
-        final Set<Path> paths = getDiff(treeWalk, gitDir);
+        final Path workTree = git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath();
+        final Set<Path> paths = getDiff(treeWalk, workTree);
         if (configuration.uncommited) {
-            paths.addAll(getUncommitedChanges(gitDir));
+            paths.addAll(getUncommitedChanges(workTree));
         }
         treeWalk.close();
         git.getRepository().close();
