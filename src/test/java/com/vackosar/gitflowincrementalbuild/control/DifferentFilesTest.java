@@ -3,6 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.google.inject.ProvisionException;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
@@ -57,14 +58,11 @@ public class DifferentFilesTest extends RepoTest {
         super.after();
     }
 
-    @Test
+    @Test(expected = ProvisionException.class)
     public void worktree() throws Exception {
         Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/wrkf2");
         setWorkDir(workDir);
-        Property.uncommited.setValue(Boolean.TRUE.toString());
-        workDir.resolve("parent/worktree-changed-file").toFile().createNewFile();
-        Assert.assertTrue(getInstance(workDir).get().stream().anyMatch(p -> p.toString().contains("worktree-changed-file")));
-        Assert.assertTrue(consoleOut.toString().contains("Head of branch worktrees/wrkf2/HEAD is commit of id: commit f120ea1c7d8cd9670cdb2f3a04a4f588dd976275"));
+        getInstance(workDir).get();
     }
 
     @Test
@@ -194,8 +192,12 @@ public class DifferentFilesTest extends RepoTest {
         protected void configure() {}
 
         public void close() {
-            git.getRepository().close();
-            git.close();
+            if (git != null) {
+                if (git.getRepository() != null) {
+                    git.getRepository().close();
+                }
+                git.close();
+            }
         }
 
     }

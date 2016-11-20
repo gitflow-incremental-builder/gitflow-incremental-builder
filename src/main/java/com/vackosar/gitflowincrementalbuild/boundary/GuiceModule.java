@@ -2,6 +2,7 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 
 public class GuiceModule extends AbstractModule {
 
+    public static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
     private final Logger logger;
     private final MavenSession mavenSession;
 
@@ -35,13 +37,14 @@ public class GuiceModule extends AbstractModule {
             throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + pomDir + "'.");
         }
         if (isWorktree(builder)) {
-            reconfigureForWorktree(configuration, builder);
+            throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());
         }
         logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
     }
 
     private void reconfigureForWorktree(Configuration configuration, FileRepositoryBuilder builder) throws IOException {
+
         Path worktreeGitDir = builder.getGitDir().toPath().normalize().toAbsolutePath();
         logger.info("Separate worktree checkout detected from current git dir: " + worktreeGitDir);
         builder.setWorkTree(worktreeGitDir.resolve(Files.lines(worktreeGitDir.resolve("gitdir")).findAny().get()).normalize().toAbsolutePath().toFile());

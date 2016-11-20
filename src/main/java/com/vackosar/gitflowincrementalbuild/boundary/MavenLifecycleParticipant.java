@@ -2,6 +2,7 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.Guice;
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -29,7 +30,11 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
                 logger.info("gitflow-incremental-builder is disabled.");
             }
         } catch (Exception e) {
-            throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occured.", e);
+            if (e.getCause() instanceof SkipExecutionException) {
+                logger.info("gitflow-incremental-builder execution skipped: " + e.getCause().getMessage());
+            } else {
+                throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occured.", e);
+            }
         }
     }
 

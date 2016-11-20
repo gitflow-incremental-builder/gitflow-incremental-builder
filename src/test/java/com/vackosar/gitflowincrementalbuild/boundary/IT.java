@@ -20,6 +20,13 @@ import java.util.stream.Stream;
 public class IT extends RepoTest {
 
     @Test
+    public void worktreeFails() throws Exception {
+        final String output = executeBuild(Collections.singletonList("--file=wrkf2\\parent\\pom.xml"));
+        System.out.println(output);
+        Assert.assertTrue(output.contains(GuiceModule.UNSUPPORTED_WORKTREE));
+    }
+
+    @Test
     public void logChanges() throws Exception {
         final String output = executeBuild(Collections.singletonList("-X"));
         System.out.println(output);
@@ -128,13 +135,18 @@ public class IT extends RepoTest {
 
     private String executeBuild(List<String> args) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
-        final List<String> command = Arrays.asList(
+        final List<String> commandBase = Arrays.asList(
                 "cmd", "/c", "mvn",
                 "install",
-                "--file", "parent\\pom.xml",
                 "-DgibVersion=" + version);
+        final List<String> commandBaseWithFile;
+        if (! args.stream().filter(s->s.startsWith("--file")).findAny().isPresent()) {
+            commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of("--file=parent\\pom.xml")).collect(Collectors.toList());
+        } else {
+            commandBaseWithFile = commandBase;
+        }
         final Process process =
-                new ProcessBuilder(Stream.concat(command.stream(), args.stream()).collect(Collectors.toList()))
+                new ProcessBuilder(Stream.concat(commandBaseWithFile.stream(), args.stream()).collect(Collectors.toList()))
                         .directory(new File("tmp/repo"))
                         .start();
         String output = convertStreamToString(process.getInputStream());
