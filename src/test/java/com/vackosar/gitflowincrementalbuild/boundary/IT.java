@@ -137,7 +137,7 @@ public class IT extends RepoTest {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final List<String> commandBase = Arrays.asList(
                 "cmd", "/c", "mvn",
-                "install",
+                "package",
                 "-DgibVersion=" + version);
         final List<String> commandBaseWithFile;
         if (! args.stream().filter(s->s.startsWith("--file")).findAny().isPresent()) {
