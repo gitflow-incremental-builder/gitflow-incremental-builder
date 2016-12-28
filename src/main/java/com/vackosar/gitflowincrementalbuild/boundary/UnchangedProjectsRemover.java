@@ -73,6 +73,7 @@ public class UnchangedProjectsRemover {
                 logger.info(TEST_JAR_DETECTED);
                 logger.info("");
                 mavenSession.getGoals().add(GOAL_TEST_COMPILE);
+                Collections.sort(mavenSession.getGoals(), new PhasesComparator());
             }
         }
         return mavenProject;
@@ -138,3 +139,4 @@ public class UnchangedProjectsRemover {
         return possibleDependent.getDependencies().stream().anyMatch(d -> equals(project, d));
     }
 }
+
