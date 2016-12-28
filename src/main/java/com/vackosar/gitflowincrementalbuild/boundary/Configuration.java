@@ -8,13 +8,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Singleton
 public class Configuration {
 
-    private static final String MAKE_UPSTREAM = "make-upstream";
+    private static final List<String> alsoMakeBehaviours = Arrays.asList("make-upstream", "make-both");
 
     public final boolean enabled;
     public final Optional<Path> key;
@@ -37,7 +39,7 @@ public class Configuration {
             referenceBranch = Property.referenceBranch.getValue();
             baseBranch = Property.baseBranch.getValue();
             uncommited = Boolean.valueOf(Property.uncommited.getValue());
-            makeUpstream = MAKE_UPSTREAM.equals(session.getRequest().getMakeBehavior());
+            makeUpstream = alsoMakeBehaviours.contains(session.getRequest().getMakeBehavior());
             skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue());
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());

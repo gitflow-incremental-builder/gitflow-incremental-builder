@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class UnchangedProjectsRemover {
+class UnchangedProjectsRemover {
 
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";
-    public static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Adding test-compile goal.";
+    static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Adding test-compile goal.";
     private static final String GOAL_TEST_COMPILE = "test-compile";
     private static final String GOAL_TEST_JAR = "test-jar";
 
@@ -27,7 +27,7 @@ public class UnchangedProjectsRemover {
     @Inject private ChangedProjects changedProjects;
     @Inject private MavenSession mavenSession;
 
-    public void act() throws GitAPIException, IOException {
+    void act() throws GitAPIException, IOException {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
