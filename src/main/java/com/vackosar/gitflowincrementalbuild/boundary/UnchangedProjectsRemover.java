@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 class UnchangedProjectsRemover {
 
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";
-    private static final String MAVEN_TEST_SKIP_EXEC = "maven.test.skip.exec";
+    private static final String MAVEN_TEST_SKIP_EXEC = "skipTests";
     static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Will compile test sources.";
     private static final String GOAL_TEST_COMPILE = "test-compile";
     private static final String GOAL_TEST_JAR = "test-jar";
