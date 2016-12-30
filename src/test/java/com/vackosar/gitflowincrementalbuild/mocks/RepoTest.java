@@ -12,7 +12,7 @@ import java.io.PrintStream;
 public abstract class RepoTest {
 
     protected LocalRepoMock localRepoMock;
-    public StaticLoggerBinder staticLoggerBinder;
+    private StaticLoggerBinder staticLoggerBinder;
     protected ByteArrayOutputStream consoleOut;
     private final PrintStream normalOut;
 

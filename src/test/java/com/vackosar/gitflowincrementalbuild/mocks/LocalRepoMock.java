@@ -37,7 +37,7 @@ public class LocalRepoMock implements AutoCloseable {
         return git;
     }
 
-    public void configureRemote(String repoUrl) throws URISyntaxException, IOException, GitAPIException {
+    private void configureRemote(String repoUrl) throws URISyntaxException, IOException, GitAPIException {
         StoredConfig config = git.getRepository().getConfig();
         config.clear();
         config.setString("remote", "origin" ,"fetch", "+refs/heads/*:refs/remotes/origin/*");
@@ -70,7 +70,7 @@ public class LocalRepoMock implements AutoCloseable {
             }
         }
         if (!f.delete()) {
-            System.out.println("Failed to delete file: " + f + " in LocalRepoMock.delete");
+            System.out.println("Failed to delete file or directory: " + f + " in LocalRepoMock.delete");
         }
     }
 

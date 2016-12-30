@@ -9,10 +9,10 @@ public class UnZiper {
     public void act(File zip, File outputFolder){
         try{
             createOutputFolder(outputFolder);
-            ZipInputStream zis = createZipInputStream(zip);
-            process(outputFolder, zis);
-            zis.closeEntry();
-            zis.close();
+            try (ZipInputStream zis = createZipInputStream(zip)) {
+                process(outputFolder, zis);
+                zis.closeEntry();
+            }
         }catch(IOException e){
             throw new RuntimeException(e);
         }
@@ -20,7 +20,7 @@ public class UnZiper {
 
     private void process(File outputFolder, ZipInputStream zis) throws IOException {
         ZipEntry ze = zis.getNextEntry();
-        while(ze!=null){
+        while(ze != null){
             String fileName = ze.getName();
             File newFile = new File(outputFolder.getPath() + File.separator + fileName);
             createParentDirectories(newFile);
@@ -35,13 +35,13 @@ public class UnZiper {
     }
 
     private void writeToFile(ZipInputStream zis, File newFile) throws IOException {
-        FileOutputStream fos = new FileOutputStream(newFile);
-        int len;
-        byte[] buffer = new byte[1024];
-        while ((len = zis.read(buffer)) > 0) {
-            fos.write(buffer, 0, len);
+        try (FileOutputStream fos = new FileOutputStream(newFile)) {
+            int len;
+            byte[] buffer = new byte[1024];
+            while ((len = zis.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+            }
         }
-        fos.close();
     }
 
     private void createParentDirectories(File newFile) {
