@@ -29,7 +29,7 @@ $ ls *
 pom.xml
 
 child1:
-pom.xml  src  target
+pom.xml  src
 
 child2:
 pom.xml  src
