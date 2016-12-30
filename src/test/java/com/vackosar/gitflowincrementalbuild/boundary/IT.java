@@ -41,8 +41,6 @@ public class IT extends RepoTest {
         );
         System.out.println(output);
 
-        Assert.assertTrue(output.contains(UnchangedProjectsRemover.TEST_JAR_DETECTED));
-
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
         Assert.assertTrue(output.contains(" subchild1"));
