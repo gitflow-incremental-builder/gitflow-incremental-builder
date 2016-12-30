@@ -2,7 +2,6 @@ package com.vackosar.gitflowincrementalbuild.mocks;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.util.zip.ZipEntry;
@@ -63,8 +62,8 @@ public class UnZiper {
         }
     }
 
-    public void setFileCreationDate(File file, FileTime creationDate) throws IOException{
-        BasicFileAttributeView attributes = Files.getFileAttributeView(Paths.get(file.getPath()), BasicFileAttributeView.class);
+    private void setFileCreationDate(File file, FileTime creationDate) throws IOException{
+        BasicFileAttributeView attributes = Files.getFileAttributeView(file.toPath(), BasicFileAttributeView.class);
         attributes.setTimes(creationDate, creationDate, creationDate);
     }
 }
