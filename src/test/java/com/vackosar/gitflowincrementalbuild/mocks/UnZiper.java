@@ -64,6 +64,8 @@ public class UnZiper {
 
     private void setFileCreationDate(File file, FileTime creationDate) throws IOException{
         BasicFileAttributeView attributes = Files.getFileAttributeView(file.getCanonicalFile().toPath(), BasicFileAttributeView.class);
-        attributes.setTimes(creationDate, creationDate, creationDate);
+        if (attributes.readAttributes().isRegularFile()) {
+            attributes.setTimes(creationDate, creationDate, creationDate);
+        }
     }
 }
