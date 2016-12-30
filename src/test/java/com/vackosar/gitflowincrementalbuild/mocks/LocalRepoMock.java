@@ -24,7 +24,7 @@ public class LocalRepoMock implements AutoCloseable {
     private Git git;
 
     public LocalRepoMock(boolean remote) throws IOException, URISyntaxException, GitAPIException {
-        try {delete(REPO);} catch (Exception e) {}
+        delete(REPO);
         new UnZiper().act(ZIP, REPO);
         git = new Git(new FileRepository(new File(WORK_DIR + "/.git")));
         if (remote) {
@@ -70,7 +70,7 @@ public class LocalRepoMock implements AutoCloseable {
             }
         }
         if (!f.delete()) {
-            new RuntimeException("Failed to delete file: " + f).printStackTrace();
+            System.out.println("Failed to delete file: " + f + " in LocalRepoMock.delete");
         }
     }
 

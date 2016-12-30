@@ -1,7 +1,5 @@
 language: java
 jdk:
   - oraclejdk8
-before_install:
-  sudo rm /etc/mavenrc
 script:
   mvn verify

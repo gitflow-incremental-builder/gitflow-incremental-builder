@@ -22,7 +22,7 @@ public class RemoteRepoMock implements AutoCloseable {
     public RemoteRepoMock(boolean bare) throws IOException {
         this.bare = bare;
         if (bare) {
-            try {delete(REPO_DIR);} catch (Exception e) {}
+            delete(REPO_DIR);
             REPO_DIR.mkdir();
         } else {
             prepareTestingData();
@@ -40,7 +40,7 @@ public class RemoteRepoMock implements AutoCloseable {
             }
         }
         if (!f.delete()) {
-            throw new RuntimeException("Failed to delete file: " + f);
+            System.out.println("Failed to delete file: " + f + " in LocalRepoMock.delete");
         }
     }
 
