@@ -8,7 +8,7 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
-import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
@@ -19,7 +19,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.impl.StaticLoggerBinder;
@@ -34,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DifferentFilesTest extends RepoTest {
+public class DifferentFilesTest extends BaseRepoTest {
 
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
@@ -44,12 +46,15 @@ public class DifferentFilesTest extends RepoTest {
     private Path workDir;
     private ModuleFacade moduleFacade;
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
     public void before() throws Exception {
         super.init();
-        workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/");
+        workDir = temporaryFolder.getRoot().getCanonicalFile().toPath().resolve("tmp/repo/");
         setWorkDir(workDir);
-        localRepoMock = new LocalRepoMock(true);
+        localRepoMock = new LocalRepoMock(temporaryFolder.getRoot(), true);
     }
 
     @After
@@ -60,29 +65,29 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test(expected = ProvisionException.class)
     public void worktree() throws Exception {
-        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/wrkf2");
+        Path workDir = temporaryFolder.getRoot().toPath().resolve("tmp/repo/wrkf2");
         setWorkDir(workDir);
         getInstance(workDir).get();
     }
 
     @Test
-    public void listIncludingUncommited() throws Exception {
+    public void listIncludingUncommitted() throws Exception {
         workDir.resolve("file5").toFile().createNewFile();
         Property.uncommited.setValue(Boolean.TRUE.toString());
-        Assert.assertTrue(getInstance().get().stream().anyMatch(p -> p.toString().contains("file5")));
+        Assert.assertTrue(getInstance(temporaryFolder.getRoot().toPath()).get().stream().anyMatch(p -> p.toString().contains("file5")));
     }
 
     @Test
     public void listWithCheckout() throws Exception {
         getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         Property.baseBranch.setValue("refs/heads/feature/2");
-        getInstance().get();
+        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
         Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/2"));
     }
 
     @Test
     public void list() throws Exception {
-        final DifferentFiles differentFiles = getInstance();
+        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
                 Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
@@ -95,9 +100,9 @@ public class DifferentFilesTest extends RepoTest {
 
     @Test
     public void listInSubdir() throws Exception {
-        Path workDir = LocalRepoMock.TEST_WORK_DIR.resolve("tmp/repo/parent/child2");
+        Path workDir = localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve("parent/child2");
         setWorkDir(workDir);
-        final DifferentFiles differentFiles = getInstance();
+        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 workDir.resolve("subchild2/src/resources/file2"),
                 workDir.resolve("subchild2/src/resources/file22"),
@@ -115,7 +120,7 @@ public class DifferentFilesTest extends RepoTest {
         getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         Property.baseBranch.setValue(REFS_HEADS_FEATURE_2);
         Property.compareToMergeBase.setValue("true");
-        Assert.assertTrue(getInstance().get().stream().collect(Collectors.toSet()).contains(workDir.resolve("parent/feature2-only-file.txt")));
+        Assert.assertTrue(getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get().stream().collect(Collectors.toSet()).contains(workDir.resolve("parent/feature2-only-file.txt")));
         Assert.assertTrue(consoleOut.toString().contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }
 
@@ -130,7 +135,7 @@ public class DifferentFilesTest extends RepoTest {
         Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
         Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
         Property.referenceBranch.setValue(REMOTE_DEVELOP);
-        getInstance().get();
+        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
         Git localGit = localRepoMock.getGit();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
@@ -151,7 +156,7 @@ public class DifferentFilesTest extends RepoTest {
         Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
         Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
         Property.referenceBranch.setValue(REMOTE_DEVELOP);
-        getInstance().get();
+        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
         Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
@@ -165,13 +170,11 @@ public class DifferentFilesTest extends RepoTest {
     private static class ModuleFacade extends AbstractModule {
         private final GuiceModule guiceModule;
         private Git git;
+        private Path workDir;
 
         public ModuleFacade(Path dir) throws Exception {
             this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get(dir));
-        }
-
-        public ModuleFacade() throws Exception {
-            this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get());
+            this.workDir = dir;
         }
 
         @Singleton @Provides public Logger provideLogger() {
@@ -184,7 +187,7 @@ public class DifferentFilesTest extends RepoTest {
         }
 
         @Singleton @Provides public Configuration configuration() throws Exception {
-            MavenSession mavenSession = MavenSessionMock.get();
+            MavenSession mavenSession = MavenSessionMock.get(workDir);
             return new Configuration(mavenSession);
         }
 
@@ -200,11 +203,6 @@ public class DifferentFilesTest extends RepoTest {
             }
         }
 
-    }
-
-    private DifferentFiles getInstance() throws Exception {
-        moduleFacade = new ModuleFacade();
-        return Guice.createInjector(moduleFacade).getInstance(DifferentFiles.class);
     }
 
     private DifferentFiles getInstance(Path dir) throws Exception {

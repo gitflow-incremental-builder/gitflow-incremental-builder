@@ -2,9 +2,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import com.google.inject.Guice;
 import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
-import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
-import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
-import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.junit.Assert;
@@ -18,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ChangedProjectsTest extends RepoTest {
+public class ChangedProjectsTest extends BaseRepoTest {
 
     @Test
     public void list() throws Exception {
@@ -28,9 +26,13 @@ public class ChangedProjectsTest extends RepoTest {
                 Paths.get("child4"),
                 Paths.get("testJarDependent")
         ));
-        final Set<Path> actual = Guice.createInjector(new GuiceModule(new ConsoleLogger(), MavenSessionMock.get()))
+        final Set<Path> actual = Guice.createInjector(new GuiceModule(new ConsoleLogger(), getMavenSessionMock()))
                 .getInstance(ChangedProjects.class).get().stream()
-                .map(MavenProject::getBasedir).map(File::toPath).map(LocalRepoMock.WORK_DIR.resolve("parent")::relativize).collect(Collectors.toSet());
+                .map(MavenProject::getBasedir)
+                    .map(File::toPath)
+                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve("parent")::relativize)
+                .collect(Collectors.toSet());
         Assert.assertEquals(expected, actual);
     }
+
 }
