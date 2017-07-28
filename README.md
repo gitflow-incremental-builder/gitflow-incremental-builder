@@ -16,7 +16,7 @@ Builds or tests only changed maven modules compared to reference branch in Git (
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.2</version>
+            <version>3.3</version>
         </extension>
     </extensions>
     ...
@@ -64,7 +64,7 @@ $ cat pom.xml
             <extension>
                 <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
             </extension>
         </extensions>
     </build>
@@ -220,6 +220,7 @@ Maven pom properties configuration with default values is below:
 	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
 	<gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
 	<gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
+	<gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>
 </properties>
 ```
 

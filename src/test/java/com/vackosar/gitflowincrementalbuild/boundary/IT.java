@@ -132,11 +132,12 @@ public class IT extends BaseRepoTest {
     private String executeBuild(List<String> args) throws IOException, InterruptedException {
         String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get().replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
         final List<String> commandBase = Arrays.asList(
-                "cmd", "/c", "mvn",
+//                "cmd", "/c" // Uncomment for Windows.
+                "mvn",
                 "package",
                 "-DgibVersion=" + version);
         final List<String> commandBaseWithFile;
-        if (! args.stream().filter(s->s.startsWith("--file")).findAny().isPresent()) {
+        if (!args.stream().anyMatch(s->s.startsWith("--file"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of("--file=parent\\pom.xml")).collect(Collectors.toList());
         } else {
             commandBaseWithFile = commandBase;

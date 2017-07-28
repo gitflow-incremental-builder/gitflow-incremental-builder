@@ -34,7 +34,13 @@ public class GuiceModule extends AbstractModule {
         File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
         builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
-            throw new IllegalArgumentException("Git repository root directory not found ascending from current working directory:'" + pomDir + "'.");
+            String gitDirNotFoundMessage = "Git repository root directory not found ascending from current working directory:'" + pomDir + "'.";
+            logger.warn(gitDirNotFoundMessage + " Next step is determined by failOnMissingGitDir property.");
+            if (configuration.failOnMissingGitDir) {
+                throw new IllegalArgumentException(gitDirNotFoundMessage);
+            } else {
+                throw new SkipExecutionException(gitDirNotFoundMessage);
+            }
         }
         if (isWorktree(builder)) {
             throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());

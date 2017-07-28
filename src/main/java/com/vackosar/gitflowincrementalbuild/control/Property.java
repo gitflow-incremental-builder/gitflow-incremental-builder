@@ -11,7 +11,8 @@ public enum Property {
     compareToMergeBase("true"),
     fetchBaseBranch("false"),
     fetchReferenceBranch("false"),
-    excludePathRegex(Constants.NEVER_MATCH_REGEX)
+    excludePathRegex(Constants.NEVER_MATCH_REGEX),
+    failOnMissingGitDir("true")
     ;
 
     public static final String PREFIX = "gib.";
