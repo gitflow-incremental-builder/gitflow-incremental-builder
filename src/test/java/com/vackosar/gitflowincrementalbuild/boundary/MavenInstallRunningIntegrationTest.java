@@ -1,14 +1,13 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,9 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Integration test which installs current version into your Maven Repository! See {@link IntegrationTest#installCurrentVersion()}
+ * Integration test which installs current version into your Maven Repository! See {@link MavenInstallRunningIntegrationTest#installCurrentVersion()}
  */
-public class IntegrationTest extends BaseRepoTest {
+public class MavenInstallRunningIntegrationTest extends BaseRepoTest {
 
     @BeforeClass
     public static void installCurrentVersion() throws IOException {
