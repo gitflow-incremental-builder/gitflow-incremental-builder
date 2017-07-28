@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <version>3.2</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
@@ -128,11 +128,6 @@
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.amashchenko.maven.plugin</groupId>
-                        <artifactId>gitflow-maven-plugin</artifactId>
-                        <version>1.2.1</version>
                     </plugin>
                 </plugins>
             </build>
