@@ -1,6 +1,8 @@
 # gitflow-incremental-builder
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
 
+[![Travis CI](https://travis-ci.org/vackosar/gitflow-incremental-builder.svg?branch=master)]
+
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
 
