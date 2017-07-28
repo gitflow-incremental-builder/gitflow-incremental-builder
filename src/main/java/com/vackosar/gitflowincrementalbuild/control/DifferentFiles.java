@@ -4,7 +4,7 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
@@ -33,7 +33,7 @@ public class DifferentFiles {
     public Set<Path> get() throws GitAPIException, IOException {
         fetch();
         checkout();
-        RevCommit base = getBranchHead(configuration.baseBranch);
+        RevCommit base = getBranchCommit(configuration.baseBranch);
         final TreeWalk treeWalk = new TreeWalk(git.getRepository());
         treeWalk.addTree(base.getTree());
         treeWalk.addTree(resolveReference(base).getTree());
@@ -103,15 +103,16 @@ public class DifferentFiles {
         return paths;
     }
 
-    private RevCommit getBranchHead(String branchName) throws IOException {
-        Ref ref = git.getRepository().findRef(branchName);
-        if (ref == null) {
+    private RevCommit getBranchCommit(String branchName) throws IOException {
+        ObjectId objectId = git.getRepository().resolve(branchName);
+
+        if (objectId == null) {
             throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
         }
         final RevWalk walk = new RevWalk(git.getRepository());
-        RevCommit commit = walk.parseCommit(ref.getObjectId());
+        RevCommit commit = walk.parseCommit(objectId);
         walk.close();
-        logger.info("Head of branch " + branchName + " is commit of id: " + commit.getId());
+        logger.info("Reference commit of branch " + branchName + " is commit of id: " + commit.getId());
         return commit;
     }
 
@@ -121,7 +122,7 @@ public class DifferentFiles {
     }
 
     private RevCommit resolveReference(RevCommit base) throws IOException {
-        RevCommit refHead = getBranchHead(configuration.referenceBranch);
+        RevCommit refHead = getBranchCommit(configuration.referenceBranch);
         if (configuration.compareToMergeBase) {
             return getMergeBase(base, refHead);
         } else {

@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class UnZiper {
+public class UnZipper {
 
     public void act(File zip, File outputFolder){
         try{
@@ -13,7 +13,7 @@ public class UnZiper {
                 process(outputFolder, zis);
                 zis.closeEntry();
             }
-        }catch(IOException e){
+        } catch (IOException e){
             throw new RuntimeException(e);
         }
     }
@@ -22,7 +22,7 @@ public class UnZiper {
         ZipEntry ze = zis.getNextEntry();
         while(ze != null){
             String fileName = ze.getName();
-            File newFile = new File(outputFolder.getPath() + File.separator + fileName);
+            File newFile = new File(outputFolder, fileName);
             createParentDirectories(newFile);
             if (ze.isDirectory()) {
                 newFile.mkdir();

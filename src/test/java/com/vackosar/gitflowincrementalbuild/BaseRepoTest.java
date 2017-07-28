@@ -1,39 +1,44 @@
-package com.vackosar.gitflowincrementalbuild.mocks;
+package com.vackosar.gitflowincrementalbuild;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
+
+import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public abstract class RepoTest {
+public abstract class BaseRepoTest {
 
     protected LocalRepoMock localRepoMock;
     private StaticLoggerBinder staticLoggerBinder;
     protected ByteArrayOutputStream consoleOut;
     private final PrintStream normalOut;
 
-    public RepoTest() {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    public BaseRepoTest() {
         this.normalOut = System.out;
     }
 
     @Before
     public void before() throws Exception {
         init();
-        localRepoMock = new LocalRepoMock(false);
+        localRepoMock = new LocalRepoMock(temporaryFolder.getRoot(), false);
     }
 
     protected void init() {
         staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         resetConsoleOut();
         resetProperties();
-    }
-
-    protected LocalRepoMock getLocalRepoMock() {
-        return localRepoMock;
     }
 
     private void resetConsoleOut() {
@@ -56,4 +61,13 @@ public abstract class RepoTest {
         System.setOut(normalOut);
         normalOut.print(consoleOut.toString());
     }
+
+    protected LocalRepoMock getLocalRepoMock() {
+        return localRepoMock;
+    }
+
+    protected MavenSession getMavenSessionMock() throws Exception {
+        return MavenSessionMock.get(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+    }
+
 }

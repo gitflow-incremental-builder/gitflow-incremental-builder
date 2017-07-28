@@ -1,7 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.mocks.RepoTest;
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class IT extends RepoTest {
+public class IT extends BaseRepoTest {
 
     @Test
     public void worktreeFails() throws Exception {

@@ -9,46 +9,37 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class RemoteRepoMock implements AutoCloseable {
-
     private static int port = 9418;
     private final Git git;
-    public String repoUrl = null;
-    private static final File DATA_ZIP = new File("src/test/resources/template.zip");
-    private static final File REPO_DIR = new File("tmp/remote");
+    public String repoUrl;
+
+    private File repoFolder;
+    private File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
     private boolean bare;
     private Daemon server;
     private RepoResolver resolver;
 
-    public RemoteRepoMock(boolean bare) throws IOException {
+    public RemoteRepoMock(File baseFolder, boolean bare) throws IOException {
         this.bare = bare;
+        this.repoFolder = new File(baseFolder, "tmp/remote");
+
         if (bare) {
-            delete(REPO_DIR);
-            REPO_DIR.mkdir();
+            repoFolder.mkdirs();
         } else {
-            prepareTestingData();
+            unpackTemplateProject();
         }
+
         repoUrl = "git://localhost:" + port + "/repo.git";
         start();
         port++;
-        git = new Git(new FileRepository(new File(REPO_DIR + "/.git")));
-    }
-
-    private void delete(File f) {
-        if (f.isDirectory()) {
-            for (File c : f.listFiles()) {
-                delete(c);
-            }
-        }
-        if (!f.delete()) {
-            System.out.println("Failed to delete file: " + f + " in LocalRepoMock.delete");
-        }
+        git = new Git(new FileRepository(new File(repoFolder, ".git")));
     }
 
     private void start() {
         try {
             server = new Daemon(new InetSocketAddress(port));
             server.getService("git-receive-pack").setEnabled(true);
-            resolver = new RepoResolver(REPO_DIR, bare);
+            resolver = new RepoResolver(repoFolder, bare);
             server.setRepositoryResolver(resolver);
             server.start();
         } catch (Exception e) {
@@ -56,8 +47,8 @@ public class RemoteRepoMock implements AutoCloseable {
         }
     }
 
-    private void prepareTestingData() {
-        new UnZiper().act(DATA_ZIP, REPO_DIR);
+    private void unpackTemplateProject() {
+        new UnZipper().act(templateProjectZip, repoFolder);
     }
 
     @Override
@@ -66,7 +57,6 @@ public class RemoteRepoMock implements AutoCloseable {
         resolver.close();
         git.getRepository().close();
         git.close();
-        delete(REPO_DIR);
     }
 
     public Git getGit() {

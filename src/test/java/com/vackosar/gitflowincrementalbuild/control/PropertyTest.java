@@ -4,7 +4,8 @@ import org.junit.Test;
 
 public class PropertyTest {
 
-    @Test public void exemplifyAll() {
+    @Test
+    public void exemplifyAll() {
         System.out.println(Property.exemplifyAll());
     }
 }
