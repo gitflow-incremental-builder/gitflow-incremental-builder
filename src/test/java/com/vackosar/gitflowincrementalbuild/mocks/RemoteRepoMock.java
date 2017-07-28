@@ -7,9 +7,10 @@ import org.eclipse.jgit.transport.Daemon;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Random;
 
 public class RemoteRepoMock implements AutoCloseable {
-    private static int port = 9418;
+    private static int port = 9000 + new Random().nextInt(500);
     private final Git git;
     public String repoUrl;
 
