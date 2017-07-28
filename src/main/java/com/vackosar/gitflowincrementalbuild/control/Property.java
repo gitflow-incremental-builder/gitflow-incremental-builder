@@ -12,7 +12,8 @@ public enum Property {
     fetchBaseBranch("false"),
     fetchReferenceBranch("false"),
     excludePathRegex(Constants.NEVER_MATCH_REGEX),
-    failOnMissingGitDir("true")
+    failOnMissingGitDir("true"),
+    failOnError("true")
     ;
 
     public static final String PREFIX = "gib.";
@@ -36,7 +37,11 @@ public enum Property {
     }
 
     public void setValue(String value) {
-        System.setProperty(fullName(), value);
+        if (value ==null) {
+            System.clearProperty(fullName());
+        } else {
+            System.setProperty(fullName(), value);
+        }
     }
 
     public static String exemplifyAll() {

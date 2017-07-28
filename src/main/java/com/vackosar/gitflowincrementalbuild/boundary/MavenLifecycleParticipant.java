@@ -9,6 +9,7 @@ import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.util.ExceptionUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -30,10 +31,12 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
                 logger.info("gitflow-incremental-builder is disabled.");
             }
         } catch (Exception e) {
-            if (e.getCause() instanceof SkipExecutionException) {
-                logger.info("gitflow-incremental-builder execution skipped: " + e.getCause().getMessage());
+            Boolean failOnError = Boolean.valueOf(Property.failOnError.getValue());
+            if (! failOnError || e.getMessage().contains(SkipExecutionException.class.getCanonicalName())) {
+                logger.info("gitflow-incremental-builder execution skipped: " + e.getMessage());
+                logger.debug("Full exception:", e);
             } else {
-                throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occured.", e);
+                throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occurred.", e);
             }
         }
     }
