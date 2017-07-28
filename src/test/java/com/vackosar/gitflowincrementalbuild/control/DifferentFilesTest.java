@@ -99,6 +99,18 @@ public class DifferentFilesTest extends BaseRepoTest {
     }
 
     @Test
+    public void listExcluding() throws Exception {
+        Property.excludePathRegex.setValue(".*file2.*");
+        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                Paths.get(workDir + "/parent/child3/src/resources/file1"),
+                Paths.get(workDir + "/parent/child4/pom.xml"),
+                Paths.get(workDir + "/parent/testJarDependent/src/resources/file5")
+        ));
+        Assert.assertEquals(expected, differentFiles.get());
+    }
+
+    @Test
     public void listInSubdir() throws Exception {
         Path workDir = localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve("parent/child2");
         setWorkDir(workDir);

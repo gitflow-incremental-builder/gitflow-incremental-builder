@@ -217,6 +217,7 @@ Maven pom properties configuration with default values is below:
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
 	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
 	<gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
+	<gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
 </properties>
 ```
 

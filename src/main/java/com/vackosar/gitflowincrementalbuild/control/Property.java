@@ -10,7 +10,8 @@ public enum Property {
     buildAll("false"),
     compareToMergeBase("true"),
     fetchBaseBranch("false"),
-    fetchReferenceBranch("false")
+    fetchReferenceBranch("false"),
+    excludePathRegex(Constants.NEVER_MATCH_REGEX)
     ;
 
     public static final String PREFIX = "gib.";
@@ -45,5 +46,9 @@ public enum Property {
         }
         builder.append("</properties>\n");
         return builder.toString();
+    }
+
+    private static class Constants {
+        private static final String NEVER_MATCH_REGEX = "(?!x)x";
     }
 }

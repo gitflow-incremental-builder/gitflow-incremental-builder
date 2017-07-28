@@ -98,7 +98,10 @@ public class DifferentFiles {
     private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {
         final Set<Path> paths = new HashSet<>();
         while (treeWalk.next()) {
-            paths.add(gitDir.resolve(treeWalk.getPathString()).normalize());
+            Path path = gitDir.resolve(treeWalk.getPathString()).normalize();
+            if (! configuration.excludePathRegex.test(path.toString())) {
+                paths.add(path);
+            }
         }
         return paths;
     }

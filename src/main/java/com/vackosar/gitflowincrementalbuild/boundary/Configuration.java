@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 @Singleton
 public class Configuration {
@@ -29,6 +31,7 @@ public class Configuration {
     public final boolean compareToMergeBase;
     public final boolean fetchBaseBranch;
     public final boolean fetchReferenceBranch;
+    public final Predicate<String> excludePathRegex;
 
     @Inject
     public Configuration(MavenSession session) throws IOException {
@@ -45,6 +48,7 @@ public class Configuration {
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
             fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue());
             fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue());
+            excludePathRegex = Pattern.compile(Property.excludePathRegex.getValue()).asPredicate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
