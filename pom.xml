@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>3.3</version>
+    <version>3.4-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
@@ -15,7 +15,7 @@
     </issueManagement>
     <scm>
         <url>https://github.com/vackosar/gitflow-incremental-builder</url>
-        <connection>scm:git:git://github.com/vackosar/gitflow-incremental-builder.git</connection>
+        <connection>scm:git://github.com/vackosar/gitflow-incremental-builder.git</connection>
         <developerConnection>scm:git:git@github.com:vackosar/gitflow-incremental-builder.git</developerConnection>
     </scm>
     <licenses>
