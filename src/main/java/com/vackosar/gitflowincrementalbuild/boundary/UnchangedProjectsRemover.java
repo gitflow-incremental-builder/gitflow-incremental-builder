@@ -39,7 +39,8 @@ class UnchangedProjectsRemover {
         if (!configuration.buildAll) {
             Set<MavenProject> rebuild = getRebuildProjects(impacted);
             if (rebuild.isEmpty()) {
-                logger.info("No changed artifacts to build. Executing validate goal only.");
+                logger.info("No changed artifacts to build. Executing validate goal on current project only.");
+                mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
                 mavenSession.getGoals().clear();
                 mavenSession.getGoals().add("validate");
             } else {
@@ -83,8 +84,7 @@ class UnchangedProjectsRemover {
         return mavenProject.getBuildPlugins().stream()
                 .flatMap(p -> p.getExecutions().stream())
                 .flatMap(e -> e.getGoals().stream())
-                .filter(GOAL_TEST_JAR::equals).findAny()
-                .isPresent();
+                .anyMatch(GOAL_TEST_JAR::equals);
     }
 
     private void logProjects(Set<MavenProject> projects, String title) {

@@ -84,18 +84,16 @@ public class MavenInstallRunningIntegrationTest extends BaseRepoTest {
         git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
         git.checkout().setName("develop").call();
         final String output = executeBuild(Collections.singletonList("-Dgib." + Property.baseBranch.name() + "=refs/heads/develop"));
-        System.out.println(output);
-
-        Assert.assertTrue(output.contains("Executing validate goal only."));
+        Assert.assertTrue(output.contains("Executing validate goal on current project only."));
         Assert.assertTrue(output.contains(" child1"));
-        Assert.assertTrue(output.contains(" child2"));
-        Assert.assertTrue(output.contains(" subchild1"));
-        Assert.assertTrue(output.contains(" subchild42"));
-        Assert.assertTrue(output.contains(" subchild2"));
-        Assert.assertTrue(output.contains(" child3"));
-        Assert.assertTrue(output.contains(" child4"));
-        Assert.assertTrue(output.contains(" subchild41"));
-        Assert.assertTrue(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertFalse(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertFalse(output.contains(" child6"));
     }
 
 
