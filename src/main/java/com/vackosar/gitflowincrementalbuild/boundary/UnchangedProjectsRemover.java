@@ -3,7 +3,6 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 import com.google.inject.Singleton;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,10 +31,9 @@ class UnchangedProjectsRemover {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
-        Set<MavenProject> impacted = mavenSession.getProjects().stream()
-                .filter(changed::contains)
-                .flatMap(p -> getAllDependents(mavenSession.getProjects(), p).stream())
-                .collect(Collectors.toSet());
+        Set<MavenProject> impacted = changed.stream()
+            .flatMap(this::getAllDependents)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
         if (!configuration.buildAll) {
             Set<MavenProject> rebuild = getRebuildProjects(impacted);
             if (rebuild.isEmpty()) {
@@ -55,7 +53,8 @@ class UnchangedProjectsRemover {
 
     private Set<MavenProject> getRebuildProjects(Set<MavenProject> changedProjects) {
         if (configuration.makeUpstream) {
-            return Stream.concat(changedProjects.stream(), collectDependencies(changedProjects)).collect(Collectors.toSet());
+            return Stream.concat(changedProjects.stream(), collectDependencies(changedProjects))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         } else {
             return changedProjects;
         }
@@ -98,45 +97,16 @@ class UnchangedProjectsRemover {
         logger.info("------------------------------------------------------------------------");
     }
 
-    private Set<MavenProject> getAllDependents(List<MavenProject> projects, MavenProject project) {
-        Set<MavenProject> result = new HashSet<>();
-        result.add(project);
-        for (MavenProject possibleDependent: projects) {
-            if (isDependentOf(possibleDependent, project)) {
-                result.addAll(getAllDependents(projects, possibleDependent));
-            }
-            if (project.equals(possibleDependent.getParent())) {
-                result.addAll(getAllDependents(projects, possibleDependent));
-            }
-        }
-        return result;
+    private Stream<MavenProject> getAllDependents(MavenProject project) {
+        return Stream.concat(
+            Stream.of(project),
+            mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream());
     }
 
-    private Stream<MavenProject> ifMakeUpstreamGetDependencies(MavenProject mavenProject) {
-        return getAllDependencies(mavenSession.getProjects(), mavenProject).stream();
-    }
-
-    private Set<MavenProject> getAllDependencies(List<MavenProject> projects, MavenProject project) {
-        Set<MavenProject> dependencies = project.getDependencies().stream()
-                .map(d -> convert(projects, d)).filter(Optional::isPresent).map(Optional::get)
-                .flatMap(p -> getAllDependencies(projects, p).stream())
-                .collect(Collectors.toSet());
-        dependencies.add(project);
-        return dependencies;
-    }
-
-    private boolean equals(MavenProject project, Dependency dependency) {
-        return dependency.getArtifactId().equals(project.getArtifactId())
-                && dependency.getGroupId().equals(project.getGroupId())
-                && dependency.getVersion().equals(project.getVersion());
-    }
-
-    private Optional<MavenProject> convert(List<MavenProject> projects, Dependency dependency) {
-        return projects.stream().filter(p -> equals(p, dependency)).findFirst();
-    }
-
-    private boolean isDependentOf(MavenProject possibleDependent, MavenProject project) {
-        return possibleDependent.getDependencies().stream().anyMatch(d -> equals(project, d));
+    private Stream<MavenProject> ifMakeUpstreamGetDependencies(MavenProject project) {
+        return Stream.concat(
+            Stream.of(project),
+            mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream());
     }
 }
 

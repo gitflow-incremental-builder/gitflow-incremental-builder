@@ -2,6 +2,7 @@ package com.vackosar.gitflowincrementalbuild.mocks;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 
@@ -32,6 +33,8 @@ public class MavenSessionMock {
         when(mavenSession.getRequest()).thenReturn(request);
         when(mavenSession.getProjects()).thenReturn(projects);
         when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
+        ProjectDependencyGraph dependencyGraphMock = mock(ProjectDependencyGraph.class);
+        when(mavenSession.getProjectDependencyGraph()).thenReturn(dependencyGraphMock);
         return mavenSession;
     }
 
