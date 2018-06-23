@@ -22,14 +22,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.impl.StaticLoggerBinder;
 
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,12 +53,31 @@ public class DifferentFilesTest extends BaseRepoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    /**
+     * Resets the user.dir system property that is manipulated by {@link #setWorkDir(Path)} to keep test classes isolated.
+     */
+    @Rule
+    public TestRule userDirResettingRule = (base, description) -> new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+            final String origUserDir = System.getProperty("user.dir");
+            try {
+                base.evaluate();
+            } finally {
+                System.setProperty("user.dir", origUserDir);
+            }
+        }
+    };
+
     @Before
     public void before() throws Exception {
         super.init();
         workDir = temporaryFolder.getRoot().getCanonicalFile().toPath().resolve("tmp/repo/");
         setWorkDir(workDir);
         localRepoMock = new LocalRepoMock(temporaryFolder.getRoot(), true);
+
+        Property.uncommited.setValue(Boolean.FALSE.toString());
+        Property.untracked.setValue(Boolean.FALSE.toString());
     }
 
     @After
@@ -72,9 +95,30 @@ public class DifferentFilesTest extends BaseRepoTest {
 
     @Test
     public void listIncludingUncommitted() throws Exception {
-        workDir.resolve("file5").toFile().createNewFile();
+        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        Path modifiedFilePath = repoPath.resolve("parent/child1/src/resources/file1");
+        Files.write(modifiedFilePath, "\nuncommitted".getBytes(), StandardOpenOption.APPEND);
         Property.uncommited.setValue(Boolean.TRUE.toString());
-        Assert.assertTrue(getInstance(temporaryFolder.getRoot().toPath()).get().stream().anyMatch(p -> p.toString().contains("file5")));
+
+        Assert.assertTrue(getInstance(repoPath).get().contains(modifiedFilePath));
+
+        Property.uncommited.setValue(Boolean.FALSE.toString());
+
+        Assert.assertFalse(getInstance(repoPath).get().contains(modifiedFilePath));
+    }
+
+    @Test
+    public void listIncludingUntracked() throws Exception {
+        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        Path newFilePath = repoPath.resolve("parent/child1/src/resources/fileNew");
+        Files.write(newFilePath, "\nuncommitted".getBytes(), StandardOpenOption.CREATE_NEW);
+        Property.untracked.setValue(Boolean.TRUE.toString());
+
+        Assert.assertTrue(getInstance(repoPath).get().contains(newFilePath));
+
+        Property.untracked.setValue(Boolean.FALSE.toString());
+
+        Assert.assertFalse(getInstance(repoPath).get().contains(newFilePath));
     }
 
     @Test
@@ -172,11 +216,6 @@ public class DifferentFilesTest extends BaseRepoTest {
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
         Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
-    }
-
-
-    private boolean filterIgnored(Path p) {
-        return ! p.toString().contains("target") && ! p.toString().contains(".iml");
     }
 
     private static class ModuleFacade extends AbstractModule {
