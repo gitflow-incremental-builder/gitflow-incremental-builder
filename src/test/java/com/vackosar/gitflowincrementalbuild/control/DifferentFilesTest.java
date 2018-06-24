@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -162,6 +163,15 @@ public class DifferentFilesTest extends BaseRepoTest {
                 Paths.get(workDir + "/parent/testJarDependent/src/resources/file5")
         ));
         Assert.assertEquals(expected, differentFiles.get());
+    }
+
+    @Test
+    public void listWithDisabledBranchComparison() throws Exception {
+        Property.disableBranchComparison.setValue(Boolean.TRUE.toString());
+
+        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+
+        Assert.assertEquals(Collections.emptySet(), differentFiles.get());
     }
 
     @Test

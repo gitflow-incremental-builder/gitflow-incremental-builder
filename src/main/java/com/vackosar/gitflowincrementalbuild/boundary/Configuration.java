@@ -22,6 +22,7 @@ public class Configuration {
 
     public final boolean enabled;
     public final Optional<Path> key;
+    public final boolean disableBranchComparison;
     public final String referenceBranch;
     public String baseBranch;
     public final boolean uncommited;
@@ -41,6 +42,7 @@ public class Configuration {
             checkProperties();
             enabled = Boolean.valueOf(Property.enabled.getValue());
             key = parseKey(session);
+            disableBranchComparison = Boolean.valueOf(Property.disableBranchComparison.getValue());
             referenceBranch = Property.referenceBranch.getValue();
             baseBranch = Property.baseBranch.getValue();
             uncommited = Boolean.valueOf(Property.uncommited.getValue());

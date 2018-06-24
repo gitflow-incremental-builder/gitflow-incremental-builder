@@ -211,6 +211,7 @@ Maven pom properties configuration with default values is below:
 <properties>
 	<gib.enabled>true</gib.enabled>
 	<gib.repositorySshKey></gib.repositorySshKey>
+	<gib.disableBranchComparison>false</gib.disableBranchComparison>
 	<gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
 	<gib.baseBranch>HEAD</gib.baseBranch>
 	<gib.uncommited>true</gib.uncommited>
@@ -225,6 +226,15 @@ Maven pom properties configuration with default values is below:
 	<gib.failOnError>true</gib.failOnError>
 </properties>
 ```
+
+### gib.disableBranchComparison
+
+Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommited` and `gib.untracked`).
+The following properties are _not_ evaluated when `gib.disableBranchDiff` is enabled:
+ - `gib.referenceBranch`
+ - `gib.compareToMergeBase`
+ - `gib.fetchReferenceBranch`
+ - `gib.excludePathRegex`
 
 ### gib.uncommited
 
