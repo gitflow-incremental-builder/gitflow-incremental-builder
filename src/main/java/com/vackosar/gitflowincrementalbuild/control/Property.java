@@ -3,6 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 public enum Property {
     enabled("true"),
     repositorySshKey(""),
+    disableBranchComparison("false"),
     referenceBranch("refs/remotes/origin/develop"),
     baseBranch("HEAD"),
     uncommited("true"),

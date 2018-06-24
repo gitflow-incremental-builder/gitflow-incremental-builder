@@ -32,23 +32,33 @@ public class DifferentFiles {
     @Inject private Logger logger;
 
     public Set<Path> get() throws GitAPIException, IOException {
+        Set<Path> paths = new HashSet<>();
         fetch();
         checkout();
-        RevCommit base = getBranchCommit(configuration.baseBranch);
-        final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-        treeWalk.addTree(base.getTree());
-        treeWalk.addTree(resolveReference(base).getTree());
-        treeWalk.setFilter(TreeFilter.ANY_DIFF);
-        treeWalk.setRecursive(true);
         final Path workTree = git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath();
-        final Set<Path> paths = getDiff(treeWalk, workTree);
+        if (!configuration.disableBranchComparison) {
+            paths.addAll(getBranchDiff(workTree));
+        }
         if (configuration.uncommited || configuration.untracked) {
             paths.addAll(getChangesFromStatus(workTree));
         }
-        treeWalk.close();
         git.getRepository().close();
         git.close();
         return paths;
+    }
+
+    private Set<Path> getBranchDiff(Path workTree) throws IOException {
+        RevCommit base = getBranchCommit(configuration.baseBranch);
+        final TreeWalk treeWalk = new TreeWalk(git.getRepository());
+        try {
+            treeWalk.addTree(base.getTree());
+            treeWalk.addTree(resolveReference(base).getTree());
+            treeWalk.setFilter(TreeFilter.ANY_DIFF);
+            treeWalk.setRecursive(true);
+            return getDiff(treeWalk, workTree);
+        } finally {
+            treeWalk.close();
+        }
     }
 
     private void checkout() throws IOException, GitAPIException {
@@ -59,7 +69,7 @@ public class DifferentFiles {
     }
 
     private void fetch() throws GitAPIException {
-        if (configuration.fetchReferenceBranch) {
+        if (!configuration.disableBranchComparison && configuration.fetchReferenceBranch) {
             fetch(configuration.referenceBranch);
         }
         if (configuration.fetchBaseBranch) {
