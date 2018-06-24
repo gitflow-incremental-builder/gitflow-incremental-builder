@@ -98,12 +98,16 @@ public class DifferentFilesTest extends BaseRepoTest {
     @Test
     public void listIncludingUncommitted() throws Exception {
         Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
-        Path modifiedFilePath = repoPath.resolve("parent/child1/src/resources/file1");
-        Files.write(modifiedFilePath, "\nuncommitted".getBytes(), StandardOpenOption.APPEND);
+        Path modifiedFilePath = modifyTrackedFile(repoPath);
         Property.uncommited.setValue(Boolean.TRUE.toString());
 
         Assert.assertTrue(getInstance(repoPath).get().contains(modifiedFilePath));
+    }
 
+    @Test
+    public void listIncludingUncommitted_disabled() throws Exception {
+        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        Path modifiedFilePath = modifyTrackedFile(repoPath);
         Property.uncommited.setValue(Boolean.FALSE.toString());
 
         Assert.assertFalse(getInstance(repoPath).get().contains(modifiedFilePath));
@@ -112,12 +116,16 @@ public class DifferentFilesTest extends BaseRepoTest {
     @Test
     public void listIncludingUntracked() throws Exception {
         Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
-        Path newFilePath = repoPath.resolve("parent/child1/src/resources/fileNew");
-        Files.write(newFilePath, "\nuncommitted".getBytes(), StandardOpenOption.CREATE_NEW);
+        Path newFilePath = createNewUntrackedFile(repoPath);
         Property.untracked.setValue(Boolean.TRUE.toString());
 
         Assert.assertTrue(getInstance(repoPath).get().contains(newFilePath));
+    }
 
+    @Test
+    public void listIncludingUntracked_disabled() throws Exception {
+        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        Path newFilePath = createNewUntrackedFile(repoPath);
         Property.untracked.setValue(Boolean.FALSE.toString());
 
         Assert.assertFalse(getInstance(repoPath).get().contains(newFilePath));
@@ -265,5 +273,17 @@ public class DifferentFilesTest extends BaseRepoTest {
 
     private void setWorkDir(final Path path) {
         System.setProperty("user.dir", path.toString());
+    }
+
+    private Path modifyTrackedFile(Path repoPath) throws IOException {
+        Path modifiedFilePath = repoPath.resolve("parent/child1/src/resources/file1");
+        Files.write(modifiedFilePath, "\nuncommitted".getBytes(), StandardOpenOption.APPEND);
+        return modifiedFilePath;
+    }
+
+    private Path createNewUntrackedFile(Path repoPath) throws IOException {
+        Path newFilePath = repoPath.resolve("parent/child1/src/resources/fileNew");
+        Files.write(newFilePath, "\nuncommitted".getBytes(), StandardOpenOption.CREATE_NEW);
+        return newFilePath;
     }
 }
