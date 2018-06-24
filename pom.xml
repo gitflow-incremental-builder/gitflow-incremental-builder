@@ -40,8 +40,8 @@
         <version.maven-core>3.3.9</version.maven-core>
         <version.guice>4.2.0</version.guice>
         <version.plexus-component-annotations>1.5.5</version.plexus-component-annotations>
-        <version.junit>4.11</version.junit>
-        <version.mockito-all>1.8.4</version.mockito-all>
+        <version.junit>4.12</version.junit>
+        <version.mockito-all>1.8.5</version.mockito-all>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M2</version.maven-enforcer-plugin>
