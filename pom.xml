@@ -39,7 +39,6 @@
         <version.jgit>5.0.1.201806211838-r</version.jgit>
         <version.maven-core>3.3.9</version.maven-core>
         <version.guice>4.2.0</version.guice>
-        <version.plexus-component-annotations>1.5.5</version.plexus-component-annotations>
         <version.junit>4.12</version.junit>
         <version.mockito-all>1.8.5</version.mockito-all>
 
@@ -74,17 +73,7 @@
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${version.maven-core}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-component-annotations</artifactId>
-            <version>${version.plexus-component-annotations}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
