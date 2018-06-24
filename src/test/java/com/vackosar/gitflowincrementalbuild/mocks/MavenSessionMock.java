@@ -69,7 +69,9 @@ public class MavenSessionMock {
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            return null;
+            System.err.println("WARNING: Failed to visit " + file);
+            exc.printStackTrace(System.err);
+            return FileVisitResult.CONTINUE;
         }
 
         @Override

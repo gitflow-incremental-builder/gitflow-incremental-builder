@@ -82,7 +82,9 @@ public class DifferentFilesTest extends BaseRepoTest {
 
     @After
     public void after() throws Exception {
-        moduleFacade.close();
+        if (moduleFacade != null) {
+            moduleFacade.close();
+        }
         super.after();
     }
 

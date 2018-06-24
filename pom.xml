@@ -175,6 +175,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.maven-surefire-plugin}</version>
+                    <configuration>
+                        <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
