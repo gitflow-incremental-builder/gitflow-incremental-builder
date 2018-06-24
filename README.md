@@ -214,6 +214,7 @@ Maven pom properties configuration with default values is below:
 	<gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
 	<gib.baseBranch>HEAD</gib.baseBranch>
 	<gib.uncommited>true</gib.uncommited>
+	<gib.untracked>true</gib.untracked>
 	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
 	<gib.buildAll>false</gib.buildAll>
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
@@ -224,6 +225,14 @@ Maven pom properties configuration with default values is below:
 	<gib.failOnError>true</gib.failOnError>
 </properties>
 ```
+
+### gib.uncommited
+
+Detects changed files that have not yet been committed. This does **not** include _untracked_ files (see `git status` manual).
+
+### gib.untracked
+
+Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anmore after it is added to the index.
 
 ## Requirements
 

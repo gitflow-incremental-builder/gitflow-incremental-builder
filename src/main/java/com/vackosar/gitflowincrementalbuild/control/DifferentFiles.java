@@ -3,6 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -41,8 +42,8 @@ public class DifferentFiles {
         treeWalk.setRecursive(true);
         final Path workTree = git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath();
         final Set<Path> paths = getDiff(treeWalk, workTree);
-        if (configuration.uncommited) {
-            paths.addAll(getUncommitedChanges(workTree));
+        if (configuration.uncommited || configuration.untracked) {
+            paths.addAll(getChangesFromStatus(workTree));
         }
         treeWalk.close();
         git.getRepository().close();
@@ -119,9 +120,16 @@ public class DifferentFiles {
         return commit;
     }
 
-    private Set<Path> getUncommitedChanges(Path gitDir) throws GitAPIException {
-        return git.status().call().getUncommittedChanges().stream()
-                .map(gitDir::resolve).map(Path::normalize).collect(Collectors.toSet());
+    private Set<Path> getChangesFromStatus(Path gitDir) throws GitAPIException {
+        Set<String> changes = new HashSet<>();
+        Status status = git.status().call();
+        if (configuration.uncommited) {
+            changes.addAll(status.getUncommittedChanges());
+        }
+        if (configuration.untracked) {
+            changes.addAll(status.getUntracked());
+        }
+        return changes.stream().map(gitDir::resolve).map(Path::normalize).collect(Collectors.toSet());
     }
 
     private RevCommit resolveReference(RevCommit base) throws IOException {
