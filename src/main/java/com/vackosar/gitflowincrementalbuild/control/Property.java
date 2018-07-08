@@ -9,6 +9,7 @@ public enum Property {
     uncommited("true"),
     untracked("true"),
     skipTestsForNotImpactedModules("false"),
+    argsForNotImpactedModules(""),
     buildAll("false"),
     compareToMergeBase("true"),
     fetchBaseBranch("false"),

@@ -217,6 +217,7 @@ Maven pom properties configuration with default values is below:
 	<gib.uncommited>true</gib.uncommited>
 	<gib.untracked>true</gib.untracked>
 	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
+	<gib.argsForNotImpactedModules>false</gib.argsForNotImpactedModules>
 	<gib.buildAll>false</gib.buildAll>
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
 	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
@@ -242,7 +243,23 @@ Detects changed files that have not yet been committed. This does **not** includ
 
 ### gib.untracked
 
-Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anmore after it is added to the index.
+Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anymore after it is added to the index.
+
+### gib.skipTestsForNotImpactedModules
+
+In conjunction with `-am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have *not* been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test *execution* is disbled via `skipTests=true`.
+
+Can be combined with `gib.argsForNotImpactedModules`.
+
+### gib.argsForNotImpactedModules
+
+In conjunction with `-am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have *not* been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
+Arguments have to be sparated with a single space character and values are optional. Example:
+```
+mvn clean install -am -Dgib.argsForNotImpactedModules='-Denforcer.skip -Dcheckstyle.skip=true'
+```
+
+Can be combined with `gib.skipTestsForNotImpactedModules`.
 
 ## Requirements
 
