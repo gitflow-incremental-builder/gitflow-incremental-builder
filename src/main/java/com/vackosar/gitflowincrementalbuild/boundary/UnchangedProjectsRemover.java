@@ -19,20 +19,28 @@ class UnchangedProjectsRemover {
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";
     private static final String MAVEN_TEST_SKIP_EXEC = "skipTests";
     static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Will compile test sources.";
-    private static final String GOAL_TEST_COMPILE = "test-compile";
     private static final String GOAL_TEST_JAR = "test-jar";
 
-    @Inject private Configuration configuration;
-    @Inject private Logger logger;
-    @Inject private ChangedProjects changedProjects;
-    @Inject private MavenSession mavenSession;
+    private Configuration configuration;
+    private Logger logger;
+    private ChangedProjects changedProjects;
+    private MavenSession mavenSession;
+
+    @Inject
+    UnchangedProjectsRemover(Configuration configuration, Logger logger, ChangedProjects changedProjects,
+            MavenSession mavenSession) {
+        this.configuration = configuration;
+        this.logger = logger;
+        this.changedProjects = changedProjects;
+        this.mavenSession = mavenSession;
+    }
 
     void act() throws GitAPIException, IOException {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
         Set<MavenProject> impacted = changed.stream()
-            .flatMap(this::getAllDependents)
+            .flatMap(this::streamProjectWithDependents)
             .collect(Collectors.toCollection(LinkedHashSet::new));
         if (!configuration.buildAll) {
             Set<MavenProject> rebuild = getRebuildProjects(impacted);
@@ -47,7 +55,7 @@ class UnchangedProjectsRemover {
         } else {
             mavenSession.getProjects().stream()
                     .filter(p -> !impacted.contains(p))
-                    .forEach(this::ifSkipDependenciesTest);
+                    .forEach(this::applyNotImpactedModuleArgs);
         }
     }
 
@@ -62,20 +70,22 @@ class UnchangedProjectsRemover {
 
     private Stream<MavenProject> collectDependencies(Set<MavenProject> changedProjects) {
         return changedProjects.stream()
-                .flatMap(this::ifMakeUpstreamGetDependencies)
+                .flatMap(this::streamProjectWithDependencies)
                 .filter(p -> ! changedProjects.contains(p))
-                .map(this::ifSkipDependenciesTest);
+                .map(this::applyNotImpactedModuleArgs);
     }
 
-    private MavenProject ifSkipDependenciesTest(MavenProject mavenProject) {
+    private MavenProject applyNotImpactedModuleArgs(MavenProject mavenProject) {
+        final Properties projectProperties = mavenProject.getProperties();
         if (configuration.skipTestsForNotImpactedModules) {
             if (projectDeclaresTestJarGoal(mavenProject)) {
                 logger.debug(mavenProject.getArtifactId() + ": " + TEST_JAR_DETECTED);
-                mavenProject.getProperties().setProperty(MAVEN_TEST_SKIP_EXEC, Boolean.TRUE.toString());
+                projectProperties.setProperty(MAVEN_TEST_SKIP_EXEC, Boolean.TRUE.toString());
             } else {
-                mavenProject.getProperties().setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
+                projectProperties.setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
             }
         }
+        configuration.argsForNotImpactedModules.forEach(projectProperties::setProperty);
         return mavenProject;
     }
 
@@ -97,13 +107,13 @@ class UnchangedProjectsRemover {
         logger.info("------------------------------------------------------------------------");
     }
 
-    private Stream<MavenProject> getAllDependents(MavenProject project) {
+    private Stream<MavenProject> streamProjectWithDependents(MavenProject project) {
         return Stream.concat(
             Stream.of(project),
             mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream());
     }
 
-    private Stream<MavenProject> ifMakeUpstreamGetDependencies(MavenProject project) {
+    private Stream<MavenProject> streamProjectWithDependencies(MavenProject project) {
         return Stream.concat(
             Stream.of(project),
             mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream());
