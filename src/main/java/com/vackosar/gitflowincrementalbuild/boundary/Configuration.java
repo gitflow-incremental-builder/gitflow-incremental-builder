@@ -2,7 +2,6 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
@@ -39,6 +38,7 @@ public class Configuration {
     public final boolean skipTestsForNotImpactedModules;
     public final Map<String, String> argsForNotImpactedModules;
     public final boolean buildAll;
+    public final List<String> forceBuildModules;
     public final boolean compareToMergeBase;
     public final boolean fetchBaseBranch;
     public final boolean fetchReferenceBranch;
@@ -61,12 +61,14 @@ public class Configuration {
             argsForNotImpactedModules = Collections.unmodifiableMap(
                     parseSpaceDelimitedArgs(Property.argsForNotImpactedModules.getValue()));
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
+            forceBuildModules = Collections.unmodifiableList(
+                    parseDelimited(Property.forceBuildModules.getValue(), ","));
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
             fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue());
             fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue());
             excludePathRegex = Pattern.compile(Property.excludePathRegex.getValue()).asPredicate();
             failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue());
-        } catch (Exception e) {
+        } catch (MavenExecutionException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -81,14 +83,19 @@ public class Configuration {
         }
     }
 
-    private static Map<String, String> parseSpaceDelimitedArgs(String value) {
+    private static List<String> parseDelimited(String value, String delimiter) {
         return value.isEmpty()
-                ? Collections.emptyMap()
-                : Arrays.stream(value.split(" "))
+                ? Collections.emptyList()
+                : Arrays.stream(value.split(delimiter))
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .map(Configuration::keyValueStringToEntry)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+                    .collect(Collectors.toList());
+    }
+
+    private static Map<String, String> parseSpaceDelimitedArgs(String value) {
+        return parseDelimited(value, " ").stream()
+                .map(Configuration::keyValueStringToEntry)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     }
 
     private static Map.Entry<String, String> keyValueStringToEntry(String pair) {

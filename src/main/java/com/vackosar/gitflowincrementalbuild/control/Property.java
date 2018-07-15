@@ -11,6 +11,7 @@ public enum Property {
     skipTestsForNotImpactedModules("false"),
     argsForNotImpactedModules(""),
     buildAll("false"),
+    forceBuildModules(""),
     compareToMergeBase("true"),
     fetchBaseBranch("false"),
     fetchReferenceBranch("false"),
