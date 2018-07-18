@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
@@ -42,7 +44,10 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 @RunWith(MockitoJUnitRunner.class)
 public class UnchangedProjectsRemoverTest {
 
-    @Mock
+    private static final String ARTIFACT_ID_1 = "first-module";
+    private static final String ARTIFACT_ID_2 = "changed-module";
+
+    @Mock(name = ARTIFACT_ID_1)
     private MavenProject mavenProjectMock;
 
     @Mock
@@ -61,32 +66,33 @@ public class UnchangedProjectsRemoverTest {
     private ChangedProjects changedProjectsMock;
 
     private final List<MavenProject> projects = new ArrayList<>(); 
+    private final Set<MavenProject> changedProjects = new LinkedHashSet<>();
     
     @Before
-    public void setup() {
+    public void setup() throws GitAPIException, IOException {
         addPropertiesToMock(mavenProjectMock);
         when(mavenProjectMock.getBasedir()).thenReturn(new File("."));
+        when(mavenProjectMock.getArtifactId()).thenReturn(ARTIFACT_ID_1);
         when(mavenSessionMock.getCurrentProject()).thenReturn(mavenProjectMock);
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         projects.add(mavenProjectMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
+        when(changedProjectsMock.get()).thenReturn(changedProjects);
     }
     
     @Test
     public void singleChanged() throws GitAPIException, IOException {
-        MavenProject changedProjectMock = Mockito.mock(MavenProject.class);
-        when(changedProjectsMock.get()).thenReturn(Collections.singleton(changedProjectMock));
-        projects.add(changedProjectMock);
+        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
 
         buildUnderTest().act();
 
-        Mockito.verify(mavenSessionMock).setProjects(Collections.singletonList(changedProjectMock));
+        Mockito.verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
     }
 
     @Test
     public void singleChanged_alsoMake_argsForNotImpactedModules() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock();
+        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
@@ -107,7 +113,7 @@ public class UnchangedProjectsRemoverTest {
 
     @Test
     public void singleChanged_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock();
+        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
 
         ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
                 Property.argsForNotImpactedModules, "enforcer.skip=true argWithNoValue",
@@ -125,15 +131,44 @@ public class UnchangedProjectsRemoverTest {
                 new Properties(), changedModuleMock.getProperties());
     }
 
+    @Test
+    public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.forceBuildModules, mavenProjectMock.getArtifactId());
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(Arrays.asList(mavenProjectMock, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_two() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addChangedModuleMock(ARTIFACT_ID_2);
+        MavenProject unchangedProjectMock = addChangedModuleMock("unchanged-module");
+        changedProjects.remove(unchangedProjectMock);
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.forceBuildModules,
+                mavenProjectMock.getArtifactId() + "," + unchangedProjectMock.getArtifactId());
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(mavenProjectMock, unchangedProjectMock, changedProjectMock));
+    }
+
     private Properties addPropertiesToMock(MavenProject mavenProjectMock) {
         Properties properties = new Properties();
         when(mavenProjectMock.getProperties()).thenReturn(properties);
         return properties;
     }
 
-    private MavenProject addChangedModuleMock() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = mock(MavenProject.class);
-        when(changedProjectsMock.get()).thenReturn(Collections.singleton(changedModuleMock));
+    private MavenProject addChangedModuleMock(String moduleArtifactId) {
+        MavenProject changedModuleMock = mock(MavenProject.class, moduleArtifactId);
+        when(changedModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
+        changedProjects.add(changedModuleMock);
         projects.add(changedModuleMock);
         addPropertiesToMock(changedModuleMock);
 

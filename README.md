@@ -219,6 +219,7 @@ Maven pom properties configuration with default values is below:
 	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
 	<gib.argsForNotImpactedModules>false</gib.argsForNotImpactedModules>
 	<gib.buildAll>false</gib.buildAll>
+	<gib.forceBuildModules></gib.forceBuildModules>
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
 	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
 	<gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
@@ -260,6 +261,16 @@ mvn clean install -am -Dgib.argsForNotImpactedModules='-Denforcer.skip -Dcheckst
 ```
 
 Can be combined with `gib.skipTestsForNotImpactedModules`.
+
+### gib.forceBuildModules
+
+Defines artifact ids of modules to build forcibly, even if these modules have not been changed and/or do not depend on changed modules. Example:
+```
+mvn clean install -Dgib.forceBuildModules=unchanged-module-1,unchanged-module-2
+```
+Each of these modules is subject to `argsForNotImpactedModules` and `skipTestsForNotImpactedModules`.
+
+This property has no effect in case `buildAll` is enabled.
 
 ## Requirements
 
