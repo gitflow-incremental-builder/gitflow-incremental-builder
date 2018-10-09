@@ -20,15 +20,24 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+        mergeCurrentProjectProperties(session);
+
+        if (!Boolean.valueOf(Property.enabled.getValue())) {
+            logger.info("gitflow-incremental-builder is disabled.");
+            return;
+        }
+
+        // check prerequisites
+        if (session.getProjectDependencyGraph() == null) {
+            logger.warn("Execution of gitflow-incremental-builder is not supported in this environment: "
+                    + "Current MavenSession does not provide a ProjectDependencyGraph. "
+                    + "Consider disabling gitflow-incremental-builder via property: " + Property.enabled.fullName());
+            return;
+        }
+
+        logger.info("gitflow-incremental-builder starting..."); //TODO Print version.
         try {
-            mergeCurrentProjectProperties(session);
-            if (Boolean.valueOf(Property.enabled.getValue())) {
-                logger.info("gitflow-incremental-builder starting..."); //TODO Print version.
-                execute(session);
-                logger.info("gitflow-incremental-builder exiting...");
-            } else {
-                logger.info("gitflow-incremental-builder is disabled.");
-            }
+            execute(session);
         } catch (Exception e) {
             Boolean failOnError = Boolean.valueOf(Property.failOnError.getValue());
             if (! failOnError || (e.getMessage() != null && e.getMessage().contains(SkipExecutionException.class.getCanonicalName()))) {
@@ -38,6 +47,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
                 throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occurred.", e);
             }
         }
+        logger.info("gitflow-incremental-builder exiting...");
     }
 
     private void execute(MavenSession session) throws GitAPIException, IOException {
