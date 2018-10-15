@@ -217,7 +217,7 @@ Maven pom properties configuration with default values is below:
 	<gib.uncommited>true</gib.uncommited>
 	<gib.untracked>true</gib.untracked>
 	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
-	<gib.argsForNotImpactedModules>false</gib.argsForNotImpactedModules>
+	<gib.argsForNotImpactedModules></gib.argsForNotImpactedModules>
 	<gib.buildAll>false</gib.buildAll>
 	<gib.forceBuildModules></gib.forceBuildModules>
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
