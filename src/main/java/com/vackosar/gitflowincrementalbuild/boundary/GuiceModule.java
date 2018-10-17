@@ -42,10 +42,10 @@ public class GuiceModule extends AbstractModule {
                 throw new SkipExecutionException(gitDirNotFoundMessage);
             }
         }
+        logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         if (isWorktree(builder)) {
             throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());
         }
-        logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
     }
 
