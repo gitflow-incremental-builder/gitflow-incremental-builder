@@ -24,7 +24,9 @@ public class LocalRepoMock implements AutoCloseable {
         this.baseFolder = new File(baseFolder.getAbsolutePath(), "tmp/repo/");
         new UnZipper().act(templateProjectZip, this.baseFolder);
 
-        Files.move(this.baseFolder.toPath().resolve("wrkf2"), baseFolder.toPath().resolve("wrkf2"));
+        if (false) {
+            Files.move(this.baseFolder.toPath().resolve("wrkf2"), baseFolder.toPath().resolve("wrkf2"));
+        }
 
         remoteRepo = new RemoteRepoMock(baseFolder, false);
         git = new Git(new FileRepository(new File(this.baseFolder, ".git")));
