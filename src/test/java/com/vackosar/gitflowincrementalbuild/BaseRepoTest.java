@@ -57,7 +57,9 @@ public abstract class BaseRepoTest {
 
     @After
     public void after() throws Exception {
-        localRepoMock.close();
+        if (localRepoMock != null) {
+            localRepoMock.close();
+        }
         System.setOut(normalOut);
         normalOut.print(consoleOut.toString());
     }
