@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -89,6 +90,7 @@ public class DifferentFilesTest extends BaseRepoTest {
         super.after();
     }
 
+    @Ignore("Issue #57: WIP")
     @Test(expected = ProvisionException.class)
     public void worktree() throws Exception {
         Path workDir = temporaryFolder.getRoot().toPath().resolve("tmp/repo/wrkf2");

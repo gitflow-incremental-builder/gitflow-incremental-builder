@@ -177,6 +177,7 @@
                     <version>${version.maven-surefire-plugin}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
+                        <test>DifferentFilesTest</test>
                     </configuration>
                 </plugin>
                 <plugin>

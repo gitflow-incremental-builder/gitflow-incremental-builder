@@ -32,6 +32,7 @@ public class GuiceModule extends AbstractModule {
     public Git provideGit(final StaticLoggerBinder staticLoggerBinder, final Configuration configuration) throws IOException, GitAPIException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
         File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
+        logger.info("pomDir is: " + String.valueOf(pomDir.getAbsolutePath()));
         builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
             String gitDirNotFoundMessage = "Git repository root directory not found ascending from current working directory:'" + pomDir + "'.";
@@ -42,10 +43,10 @@ public class GuiceModule extends AbstractModule {
                 throw new SkipExecutionException(gitDirNotFoundMessage);
             }
         }
+        logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         if (isWorktree(builder)) {
             throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());
         }
-        logger.info("Git dir is: " + String.valueOf(builder.getGitDir().getAbsolutePath()));
         return Git.wrap(builder.build());
     }
 
