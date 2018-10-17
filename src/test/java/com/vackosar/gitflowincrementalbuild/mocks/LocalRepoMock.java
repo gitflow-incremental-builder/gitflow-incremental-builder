@@ -11,6 +11,7 @@ import org.eclipse.jgit.transport.URIish;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 public class LocalRepoMock implements AutoCloseable {
 
@@ -22,6 +23,8 @@ public class LocalRepoMock implements AutoCloseable {
     public LocalRepoMock(File baseFolder, boolean withRemote) throws IOException, URISyntaxException, GitAPIException {
         this.baseFolder = new File(baseFolder.getAbsolutePath(), "tmp/repo/");
         new UnZipper().act(templateProjectZip, this.baseFolder);
+
+        Files.move(this.baseFolder.toPath().resolve("wrkf2"), baseFolder.toPath().resolve("wrkf2"));
 
         remoteRepo = new RemoteRepoMock(baseFolder, false);
         git = new Git(new FileRepository(new File(this.baseFolder, ".git")));
