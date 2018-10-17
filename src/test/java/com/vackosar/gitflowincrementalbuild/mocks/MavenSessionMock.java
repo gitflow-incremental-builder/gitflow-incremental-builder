@@ -25,7 +25,10 @@ public class MavenSessionMock {
     public static MavenSession get(Path workDir) throws Exception {
         PomFinder finder = new PomFinder();
         Files.walkFileTree(workDir, finder);
-        List<MavenProject> projects = finder.projects.stream().map(MavenSessionMock::createProject).collect(Collectors.toList());
+        List<MavenProject> projects = finder.projects.stream()
+                .sorted()
+                .map(MavenSessionMock::createProject)
+                .collect(Collectors.toList());
 
         MavenSession mavenSession = mock(MavenSession.class);
         when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
