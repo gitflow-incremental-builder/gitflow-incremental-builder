@@ -39,6 +39,7 @@ public class Configuration {
     public final Map<String, String> argsForNotImpactedModules;
     public final boolean buildAll;
     public final List<String> forceBuildModules;
+    public final List<String> excludeTransitiveModulesPackagedAs;
     public final boolean compareToMergeBase;
     public final boolean fetchBaseBranch;
     public final boolean fetchReferenceBranch;
@@ -63,6 +64,8 @@ public class Configuration {
             buildAll = Boolean.valueOf(Property.buildAll.getValue());
             forceBuildModules = Collections.unmodifiableList(
                     parseDelimited(Property.forceBuildModules.getValue(), ","));
+            excludeTransitiveModulesPackagedAs = Collections.unmodifiableList(
+                    parseDelimited(Property.excludeTransitiveModulesPackagedAs.getValue(), ","));
             compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue());
             fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue());
             fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue());

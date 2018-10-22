@@ -117,7 +117,8 @@ class UnchangedProjectsRemover {
     private Stream<MavenProject> streamProjectWithDependents(MavenProject project) {
         return Stream.concat(
             Stream.of(project),
-            mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream());
+            mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
+                .filter(p -> !configuration.excludeTransitiveModulesPackagedAs.contains(p.getPackaging())));
     }
 
     private Stream<MavenProject> streamProjectWithDependencies(MavenProject project) {

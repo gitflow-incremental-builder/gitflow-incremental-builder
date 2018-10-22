@@ -220,6 +220,7 @@ Maven pom properties configuration with default values is below:
 	<gib.argsForNotImpactedModules></gib.argsForNotImpactedModules>
 	<gib.buildAll>false</gib.buildAll>
 	<gib.forceBuildModules></gib.forceBuildModules>
+	<gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>
 	<gib.compareToMergeBase>true</gib.compareToMergeBase>
 	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
 	<gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
@@ -271,6 +272,16 @@ mvn clean install -Dgib.forceBuildModules=unchanged-module-1,unchanged-module-2
 Each of these modules is subject to `argsForNotImpactedModules` and `skipTestsForNotImpactedModules`.
 
 This property has no effect in case `buildAll` is enabled.
+
+### gib.excludeTransitiveModulesPackagedAs
+
+Defines the packaging (e.g. `jar`) of modules that depend on changed modules but shall not be built.
+
+One possible use case for this is mainly working in an IDE, fixing all compile errors etc. and then just quickly building the least possible amount of modules
+which are needed to (hot-)deploy the changes via `mvn` on the command line.
+In this scenario, by defining `-Dgib.excludeTransitiveModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear` deployment modules will be built. 
+
+This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
 
 ## Requirements
 
