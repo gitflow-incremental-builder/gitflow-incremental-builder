@@ -6,6 +6,19 @@
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
 
+## Table of Contents
+
+- [Usage](#usage)
+  * [Disable in IDE](#disable-in-ide)
+- [Example](#example)
+- [Configuration](#configuration)
+  * [gib.enabled](#gibenabled)
+  * [gib.disableBranchComparison](#gibdisablebranchcomparison)
+  * [gib.uncommited](#gibuncommited)
+  * [gib.untracked](#gibuntracked)
+  * [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
+  * [gib.argsForNotImpactedModules](#gibargsfornotimpactedmodules)
+  * [gib.forceBuildModules](#gibforcebuildmodules)
 
 ## Usage
 
@@ -22,6 +35,13 @@ Builds or tests only changed maven modules compared to reference branch in Git (
     ...
 </build>
 ```
+
+### Disable in IDE
+
+As IDEs like IntelliJ IDEA or Eclipse usually apply their own custom strategy to building changed modules,
+this extension should be disabled in such environments to avoid inconsistencies or errors (e.g. see issue #49).
+
+See [gib.enabled](#gibenabled) in the configuration section.
 
 ## Example
 
@@ -228,6 +248,10 @@ Maven pom properties configuration with default values is below:
 	<gib.failOnError>true</gib.failOnError>
 </properties>
 ```
+
+### gib.enabled
+
+Can be used to disable this extension temporarily or permanently (e.g. to avoid clashes with IDE building strategy).
 
 ### gib.disableBranchComparison
 
