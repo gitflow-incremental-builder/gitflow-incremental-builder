@@ -48,15 +48,18 @@
         <version.plexus-component-metadata>1.7.1</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.7.0</version.maven-compiler-plugin>
-        <version.maven-surefire-plugin>2.22.0</version.maven-surefire-plugin>
+        <version.maven-surefire-plugin>2.22.1</version.maven-surefire-plugin>
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
         <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
         <version.maven-jar-plugin>3.1.0</version.maven-jar-plugin>
+        <version.maven-failsafe-plugin>2.22.1</version.maven-failsafe-plugin>
         <version.maven-site-plugin>3.7.1</version.maven-site-plugin>
         <version.maven-install-plugin>2.5.2</version.maven-install-plugin>
         <version.maven-deploy-plugin>2.8.2</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.3</version.nexus-staging-maven-plugin>
+
+        <gib.it.repo>${project.build.directory}${file.separator}it${file.separator}repo</gib.it.repo>
     </properties>
     <dependencies>
         <dependency>
@@ -170,6 +173,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${version.maven-compiler-plugin}</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -177,7 +184,18 @@
                     <version>${version.maven-surefire-plugin}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
+                        <excludes>
+                            <exclude>**/*IntegrationTest.java</exclude>
+                            <exclude>**/*$*.java</exclude>
+                        </excludes>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit47</artifactId>
+                            <version>${version.maven-surefire-plugin}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -198,6 +216,28 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${version.maven-jar-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${version.maven-failsafe-plugin}</version>
+                    <configuration>
+                        <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
+                        <includes>
+                            <include>**/*IntegrationTest.java</include>
+                        </includes>
+                        <systemPropertyVariables>
+                            <gib.it.repo>${gib.it.repo}</gib.it.repo>
+                            <gib.it.version>${project.version}</gib.it.version>
+                        </systemPropertyVariables>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit47</artifactId>
+                            <version>${version.maven-failsafe-plugin}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -242,19 +282,40 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-component-metadata</artifactId>
                 <executions>
                     <execution>
                         <goals>
                             <goal>generate-metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>pre-it-install-gib</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
+                            <localRepositoryPath>${gib.it.repo}</localRepositoryPath>
+                            <pomFile>${project.basedir}/pom.xml</pomFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>

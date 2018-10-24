@@ -6,15 +6,12 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,51 +19,54 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Integration test which installs current version into your Maven Repository! See {@link MavenInstallRunningIntegrationTest#installCurrentVersion()}
+ * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
+ * <p/>
+ * This test is expected to be called via {@code maven-failsafe-plugin} and requires two system properties:
+ * <ul>
+ * <li>{@code gib.it.repo} defining the path of the maven repo containing the {@code gitflow-incremental-builder} jarfile to test</li>
+ * <li>{@code gib.it.version} defining the version of the {@code gitflow-incremental-builder} jarfile to test</li>
+ * </ul>
  */
-public class MavenInstallRunningIntegrationTest extends BaseRepoTest {
+public class MavenIntegrationTest extends BaseRepoTest {
 
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
 
+    private static String localRepoArg;
     private static String gibVersionArg;
+    private static boolean initialInstallDone;
 
     @BeforeClass
-    public static void installCurrentVersion() throws IOException, InterruptedException {
-        awaitProcess(new ProcessBuilder(cmdArgs("mvn", "install", "-Dmaven.test.skip=true")).start());
-        // Get current version from pom.xml
-        String version = Files.readAllLines(Paths.get("pom.xml")).stream().filter(s -> s.contains("<version>")).findFirst().get()
-            .replaceAll("</*version>", "").replaceAll("^[ \t]*", "");
-        gibVersionArg = "-DgibVersion=" + version;
+    public static void evaluateSystemProperties() throws IOException, InterruptedException {
+        localRepoArg = "-Dmaven.repo.local=" + System.getProperty("gib.it.repo");
+        gibVersionArg = "-DgibVersion=" + System.getProperty("gib.it.version");
+
+        System.out.println(
+                "The first test method will execute an initial 'mvn install ...' on the test project to populate the test repo."
+                + " This might take a while.");
     }
 
     /**
-     * Installs all test artifacts/modules to avoid dependency problems when only building a subset incrementally. 
+     * Installs all test artifacts/modules to avoid dependency problems when only building a subset incrementally.
+     * <p/>
+     * This also downloads all required maven core and plugin dependencies into the test repo.
+     * <p/>
+     * This is performed only once for the entire class but cannot be moved to {@link BeforeClass} as {@link BaseRepoTest} (re-)creates the
+     * test project for each test in {@link Before}.
      *
      * @throws IOException on process execution errors
      * @throws InterruptedException on process execution errors
      */
     @Before
-    public void installTestArtifacts() throws IOException, InterruptedException {
-        awaitProcess(
-            new ProcessBuilder(cmdArgs("mvn", "install",
-                DEFAULT_POMFILE_ARG, gibVersionArg, "-Dgib." + Property.enabled + "=false"))
-                    .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
-                    .start());
-    }
-
-    /**
-     * Removes the test artifacts/modules which have been installed by {@link #installTestArtifacts()}.
-     *
-     * @throws IOException on process execution errors
-     * @throws InterruptedException on process execution errors
-     */
-    @After
-    public void purgeInstalledTestArtifacts() throws IOException, InterruptedException {
-        awaitProcess(
-            new ProcessBuilder(cmdArgs("mvn", "org.codehaus.mojo:build-helper-maven-plugin:3.0.0:remove-project-artifact",
-                DEFAULT_POMFILE_ARG, gibVersionArg,"-Dgib." + Property.enabled + "=false"))
-                    .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
-                    .start());
+    public void initialInstall() throws IOException, InterruptedException {
+        if (initialInstallDone) {
+            return;
+        }
+        awaitProcess(new ProcessBuilder(
+                cmdArgs(
+                        "mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, "-Dgib." + Property.enabled + "=false"))
+                .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
+                .start());
+        initialInstallDone = true;
     }
     
     @Test
@@ -178,7 +178,7 @@ public class MavenInstallRunningIntegrationTest extends BaseRepoTest {
     }
 
     private String executeBuild(List<String> args) throws IOException, InterruptedException {
-        final List<String> commandBase = cmdArgs("mvn", "package", gibVersionArg);
+        final List<String> commandBase = cmdArgs("mvn", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
         if (args.stream().noneMatch(s->s.startsWith("--file"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
