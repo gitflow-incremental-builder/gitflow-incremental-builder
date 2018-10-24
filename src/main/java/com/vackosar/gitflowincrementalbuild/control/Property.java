@@ -12,6 +12,7 @@ public enum Property {
     argsForNotImpactedModules(""),
     buildAll("false"),
     forceBuildModules(""),
+    excludeTransitiveModulesPackagedAs(""),
     compareToMergeBase("true"),
     fetchBaseBranch("false"),
     fetchReferenceBranch("false"),

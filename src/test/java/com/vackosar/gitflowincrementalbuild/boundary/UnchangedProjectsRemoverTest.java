@@ -46,6 +46,7 @@ public class UnchangedProjectsRemoverTest {
 
     private static final String ARTIFACT_ID_1 = "first-module";
     private static final String ARTIFACT_ID_2 = "changed-module";
+    private static final String ARTIFACT_ID_2_DEP_WAR = ARTIFACT_ID_2 + "-dependent-war";
 
     @Mock(name = ARTIFACT_ID_1)
     private MavenProject mavenProjectMock;
@@ -83,7 +84,7 @@ public class UnchangedProjectsRemoverTest {
     
     @Test
     public void singleChanged() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         buildUnderTest().act();
 
@@ -92,7 +93,7 @@ public class UnchangedProjectsRemoverTest {
 
     @Test
     public void singleChanged_alsoMake_argsForNotImpactedModules() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
@@ -113,7 +114,7 @@ public class UnchangedProjectsRemoverTest {
 
     @Test
     public void singleChanged_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
                 Property.argsForNotImpactedModules, "enforcer.skip=true argWithNoValue",
@@ -133,7 +134,7 @@ public class UnchangedProjectsRemoverTest {
 
     @Test
     public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
-        MavenProject changedModuleMock = addChangedModuleMock(ARTIFACT_ID_2);
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
                 Property.forceBuildModules, mavenProjectMock.getArtifactId());
@@ -145,18 +146,140 @@ public class UnchangedProjectsRemoverTest {
 
     @Test
     public void singleChanged_forceBuildModules_two() throws GitAPIException, IOException {
-        MavenProject changedProjectMock = addChangedModuleMock(ARTIFACT_ID_2);
-        MavenProject unchangedProjectMock = addChangedModuleMock("unchanged-module");
-        changedProjects.remove(unchangedProjectMock);
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
         ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
                 Property.forceBuildModules,
-                mavenProjectMock.getArtifactId() + "," + unchangedProjectMock.getArtifactId());
+                mavenProjectMock.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
 
         buildUnderTest(propertyMap).act();
 
         Mockito.verify(mavenSessionMock).setProjects(
-                Arrays.asList(mavenProjectMock, unchangedProjectMock, changedProjectMock));
+                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_oneExcluded() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
+
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(changedProjectMock));
+    }
+
+    @Test
+    public void singleChanged_excludeTransitiveModulesPackagedAs_twoTransitive_oneExcluded() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
+        MavenProject dependentJar = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar, dependentJar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(changedProjectMock, dependentJar));
+    }
+
+    @Test
+    public void singleChanged_excludeTransitiveModulesPackagedAs_twoTransitive_twoExcluded() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
+        MavenProject dependentEar = addModuleMock(ARTIFACT_ID_2 + "-dependent-ear", false, "ear");
+
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar, dependentEar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war,ear");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(changedProjectMock));
+    }
+
+    @Test
+    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_buildAll() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
+
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war",
+                Property.buildAll,"true");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock, never())
+                .setProjects(anyListOf(MavenProject.class));
+    }
+
+    @Test
+    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_forceBuildModules() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
+
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war",
+                Property.forceBuildModules,dependentWar.getArtifactId());
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(dependentWar, changedProjectMock));
+    }
+
+    @Test
+    public void twoChanged_excludeTransitiveModulesPackagedAs_changedNotExcluded() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, true, "war");
+
+        // war module is changed, must be retained!
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(changedProjectMock, dependentWar));
+    }
+
+    @Test
+    public void twoChanged_excludeTransitiveModulesPackagedAs_changedNotExcluded_transitive() throws GitAPIException, IOException {
+        MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, true, "war");
+
+        // war module is changed, must be retained - even if depending on changedProjectMock!
+        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
+                .thenReturn(Arrays.asList(dependentWar));
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.excludeTransitiveModulesPackagedAs,"war");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(changedProjectMock, dependentWar));
     }
 
     private Properties addPropertiesToMock(MavenProject mavenProjectMock) {
@@ -165,10 +288,17 @@ public class UnchangedProjectsRemoverTest {
         return properties;
     }
 
-    private MavenProject addChangedModuleMock(String moduleArtifactId) {
+    private MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged) {
+        return addModuleMock(moduleArtifactId, addToChanged, "jar");
+    }
+
+    private MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged, final String packaging) {
         MavenProject changedModuleMock = mock(MavenProject.class, moduleArtifactId);
         when(changedModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
-        changedProjects.add(changedModuleMock);
+        when(changedModuleMock.getPackaging()).thenReturn(packaging);
+        if (addToChanged) {
+            changedProjects.add(changedModuleMock);
+        }
         projects.add(changedModuleMock);
         addPropertiesToMock(changedModuleMock);
 
