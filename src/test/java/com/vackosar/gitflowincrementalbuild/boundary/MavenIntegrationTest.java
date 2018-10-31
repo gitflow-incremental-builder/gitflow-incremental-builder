@@ -1,9 +1,9 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.ProcessUtils;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
@@ -61,8 +61,8 @@ public class MavenIntegrationTest extends BaseRepoTest {
         if (initialInstallDone) {
             return;
         }
-        awaitProcess(new ProcessBuilder(
-                cmdArgs(
+        ProcessUtils.awaitProcess(new ProcessBuilder(
+                ProcessUtils.cmdArgs(
                         "mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, "-Dgib." + Property.enabled + "=false"))
                 .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
                 .start());
@@ -178,7 +178,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private String executeBuild(List<String> args) throws IOException, InterruptedException {
-        final List<String> commandBase = cmdArgs("mvn", "package", localRepoArg, gibVersionArg);
+        final List<String> commandBase = ProcessUtils.cmdArgs("mvn", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
         if (args.stream().noneMatch(s->s.startsWith("--file"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
@@ -190,29 +190,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
                 new ProcessBuilder(command)
                         .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
                         .start();
-        return awaitProcess(process);
-    }
-
-    private static String awaitProcess(Process process) throws InterruptedException {
-        final String stdOut = convertStreamToString(process.getInputStream());
-        final String stdErr = convertStreamToString(process.getErrorStream());
-        final int returnCode = process.waitFor();
-        if (returnCode > 0) {
-            System.err.println(stdOut);
-            System.err.println(stdErr);
-            Assert.fail("Process failed with return code " + returnCode);
-        }
-        return stdOut;
-    }
-
-    private static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-    private static List<String> cmdArgs(String... args) {
-        return SystemUtils.IS_OS_WINDOWS
-            ? Stream.concat(Stream.of("cmd", "/c"), Arrays.stream(args)).collect(Collectors.toList())
-            : Arrays.asList(args);
+        return ProcessUtils.awaitProcess(process);
     }
 }
