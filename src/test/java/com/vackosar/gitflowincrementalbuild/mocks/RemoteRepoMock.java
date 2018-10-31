@@ -18,7 +18,6 @@ public class RemoteRepoMock implements AutoCloseable {
     private File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
     private boolean bare;
     private Daemon server;
-    private RepoResolver resolver;
 
     public RemoteRepoMock(File baseFolder, boolean bare) throws IOException {
         this.bare = bare;
@@ -40,8 +39,7 @@ public class RemoteRepoMock implements AutoCloseable {
         try {
             server = new Daemon(new InetSocketAddress(port));
             server.getService("git-receive-pack").setEnabled(true);
-            resolver = new RepoResolver(repoFolder, bare);
-            server.setRepositoryResolver(resolver);
+            server.setRepositoryResolver(new RepoResolver(repoFolder, bare));
             server.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -55,7 +53,6 @@ public class RemoteRepoMock implements AutoCloseable {
     @Override
     public void close() throws Exception {
         server.stop();
-        resolver.close();
         git.getRepository().close();
         git.close();
     }
