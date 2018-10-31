@@ -4,7 +4,6 @@ import com.google.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,10 +17,6 @@ public class Modules {
     }
 
     private static Path getPath(MavenProject project) {
-        try {
-            return project.getBasedir().toPath().normalize().toAbsolutePath().toRealPath();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return project.getBasedir().toPath().normalize().toAbsolutePath();
     }
 }
