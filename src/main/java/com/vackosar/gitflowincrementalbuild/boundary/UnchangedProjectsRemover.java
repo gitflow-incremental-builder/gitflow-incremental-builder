@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,7 +52,7 @@ class UnchangedProjectsRemover {
                 mavenSession.getGoals().add("validate");
             } else if (!configuration.forceBuildModules.isEmpty()) {
                 Stream<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
-                        .filter(p -> configuration.forceBuildModules.contains(p.getArtifactId()))
+                        .filter(p -> matchesAny(p.getArtifactId(), configuration.forceBuildModules))
                         .filter(p -> !rebuild.contains(p))
                         .map(this::applyNotImpactedModuleArgs);
                 mavenSession.setProjects(
@@ -125,6 +126,10 @@ class UnchangedProjectsRemover {
         return Stream.concat(
             Stream.of(project),
             mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream());
+    }
+
+    private boolean matchesAny(final String str, Collection<Pattern> patterns) {
+        return patterns.stream().anyMatch(pattern -> pattern.matcher(str).matches());
     }
 }
 

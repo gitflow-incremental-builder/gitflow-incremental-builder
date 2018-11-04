@@ -293,6 +293,10 @@ Defines artifact ids of modules to build forcibly, even if these modules have no
 ```
 mvn clean install -Dgib.forceBuildModules=unchanged-module-1,unchanged-module-2
 ```
+Regular expressions are also supported in each comma separated part, e.g.:
+```
+mvn clean install -Dgib.forceBuildModules=unchanged-module-.*,another-module
+```
 Each of these modules is subject to `argsForNotImpactedModules` and `skipTestsForNotImpactedModules`.
 
 This property has no effect in case `buildAll` is enabled.
