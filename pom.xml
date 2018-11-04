@@ -36,11 +36,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->
-        <version.jgit>5.1.2.201810061102-r</version.jgit>
+        <version.jgit>5.1.3.201810200350-r</version.jgit>
         <version.maven-core>3.3.9</version.maven-core>
-        <version.guice>4.2.1</version.guice>
+        <version.guice>4.2.2</version.guice>
         <version.junit>4.12</version.junit>
-        <version.mockito-all>1.8.5</version.mockito-all>
+        <version.mockito-all>1.10.19</version.mockito-all>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M2</version.maven-enforcer-plugin>
