@@ -42,8 +42,6 @@ public class DifferentFiles {
         if (configuration.uncommited || configuration.untracked) {
             paths.addAll(getChangesFromStatus(workTree));
         }
-        git.getRepository().close();
-        git.close();
         return paths;
     }
 

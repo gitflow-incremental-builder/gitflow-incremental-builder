@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
@@ -9,6 +10,7 @@ import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -51,10 +53,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     }
 
     private void execute(MavenSession session) throws GitAPIException, IOException {
-        Guice
-                .createInjector(new GuiceModule(logger, session))
-                .getInstance(UnchangedProjectsRemover.class)
-                .act();
+        Injector injector = Guice.createInjector(new GuiceModule(logger, session));
+        try {
+            injector.getInstance(UnchangedProjectsRemover.class).act();
+        } finally {
+            Git git = injector.getInstance(Git.class);
+            git.getRepository().close();
+            git.close();
+        }
     }
 
     private void mergeCurrentProjectProperties(MavenSession mavenSession) {

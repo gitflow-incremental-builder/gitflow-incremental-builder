@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RepoResolver implements RepositoryResolver<DaemonClient>, AutoCloseable {
+public class RepoResolver implements RepositoryResolver<DaemonClient> {
 
     private static final String DOT_GIT = ".git";
     private Map<String, Repository> repositories = new HashMap<>();
@@ -35,10 +35,14 @@ public class RepoResolver implements RepositoryResolver<DaemonClient>, AutoClose
     }
 
     private Repository getOrCreateRepo(String name) {
-        if (!repositories.containsKey(name)) {
-            repositories.put(name, createRepo());
+        Repository repository = repositories.get(name);
+        if (repository != null) {
+            repository.incrementOpen();
+            return repository;
         }
-        return repositories.get(name);
+        repository = createRepo();
+        repositories.put(name, repository);
+        return repository;
     }
 
     private Repository createRepo() {
@@ -58,12 +62,5 @@ public class RepoResolver implements RepositoryResolver<DaemonClient>, AutoClose
             throw new RuntimeException(e);
         }
         return repo;
-    }
-
-    @Override
-    public void close() throws Exception {
-        for (Map.Entry<String, Repository> repository: repositories.entrySet()) {
-            repository.getValue().close();
-        }
     }
 }
