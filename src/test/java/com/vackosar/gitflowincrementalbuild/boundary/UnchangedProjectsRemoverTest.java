@@ -44,7 +44,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 @RunWith(MockitoJUnitRunner.class)
 public class UnchangedProjectsRemoverTest {
 
-    private static final String ARTIFACT_ID_1 = "first-module";
+    private static final String ARTIFACT_ID_1 = "first-unchanged-module";
     private static final String ARTIFACT_ID_2 = "changed-module";
     private static final String ARTIFACT_ID_2_DEP_WAR = ARTIFACT_ID_2 + "-dependent-war";
 
@@ -152,6 +152,36 @@ public class UnchangedProjectsRemoverTest {
         ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
                 Property.forceBuildModules,
                 mavenProjectMock.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_oneWildcard() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.forceBuildModules,
+                ".*unchanged-module");
+
+        buildUnderTest(propertyMap).act();
+
+        Mockito.verify(mavenSessionMock).setProjects(
+                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_twoWildcards() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+
+        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
+                Property.forceBuildModules,
+                "first-.*-module,unchanged-.*");
 
         buildUnderTest(propertyMap).act();
 
@@ -311,7 +341,7 @@ public class UnchangedProjectsRemoverTest {
         return buildUnderTest(ImmutableMap.of());
     }
 
-    private UnchangedProjectsRemover buildUnderTest(ImmutableMap<Property, String> propertyMap) throws IOException {
+    private UnchangedProjectsRemover buildUnderTest(ImmutableMap<Property, String> propertyMap) {
         Configuration configuration;
         Properties origProps = (Properties) System.getProperties().clone();
         try {
