@@ -18,12 +18,19 @@ import java.io.File;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 public abstract class BaseRepoTest {
 
+    /** The project properties for the top-level project of {@link #getMavenSessionMock() MavenSessionMock} for config init. */
+    protected final Properties projectProperties = new Properties();
     private final boolean useSymLinkedFolder;
+    private final boolean withRemote;
 
     protected LocalRepoMock localRepoMock;
+    /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
+    protected Path repoPath;
+
     private StaticLoggerBinder staticLoggerBinder;
     protected ByteArrayOutputStream consoleOut;
     private final PrintStream normalOut;
@@ -32,12 +39,13 @@ public abstract class BaseRepoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public BaseRepoTest() {
-        this(false);
+        this(false, false);
     }
 
-    public BaseRepoTest(boolean useSymLinkedFolder) {
+    public BaseRepoTest(boolean useSymLinkedFolder, boolean withRemote) {
         this.normalOut = System.out;
         this.useSymLinkedFolder = useSymLinkedFolder;
+        this.withRemote = withRemote;
     }
 
     @Before
@@ -65,27 +73,23 @@ public abstract class BaseRepoTest {
 
             repoBaseFolder = link.toFile();
         }
-        localRepoMock = new LocalRepoMock(repoBaseFolder, false);
+        localRepoMock = new LocalRepoMock(repoBaseFolder, withRemote);
+        repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
     }
 
-    protected void init() {
+    private void init() {
         staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         resetConsoleOut();
-        resetProperties();
+
+        projectProperties.setProperty(Property.uncommited.fullName(), "false");
+        projectProperties.setProperty(Property.untracked.fullName(), "false");
+        projectProperties.setProperty(Property.referenceBranch.fullName(), "refs/heads/develop");
+        projectProperties.setProperty(Property.compareToMergeBase.fullName(), "false");
     }
 
     private void resetConsoleOut() {
         consoleOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(consoleOut));
-    }
-
-    private void resetProperties() {
-        for (Property property: Property.values()) {
-            property.setValue(property.defaultValue);
-        }
-        Property.uncommited.setValue("false");
-        Property.referenceBranch.setValue("refs/heads/develop");
-        Property.compareToMergeBase.setValue("false");
     }
 
     @After
@@ -97,12 +101,7 @@ public abstract class BaseRepoTest {
         normalOut.print(consoleOut.toString());
     }
 
-    protected LocalRepoMock getLocalRepoMock() {
-        return localRepoMock;
-    }
-
     protected MavenSession getMavenSessionMock() throws Exception {
-        return MavenSessionMock.get(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+        return MavenSessionMock.get(repoPath, projectProperties);
     }
-
 }
