@@ -6,12 +6,10 @@ import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.execution.MavenSession;
-import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,7 +29,6 @@ public abstract class BaseRepoTest {
     /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
     protected Path repoPath;
 
-    private StaticLoggerBinder staticLoggerBinder;
     protected ByteArrayOutputStream consoleOut;
     private final PrintStream normalOut;
 
@@ -78,7 +75,6 @@ public abstract class BaseRepoTest {
     }
 
     private void init() {
-        staticLoggerBinder = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
         resetConsoleOut();
 
         projectProperties.setProperty(Property.uncommited.fullName(), "false");
