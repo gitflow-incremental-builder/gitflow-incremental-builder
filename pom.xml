@@ -65,7 +65,7 @@
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.3</version.nexus-staging-maven-plugin>
 
-        <gib.it.repo>${project.build.directory}${file.separator}it${file.separator}repo</gib.it.repo>
+        <gibIntegrationTestRepo>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepo>
 
         <!-- Properties to skip UnitTests (UTs) via surefire-plugin and/or IntegrationTests (UTs) via failsafe-plugin
              See also: https://stackoverflow.com/a/37880379 -->
@@ -244,6 +244,13 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${version.maven-jar-plugin}</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -257,8 +264,8 @@
                             <include>**/*IntegrationTest.java</include>
                         </includes>
                         <systemPropertyVariables>
-                            <gib.it.repo>${gib.it.repo}</gib.it.repo>
-                            <gib.it.version>${project.version}</gib.it.version>
+                            <gibIntegrationTestRepo>${gibIntegrationTestRepo}</gibIntegrationTestRepo>
+                            <gibIntegrationTestVersion>${project.version}</gibIntegrationTestVersion>
                         </systemPropertyVariables>
                     </configuration>
                     <dependencies>
@@ -333,7 +340,7 @@
                         </goals>
                         <configuration>
                             <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                            <localRepositoryPath>${gib.it.repo}</localRepositoryPath>
+                            <localRepositoryPath>${gibIntegrationTestRepo}</localRepositoryPath>
                             <pomFile>${project.basedir}/pom.xml</pomFile>
                         </configuration>
                     </execution>

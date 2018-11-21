@@ -38,7 +38,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             return;
         }
 
-        logger.info("gitflow-incremental-builder starting..."); //TODO Print version.
+        logger.info("gitflow-incremental-builder " + getClass().getPackage().getImplementationVersion() + " starting...");
         try {
             unchangedProjectsRemover.act();
         } catch (Exception e) {
