@@ -1,6 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import com.google.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 
@@ -8,7 +7,11 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 @Singleton
+@Named("gib.modules")
 public class Modules {
 
     public Map<Path, MavenProject> createPathMap(MavenSession session) {

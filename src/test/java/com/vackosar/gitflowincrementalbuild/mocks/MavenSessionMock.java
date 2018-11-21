@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 public class MavenSessionMock {
 
-    public static MavenSession get(Path workDir) throws Exception {
+    public static MavenSession get(Path workDir, Properties topLevelProjectProperties) throws Exception {
         PomFinder finder = new PomFinder();
         Files.walkFileTree(workDir, finder);
         List<MavenProject> projects = finder.projects.stream()
@@ -30,12 +30,14 @@ public class MavenSessionMock {
                 .map(MavenSessionMock::createProject)
                 .collect(Collectors.toList());
 
+        MavenProject topLevelProject = projects.get(0);
+        topLevelProject.getModel().setProperties(topLevelProjectProperties);
         MavenSession mavenSession = mock(MavenSession.class);
-        when(mavenSession.getCurrentProject()).thenReturn(projects.get(0));
+        when(mavenSession.getCurrentProject()).thenReturn(topLevelProject);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
         when(mavenSession.getRequest()).thenReturn(request);
         when(mavenSession.getProjects()).thenReturn(projects);
-        when(mavenSession.getTopLevelProject()).thenReturn(projects.get(0));
+        when(mavenSession.getTopLevelProject()).thenReturn(topLevelProject);
         ProjectDependencyGraph dependencyGraphMock = mock(ProjectDependencyGraph.class);
         when(mavenSession.getProjectDependencyGraph()).thenReturn(dependencyGraphMock);
         return mavenSession;

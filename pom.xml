@@ -31,6 +31,11 @@
             <url>https://github.com/vackosar</url>
             <id>vackosar</id>
         </developer>
+        <developer>
+            <name>Falko Modler</name>
+            <url>https://github.com/famod</url>
+            <id>famod</id>
+        </developer>
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,8 +43,9 @@
         <!-- Dependency versions -->
         <version.jgit>5.1.3.201810200350-r</version.jgit>
         <version.maven-core>3.3.9</version.maven-core>
-        <version.guice>4.2.2</version.guice>
+        <version.javax.inject>1</version.javax.inject>
         <version.junit>4.12</version.junit>
+        <version.powermock-reflect>1.7.4</version.powermock-reflect>
         <version.mockito-all>1.10.19</version.mockito-all>
 
         <!-- Plugin versions -->
@@ -60,6 +66,13 @@
         <version.nexus-staging-maven-plugin>1.6.3</version.nexus-staging-maven-plugin>
 
         <gib.it.repo>${project.build.directory}${file.separator}it${file.separator}repo</gib.it.repo>
+
+        <!-- Properties to skip UnitTests (UTs) via surefire-plugin and/or IntegrationTests (UTs) via failsafe-plugin
+             See also: https://stackoverflow.com/a/37880379 -->
+        <skipTests>false</skipTests>
+        <skipITs>${skipTests}</skipITs>
+        <skipUTs>${skipTests}</skipUTs>
+
     </properties>
     <dependencies>
         <dependency>
@@ -68,20 +81,34 @@
             <version>${version.jgit}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${version.guice}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${version.maven-core}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <!-- avoid direct usage of Guice annotations -->
+                <exclusion>
+                    <groupId>com.google.inject</groupId>
+                    <artifactId>guice</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${version.javax.inject}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-reflect</artifactId>
+            <version>${version.powermock-reflect}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -183,6 +210,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.maven-surefire-plugin}</version>
                     <configuration>
+                        <skipTests>${skipUTs}</skipTests>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
                         <excludes>
                             <exclude>**/*IntegrationTest.java</exclude>
@@ -222,6 +250,8 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${version.maven-failsafe-plugin}</version>
                     <configuration>
+                        <skipTests>${skipTests}</skipTests>
+                        <skipITs>${skipITs}</skipITs>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
                         <includes>
                             <include>**/*IntegrationTest.java</include>

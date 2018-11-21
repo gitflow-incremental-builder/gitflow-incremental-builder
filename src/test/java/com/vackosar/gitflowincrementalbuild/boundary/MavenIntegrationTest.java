@@ -2,6 +2,7 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import com.vackosar.gitflowincrementalbuild.ProcessUtils;
+import com.vackosar.gitflowincrementalbuild.control.DifferentFiles;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
 import org.eclipse.jgit.api.Git;
@@ -64,7 +65,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
         ProcessUtils.awaitProcess(new ProcessBuilder(
                 ProcessUtils.cmdArgs(
                         "mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, "-Dgib." + Property.enabled + "=false"))
-                .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
+                .directory(localRepoMock.getBaseCanonicalBaseFolder())
                 .start());
         initialInstallDone = true;
     }
@@ -73,7 +74,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     public void worktreeFails() throws Exception {
         final String output = executeBuild(Collections.singletonList("--file=wrkf2/parent/pom.xml"));
         System.out.println(output);
-        Assert.assertTrue(output.contains(GuiceModule.UNSUPPORTED_WORKTREE));
+        Assert.assertTrue(output.contains(DifferentFiles.UNSUPPORTED_WORKTREE));
     }
 
     @Test
@@ -178,7 +179,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private String executeBuild(List<String> args) throws IOException, InterruptedException {
-        final List<String> commandBase = ProcessUtils.cmdArgs("mvn", "package", localRepoArg, gibVersionArg);
+        final List<String> commandBase = ProcessUtils.cmdArgs("mvn", "-e", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
         if (args.stream().noneMatch(s->s.startsWith("--file"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
@@ -188,7 +189,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
         List<String> command = Stream.concat(commandBaseWithFile.stream(), args.stream()).collect(Collectors.toList());
         final Process process =
                 new ProcessBuilder(command)
-                        .directory(getLocalRepoMock().getBaseCanonicalBaseFolder())
+                        .directory(localRepoMock.getBaseCanonicalBaseFolder())
                         .start();
         return ProcessUtils.awaitProcess(process);
     }
