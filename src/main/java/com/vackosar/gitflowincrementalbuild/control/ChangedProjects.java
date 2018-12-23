@@ -6,14 +6,17 @@ import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
+@Named("gib.changedProjects")
 public class ChangedProjects {
 
     @Inject private Logger logger;
@@ -23,12 +26,12 @@ public class ChangedProjects {
 
     public Set<MavenProject> get() throws GitAPIException, IOException {
         return differentFiles.get().stream()
-                .map(path -> findProject(path, mavenSession))
-                .filter(project -> project != null)
+                .map(path -> findProject(path))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
-    private MavenProject findProject(Path diffPath, MavenSession mavenSession) {
+    private MavenProject findProject(Path diffPath) {
         Map<Path, MavenProject> map = modules.createPathMap(mavenSession);
         Path path = diffPath;
         while (path != null && ! map.containsKey(path)) {

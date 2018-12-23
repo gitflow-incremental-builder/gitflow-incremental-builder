@@ -1,5 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import java.util.Optional;
+import java.util.Properties;
+
 public enum Property {
     enabled("true"),
     repositorySshKey(""),
@@ -18,14 +21,15 @@ public enum Property {
     fetchReferenceBranch("false"),
     excludePathRegex(Constants.NEVER_MATCH_REGEX),
     failOnMissingGitDir("true"),
-    failOnError("true")
-    ;
+    failOnError("true");
 
     public static final String PREFIX = "gib.";
 
-    public final String defaultValue;
+    private final String fullName;
+    private final String defaultValue;
 
     Property(String defaultValue) {
+        this.fullName = PREFIX + name();
         this.defaultValue = defaultValue;
     }
 
@@ -34,19 +38,12 @@ public enum Property {
     }
 
     public String fullName() {
-        return PREFIX + this.name();
+        return fullName;
     }
 
-    public String getValue() {
-        return System.getProperty(fullName(), defaultValue);
-    }
-
-    public void setValue(String value) {
-        if (value ==null) {
-            System.clearProperty(fullName());
-        } else {
-            System.setProperty(fullName(), value);
-        }
+    public String getValue(Properties projectProperties) {
+        return Optional.ofNullable(System.getProperty(fullName))
+                .orElseGet(() -> projectProperties.getProperty(fullName, defaultValue));
     }
 
     public static String exemplifyAll() {

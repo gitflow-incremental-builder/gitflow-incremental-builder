@@ -1,34 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Provides;
-import com.google.inject.ProvisionException;
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.boundary.GuiceModule;
-import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
-import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
-import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
-import org.apache.maven.execution.MavenSession;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
-import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.model.Statement;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.impl.StaticLoggerBinder;
-
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,165 +9,140 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.apache.maven.execution.MavenSession;
+import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.junit.Assert;
+import org.junit.Test;
+import org.powermock.reflect.Whitebox;
+
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
+
 public class DifferentFilesTest extends BaseRepoTest {
+
+    private static final Logger CONSOLE_LOGGER = new ConsoleLoggerManager().getLoggerForComponent("Test");
 
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
     private static final String FETCH_FILE = "fetch-file";
     private static final String DEVELOP = "refs/heads/develop";
     private static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
-    private Path workDir;
-    private ModuleFacade moduleFacade;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    /**
-     * Resets the user.dir system property that is manipulated by {@link #setWorkDir(Path)} to keep test classes isolated.
-     */
-    @Rule
-    public TestRule userDirResettingRule = (base, description) -> new Statement() {
-        @Override
-        public void evaluate() throws Throwable {
-            final String origUserDir = System.getProperty("user.dir");
-            try {
-                base.evaluate();
-            } finally {
-                System.setProperty("user.dir", origUserDir);
-            }
-        }
-    };
-
-    @Before
-    public void before() throws Exception {
-        super.init();
-        workDir = temporaryFolder.getRoot().getCanonicalFile().toPath().resolve("tmp/repo/");
-        setWorkDir(workDir);
-        localRepoMock = new LocalRepoMock(temporaryFolder.getRoot(), true);
-
-        Property.uncommited.setValue(Boolean.FALSE.toString());
-        Property.untracked.setValue(Boolean.FALSE.toString());
+    public DifferentFilesTest() {
+        super(/* useSymLinkedFolder */ false, /* withRemote */ true);
     }
 
-    @After
-    public void after() throws Exception {
-        if (moduleFacade != null) {
-            moduleFacade.close();
-        }
-        super.after();
-    }
-
-    @Test(expected = ProvisionException.class)
+    @Test(expected = SkipExecutionException.class)
     public void worktree() throws Exception {
         Path workDir = temporaryFolder.getRoot().toPath().resolve("tmp/repo/wrkf2");
-        setWorkDir(workDir);
-        getInstance(workDir).get();
+
+        invokeUnderTest(MavenSessionMock.get(workDir, projectProperties));
     }
 
     @Test
     public void listIncludingUncommitted() throws Exception {
-        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        Property.uncommited.setValue(Boolean.TRUE.toString());
+        projectProperties.setProperty(Property.uncommited.fullName(), "true");
 
-        Assert.assertTrue(getInstance(repoPath).get().contains(modifiedFilePath));
+        Assert.assertTrue(invokeUnderTest().contains(modifiedFilePath));
     }
 
     @Test
     public void listIncludingUncommitted_disabled() throws Exception {
-        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        Property.uncommited.setValue(Boolean.FALSE.toString());
+        projectProperties.setProperty(Property.uncommited.fullName(), "false");
 
-        Assert.assertFalse(getInstance(repoPath).get().contains(modifiedFilePath));
+        Assert.assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
 
     @Test
     public void listIncludingUntracked() throws Exception {
-        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
         Path newFilePath = createNewUntrackedFile(repoPath);
-        Property.untracked.setValue(Boolean.TRUE.toString());
+        projectProperties.setProperty(Property.untracked.fullName(), "true");
 
-        Assert.assertTrue(getInstance(repoPath).get().contains(newFilePath));
+        Assert.assertTrue(invokeUnderTest().contains(newFilePath));
     }
 
     @Test
     public void listIncludingUntracked_disabled() throws Exception {
-        Path repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
         Path newFilePath = createNewUntrackedFile(repoPath);
-        Property.untracked.setValue(Boolean.FALSE.toString());
+        projectProperties.setProperty(Property.untracked.fullName(), "false");
 
-        Assert.assertFalse(getInstance(repoPath).get().contains(newFilePath));
+        Assert.assertFalse(invokeUnderTest().contains(newFilePath));
     }
 
     @Test
     public void listWithCheckout() throws Exception {
-        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        Property.baseBranch.setValue("refs/heads/feature/2");
-        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
+        localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        projectProperties.setProperty(Property.baseBranch.fullName(), "refs/heads/feature/2");
+        projectProperties.setProperty(Property.baseBranch.fullName(), "refs/heads/feature/2");
+
+        invokeUnderTest();
+
         Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/2"));
     }
 
     @Test
     public void list() throws Exception {
-        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file2"),
-                Paths.get(workDir + "/parent/child2/subchild2/src/resources/file22"),
-                Paths.get(workDir + "/parent/child3/src/resources/file1"),
-                Paths.get(workDir + "/parent/child4/pom.xml"),
-                Paths.get(workDir + "/parent/testJarDependent/src/resources/file5")
+                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
+                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22"),
+                Paths.get(repoPath + "/parent/child3/src/resources/file1"),
+                Paths.get(repoPath + "/parent/child4/pom.xml"),
+                Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
                 ));
-        Assert.assertEquals(expected, differentFiles.get());
+
+        Assert.assertEquals(expected, invokeUnderTest());
     }
 
     @Test
     public void listExcluding() throws Exception {
-        Property.excludePathRegex.setValue(".*file2.*");
-        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(workDir + "/parent/child3/src/resources/file1"),
-                Paths.get(workDir + "/parent/child4/pom.xml"),
-                Paths.get(workDir + "/parent/testJarDependent/src/resources/file5")
+                Paths.get(repoPath + "/parent/child3/src/resources/file1"),
+                Paths.get(repoPath + "/parent/child4/pom.xml"),
+                Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
         ));
-        Assert.assertEquals(expected, differentFiles.get());
+
+        Assert.assertEquals(expected, invokeUnderTest());
     }
 
     @Test
     public void listWithDisabledBranchComparison() throws Exception {
-        Property.disableBranchComparison.setValue(Boolean.TRUE.toString());
+        projectProperties.setProperty(Property.disableBranchComparison.fullName(), "true");
 
-        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
-
-        Assert.assertEquals(Collections.emptySet(), differentFiles.get());
+        Assert.assertEquals(Collections.emptySet(), invokeUnderTest());
     }
 
     @Test
     public void listInSubdir() throws Exception {
-        Path workDir = localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve("parent/child2");
-        setWorkDir(workDir);
-        final DifferentFiles differentFiles = getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath());
+        Path dir = repoPath.resolve("parent/child2");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                workDir.resolve("subchild2/src/resources/file2"),
-                workDir.resolve("subchild2/src/resources/file22"),
-                workDir.resolve("../child3/src/resources/file1").normalize(),
-                workDir.resolve("../child4/pom.xml").normalize(),
-                workDir.resolve("../testJarDependent/src/resources/file5").normalize()
+                dir.resolve("subchild2/src/resources/file2"),
+                dir.resolve("subchild2/src/resources/file22"),
+                dir.resolve("../child3/src/resources/file1").normalize(),
+                dir.resolve("../child4/pom.xml").normalize(),
+                dir.resolve("../testJarDependent/src/resources/file5").normalize()
         ));
-        Assert.assertEquals(expected, differentFiles.get());
+
+        Assert.assertEquals(expected, invokeUnderTest());
     }
 
     @Test
     public void listComparedToMergeBase() throws Exception {
-        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        getLocalRepoMock().getGit().checkout().setName(REFS_HEADS_FEATURE_2).call();
-        getLocalRepoMock().getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        Property.baseBranch.setValue(REFS_HEADS_FEATURE_2);
-        Property.compareToMergeBase.setValue("true");
-        Assert.assertTrue(getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get().stream().collect(Collectors.toSet()).contains(workDir.resolve("parent/feature2-only-file.txt")));
+        localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        localRepoMock.getGit().checkout().setName(REFS_HEADS_FEATURE_2).call();
+        localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
+        projectProperties.setProperty(Property.baseBranch.fullName(), REFS_HEADS_FEATURE_2);
+        projectProperties.setProperty(Property.compareToMergeBase.fullName(), "true");
+
+        Assert.assertTrue(invokeUnderTest().stream().anyMatch(repoPath.resolve("parent/feature2-only-file.txt")::equals));
         Assert.assertTrue(consoleOut.toString().contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }
 
@@ -209,9 +155,11 @@ public class DifferentFilesTest extends BaseRepoTest {
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage(FETCH_FILE).call();
         Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
-        Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
-        Property.referenceBranch.setValue(REMOTE_DEVELOP);
-        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
+        projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
+
+        invokeUnderTest();
+
         Git localGit = localRepoMock.getGit();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
@@ -230,59 +178,30 @@ public class DifferentFilesTest extends BaseRepoTest {
         localGit.branchDelete().setBranchNames(DEVELOP).call();
         localGit.branchDelete().setBranchNames(REMOTE_DEVELOP).call();
         Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
-        Property.fetchReferenceBranch.setValue(Boolean.TRUE.toString());
-        Property.referenceBranch.setValue(REMOTE_DEVELOP);
-        getInstance(localRepoMock.getBaseCanonicalBaseFolder().toPath()).get();
+        projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
+
+        invokeUnderTest();
+
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
         Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
     }
 
-    private static class ModuleFacade extends AbstractModule {
-        private final GuiceModule guiceModule;
-        private Git git;
-        private Path workDir;
-
-        public ModuleFacade(Path dir) throws Exception {
-            this.guiceModule = new GuiceModule(new ConsoleLogger(), MavenSessionMock.get(dir));
-            this.workDir = dir;
-        }
-
-        @Singleton @Provides public Logger provideLogger() {
-            return new ConsoleLoggerManager().getLoggerForComponent("Test");
-        }
-
-        @Singleton @Provides public Git provideGit(Configuration configuration) throws IOException, GitAPIException {
-            git = guiceModule.provideGit(new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test")), configuration);
-            return git;
-        }
-
-        @Singleton @Provides public Configuration configuration() throws Exception {
-            MavenSession mavenSession = MavenSessionMock.get(workDir);
-            return new Configuration(mavenSession);
-        }
-
-        @Override
-        protected void configure() {}
-
-        public void close() {
-            if (git != null) {
-                if (git.getRepository() != null) {
-                    git.getRepository().close();
-                }
-                git.close();
-            }
-        }
-
+    private Set<Path> invokeUnderTest() throws Exception {
+        return invokeUnderTest(getMavenSessionMock());
     }
 
-    private DifferentFiles getInstance(Path dir) throws Exception {
-        moduleFacade = new ModuleFacade(dir);
-        return Guice.createInjector(moduleFacade).getInstance(DifferentFiles.class);
-    }
+    private Set<Path> invokeUnderTest(final MavenSession mavenSessionMock) throws Exception {
+        mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
 
-    private void setWorkDir(final Path path) {
-        System.setProperty("user.dir", path.toString());
+        DifferentFiles underTest = new DifferentFiles();
+        Whitebox.setInternalState(underTest, mavenSessionMock, CONSOLE_LOGGER, new Configuration.Provider(mavenSessionMock));
+
+        Set<Path> result = underTest.get();
+
+        Assert.assertNotNull("Resulting set is unexpectedly null", result);
+        return result;
     }
 
     private Path modifyTrackedFile(Path repoPath) throws IOException {

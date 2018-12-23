@@ -28,11 +28,12 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
-import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
@@ -66,27 +67,36 @@ public class UnchangedProjectsRemoverTest {
     @Mock
     private ChangedProjects changedProjectsMock;
 
+    @InjectMocks
+    private UnchangedProjectsRemover underTest;
+
     private final List<MavenProject> projects = new ArrayList<>(); 
     private final Set<MavenProject> changedProjects = new LinkedHashSet<>();
+    private final Properties projectProperties = new Properties();
     
     @Before
     public void setup() throws GitAPIException, IOException {
-        addPropertiesToMock(mavenProjectMock);
+        when(mavenProjectMock.getProperties()).thenReturn(projectProperties);
         when(mavenProjectMock.getBasedir()).thenReturn(new File("."));
         when(mavenProjectMock.getArtifactId()).thenReturn(ARTIFACT_ID_1);
+
         when(mavenSessionMock.getCurrentProject()).thenReturn(mavenProjectMock);
+        when(mavenSessionMock.getTopLevelProject()).thenReturn(mavenProjectMock);
+
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         projects.add(mavenProjectMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get()).thenReturn(changedProjects);
+
+        Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
     }
     
     @Test
     public void singleChanged() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
-        buildUnderTest().act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
     }
@@ -97,10 +107,9 @@ public class UnchangedProjectsRemoverTest {
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.argsForNotImpactedModules, "enforcer.skip=true argWithNoValue");
+        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
         
@@ -116,11 +125,10 @@ public class UnchangedProjectsRemoverTest {
     public void singleChanged_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.argsForNotImpactedModules, "enforcer.skip=true argWithNoValue",
-                Property.buildAll, "true");
+        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
+        projectProperties.put(Property.buildAll.fullName(), "true");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
         
@@ -136,10 +144,9 @@ public class UnchangedProjectsRemoverTest {
     public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.forceBuildModules, mavenProjectMock.getArtifactId());
+        projectProperties.put(Property.forceBuildModules.fullName(), mavenProjectMock.getArtifactId());
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(Arrays.asList(mavenProjectMock, changedModuleMock));
     }
@@ -149,11 +156,10 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.forceBuildModules,
+        projectProperties.put(Property.forceBuildModules.fullName(),
                 mavenProjectMock.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
@@ -164,11 +170,9 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.forceBuildModules,
-                ".*unchanged-module");
+        projectProperties.put(Property.forceBuildModules.fullName(), ".*unchanged-module");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
@@ -179,11 +183,9 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.forceBuildModules,
-                "first-.*-module,unchanged-.*");
+        projectProperties.put(Property.forceBuildModules.fullName(), "first-.*-module,unchanged-.*");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
@@ -197,10 +199,9 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
@@ -215,10 +216,9 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar, dependentJar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentJar));
@@ -233,10 +233,9 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar, dependentEar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war,ear");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war,ear");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
@@ -250,11 +249,10 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war",
-                Property.buildAll,"true");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.buildAll.fullName(), "true");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock, never())
                 .setProjects(anyListOf(MavenProject.class));
@@ -268,11 +266,10 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war",
-                Property.forceBuildModules,dependentWar.getArtifactId());
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.forceBuildModules.fullName(), dependentWar.getArtifactId());
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(dependentWar, changedProjectMock));
@@ -285,10 +282,9 @@ public class UnchangedProjectsRemoverTest {
 
         // war module is changed, must be retained!
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
@@ -303,19 +299,12 @@ public class UnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
                 .thenReturn(Arrays.asList(dependentWar));
 
-        ImmutableMap<Property, String> propertyMap = ImmutableMap.of(
-                Property.excludeTransitiveModulesPackagedAs,"war");
+        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
-        buildUnderTest(propertyMap).act();
+        underTest.act();
 
         Mockito.verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
-    }
-
-    private Properties addPropertiesToMock(MavenProject mavenProjectMock) {
-        Properties properties = new Properties();
-        when(mavenProjectMock.getProperties()).thenReturn(properties);
-        return properties;
     }
 
     private MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged) {
@@ -330,26 +319,11 @@ public class UnchangedProjectsRemoverTest {
             changedProjects.add(changedModuleMock);
         }
         projects.add(changedModuleMock);
-        addPropertiesToMock(changedModuleMock);
+
+        when(changedModuleMock.getProperties()).thenReturn(new Properties());
 
         when(projectDependencyGraphMock.getUpstreamProjects(changedModuleMock, true))
                 .thenReturn(Collections.singletonList(mavenProjectMock));
         return changedModuleMock;
-    }
-
-    private UnchangedProjectsRemover buildUnderTest() throws IOException {
-        return buildUnderTest(ImmutableMap.of());
-    }
-
-    private UnchangedProjectsRemover buildUnderTest(ImmutableMap<Property, String> propertyMap) {
-        Configuration configuration;
-        Properties origProps = (Properties) System.getProperties().clone();
-        try {
-            propertyMap.forEach((k, v) -> System.setProperty(k.fullName(), v));
-            configuration = new Configuration(mavenSessionMock);
-        } finally {
-            System.setProperties(origProps);
-        }
-        return new UnchangedProjectsRemover(configuration, loggerMock, changedProjectsMock, mavenSessionMock);
     }
 }

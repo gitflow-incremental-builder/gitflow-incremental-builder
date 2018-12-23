@@ -3,6 +3,8 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -11,6 +13,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,7 +23,6 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
@@ -57,11 +59,17 @@ public class ConfigurationTest {
     private MavenExecutionRequest mavenExecutionRequestMock;
 
     @Mock
-    private MavenSession mavenSessioMock;
+    private MavenSession mavenSessionMock;
+
+    private final Properties projectProperties = new Properties();
 
     @Before
     public void setup() {
-        Mockito.when(mavenSessioMock.getRequest()).thenReturn(mavenExecutionRequestMock);
+        when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
+
+        MavenProject mockTLProject = mock(MavenProject.class);
+        when(mockTLProject.getProperties()).thenReturn(projectProperties);
+        when(mavenSessionMock.getTopLevelProject()).thenReturn(mockTLProject);
     }
 
     @Test
@@ -72,23 +80,36 @@ public class ConfigurationTest {
         thrown.expectMessage(invalidProperty);
         thrown.expectMessage(Property.disableBranchComparison.fullName());  // just one of those valid ones
 
-        new Configuration(mavenSessioMock);
+        new Configuration.Provider(mavenSessionMock).get();
     }
 
     @Test
     public void enabled() {
         System.setProperty(Property.enabled.fullName(), "false");
 
-        Configuration configuration = new Configuration(mavenSessioMock);
+        assertFalse(Configuration.isEnabled(mavenSessionMock));
+    }
 
-        assertFalse(configuration.enabled);
+    @Test
+    public void enabled_projectProperties() {
+        projectProperties.put(Property.enabled.fullName(), "false");
+
+        assertFalse(Configuration.isEnabled(mavenSessionMock));
+    }
+
+    @Test
+    public void enabled_projectProperties_overriddenBySystemProperty() {
+        projectProperties.put(Property.enabled.fullName(), "true");
+        System.setProperty(Property.enabled.fullName(), "false");
+
+        assertFalse(Configuration.isEnabled(mavenSessionMock));
     }
 
     @Test
     public void argsForNotImpactedModules() {
         System.setProperty(Property.argsForNotImpactedModules.fullName(), "x=true a=false");
 
-        Configuration configuration = new Configuration(mavenSessioMock);
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
         assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForNotImpactedModules);
     }
@@ -97,7 +118,7 @@ public class ConfigurationTest {
     public void excludeTransitiveModulesPackagedAs() {
         System.setProperty(Property.excludeTransitiveModulesPackagedAs.fullName(), "ear,war");
 
-        Configuration configuration = new Configuration(mavenSessioMock);
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
         assertEquals(Arrays.asList("ear", "war"), configuration.excludeTransitiveModulesPackagedAs);
     }
@@ -107,7 +128,7 @@ public class ConfigurationTest {
         String expectedPatternString = ".*-some-artifact";
         System.setProperty(Property.forceBuildModules.fullName(), expectedPatternString);
 
-        Configuration configuration = new Configuration(mavenSessioMock);
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
         assertNotNull("Field forceBuildModules is null", configuration.forceBuildModules);
         assertEquals("Unexpected number of Patterns in forceBuildModules", 1, configuration.forceBuildModules.size());
@@ -123,6 +144,6 @@ public class ConfigurationTest {
         thrown.expectMessage(Property.forceBuildModules.fullName());
         thrown.expectCause(IsInstanceOf.instanceOf(PatternSyntaxException.class));
 
-        new Configuration(mavenSessioMock);
+        new Configuration.Provider(mavenSessionMock).get();
     }
 }

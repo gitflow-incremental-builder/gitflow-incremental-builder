@@ -1,26 +1,24 @@
 package org.slf4j.impl;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
+import org.slf4j.spi.LoggerFactoryBinder;
 
 import java.util.Arrays;
 
-@Singleton
-public class StaticLoggerBinder {
+public class StaticLoggerBinder implements LoggerFactoryBinder {
 
     private final org.codehaus.plexus.logging.Logger logger;
-    private static StaticLoggerBinder staticLoggerBinder;
 
-    @Inject
-    public StaticLoggerBinder(org.codehaus.plexus.logging.Logger logger) {
+    private StaticLoggerBinder(org.codehaus.plexus.logging.Logger logger) {
         this.logger = logger;
-        StaticLoggerBinder.staticLoggerBinder = this;
     }
 
-    public static final StaticLoggerBinder getSingleton() {return staticLoggerBinder;}
+    public static final StaticLoggerBinder getSingleton() {
+        return LazyHolder.INSTANCE;
+    }
 
     public String getLoggerFactoryClassStr() {return null;}
 
@@ -95,4 +93,9 @@ public class StaticLoggerBinder {
         };
     }
 
+    // https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom
+    private static class LazyHolder {
+
+        public static final StaticLoggerBinder INSTANCE = new StaticLoggerBinder(new ConsoleLoggerManager().getLoggerForComponent("Test"));
+    }
 }
