@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.logging.Logger;
@@ -62,6 +63,15 @@ public class DifferentFilesTest extends BaseRepoTest {
     }
 
     @Test
+    public void listIncludingUncommitted_excluded() throws Exception {
+        Path modifiedFilePath = modifyTrackedFile(repoPath);
+        projectProperties.setProperty(Property.uncommited.fullName(), "true");
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(modifiedFilePath.toString()));
+
+        Assert.assertFalse(invokeUnderTest().contains(modifiedFilePath));
+    }
+
+    @Test
     public void listIncludingUntracked() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "true");
@@ -73,6 +83,15 @@ public class DifferentFilesTest extends BaseRepoTest {
     public void listIncludingUntracked_disabled() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "false");
+
+        Assert.assertFalse(invokeUnderTest().contains(newFilePath));
+    }
+
+    @Test
+    public void listIncludingUntracked_excluded() throws Exception {
+        Path newFilePath = createNewUntrackedFile(repoPath);
+        projectProperties.setProperty(Property.untracked.fullName(), "true");
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(newFilePath.toString()));
 
         Assert.assertFalse(invokeUnderTest().contains(newFilePath));
     }
