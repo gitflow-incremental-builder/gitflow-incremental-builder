@@ -51,6 +51,7 @@
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M2</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
+        <version.jacoco-maven-plugin>0.8.2</version.jacoco-maven-plugin>
         <version.plexus-component-metadata>1.7.1</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.7.0</version.maven-compiler-plugin>
@@ -73,6 +74,8 @@
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
 
+        <!-- See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html for empty argLine -->
+        <argLine></argLine>
     </properties>
     <dependencies>
         <dependency>
@@ -185,6 +188,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>${version.maven-clean-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${version.jacoco-maven-plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
@@ -315,6 +323,24 @@
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
