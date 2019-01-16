@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -165,7 +166,7 @@ public class DifferentFiles {
             final Set<Path> paths = new HashSet<>();
             while (treeWalk.next()) {
                 Path path = gitDir.resolve(treeWalk.getPathString()).normalize();
-                if (! configuration.excludePathRegex.test(path.toString())) {
+                if (pathNotExcluded(path)) {
                     paths.add(path);
                 }
             }
@@ -194,7 +195,11 @@ public class DifferentFiles {
             if (configuration.untracked) {
                 changes.addAll(status.getUntracked());
             }
-            return changes.stream().map(workTree::resolve).map(Path::normalize).collect(Collectors.toSet());
+            return changes.stream()
+                    .map(workTree::resolve)
+                    .map(Path::normalize)
+                    .filter(this::pathNotExcluded)
+                    .collect(Collectors.toSet());
         }
 
         private RevCommit resolveReference(RevCommit base) throws IOException {
@@ -204,6 +209,10 @@ public class DifferentFiles {
             } else {
                 return refHead;
             }
+        }
+
+        private boolean pathNotExcluded(Path path) {
+            return !configuration.excludePathRegex.test(path.toString());
         }
     }
 }
