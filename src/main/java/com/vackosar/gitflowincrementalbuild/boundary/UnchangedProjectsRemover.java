@@ -3,8 +3,9 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,10 +23,11 @@ class UnchangedProjectsRemover {
 
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";
     private static final String MAVEN_TEST_SKIP_EXEC = "skipTests";
-    static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Will compile test sources.";
+    private static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Will compile test sources.";
     private static final String GOAL_TEST_JAR = "test-jar";
 
-    @Inject private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(UnchangedProjectsRemover.class);
+
     @Inject private ChangedProjects changedProjects;
     @Inject private MavenSession mavenSession;
     @Inject private Configuration.Provider configProvider;
@@ -81,7 +83,7 @@ class UnchangedProjectsRemover {
         final Properties projectProperties = mavenProject.getProperties();
         if (configProvider.get().skipTestsForNotImpactedModules) {
             if (projectDeclaresTestJarGoal(mavenProject)) {
-                logger.debug(mavenProject.getArtifactId() + ": " + TEST_JAR_DETECTED);
+                logger.debug("{}: {}", mavenProject.getArtifactId(), TEST_JAR_DETECTED);
                 projectProperties.setProperty(MAVEN_TEST_SKIP_EXEC, Boolean.TRUE.toString());
             } else {
                 projectProperties.setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());

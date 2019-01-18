@@ -1,5 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import static org.mockito.Matchers.contains;
+import static org.mockito.Mockito.verify;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,28 +15,28 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.maven.execution.MavenSession;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
+import org.slf4j.Logger;
 
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 
 public class DifferentFilesTest extends BaseRepoTest {
 
-    private static final Logger CONSOLE_LOGGER = new ConsoleLoggerManager().getLoggerForComponent("Test");
-
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
     private static final String FETCH_FILE = "fetch-file";
     private static final String DEVELOP = "refs/heads/develop";
     private static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
+
+    private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(DifferentFiles.class);
 
     public DifferentFilesTest() {
         super(/* useSymLinkedFolder */ false, /* withRemote */ true);
@@ -104,7 +107,7 @@ public class DifferentFilesTest extends BaseRepoTest {
 
         invokeUnderTest();
 
-        Assert.assertTrue(consoleOut.toString().contains("Checking out base branch refs/heads/feature/2"));
+        verify(loggerSpy).info(contains("Checking out base branch refs/heads/feature/2"));
     }
 
     @Test
@@ -162,7 +165,8 @@ public class DifferentFilesTest extends BaseRepoTest {
         projectProperties.setProperty(Property.compareToMergeBase.fullName(), "true");
 
         Assert.assertTrue(invokeUnderTest().stream().anyMatch(repoPath.resolve("parent/feature2-only-file.txt")::equals));
-        Assert.assertTrue(consoleOut.toString().contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
+
+        verify(loggerSpy).info(contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }
 
     @Test
@@ -215,7 +219,7 @@ public class DifferentFilesTest extends BaseRepoTest {
         mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
 
         DifferentFiles underTest = new DifferentFiles();
-        Whitebox.setInternalState(underTest, mavenSessionMock, CONSOLE_LOGGER, new Configuration.Provider(mavenSessionMock));
+        Whitebox.setInternalState(underTest, mavenSessionMock, new Configuration.Provider(mavenSessionMock), loggerSpy);
 
         Set<Path> result = underTest.get();
 

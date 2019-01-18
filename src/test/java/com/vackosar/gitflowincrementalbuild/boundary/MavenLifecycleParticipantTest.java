@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
@@ -8,7 +9,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
 import org.hamcrest.core.IsSame;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,8 +17,10 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import org.slf4j.Logger;
 
 import java.util.Properties;
 
@@ -38,8 +40,7 @@ public class MavenLifecycleParticipantTest {
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
-    @Mock
-    private Logger loggerMock;
+    private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenLifecycleParticipant.class);
 
     @Mock
     private MavenSession mavenSessionMock;
@@ -71,7 +72,7 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerMock).info(contains("disabled"));
+        verify(loggerSpy).info(contains("disabled"));
         verifyZeroInteractions(unchangedProjectsRemoverMock);
         verify(mavenSessionMock, never()).getProjectDependencyGraph();
     }
@@ -81,7 +82,7 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerMock).info(contains("starting..."));
+        verify(loggerSpy).info(contains("starting..."));
         verify(unchangedProjectsRemoverMock).act();
     }
 
@@ -103,8 +104,8 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerMock).info(contains(" skipped:"));
-        verify(loggerMock).debug(anyString(), eq(runtimeException));
+        verify(loggerSpy).info(contains(" skipped:"), (Object) Mockito.any());
+        verify(loggerSpy).debug(anyString(), eq(runtimeException));
     }
 
     @Test
@@ -114,8 +115,8 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerMock).info(contains(" skipped:"));
-        verify(loggerMock).debug(anyString(), eq(skipExecutionException));
+        verify(loggerSpy).info(contains(" skipped:"), (Object) Mockito.any());
+        verify(loggerSpy).debug(anyString(), eq(skipExecutionException));
     }
 
     @Test
@@ -124,7 +125,7 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerMock).warn(contains("ProjectDependencyGraph"));
+        verify(loggerSpy).warn(contains("ProjectDependencyGraph"));
         verifyZeroInteractions(unchangedProjectsRemoverMock);
     }
 }

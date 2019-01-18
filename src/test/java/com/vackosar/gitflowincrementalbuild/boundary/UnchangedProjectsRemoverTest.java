@@ -23,7 +23,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,9 +59,6 @@ public class UnchangedProjectsRemoverTest {
 
     @Mock
     private ProjectDependencyGraph projectDependencyGraphMock;
-
-    @Mock
-    private Logger loggerMock;
 
     @Mock
     private ChangedProjects changedProjectsMock;

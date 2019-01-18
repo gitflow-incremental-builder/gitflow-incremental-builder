@@ -4,7 +4,6 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 import org.apache.maven.execution.MavenSession;
-import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -16,6 +15,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,7 +27,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -39,7 +39,8 @@ public class DifferentFiles {
     private static final String REFS_REMOTES = "refs/remotes/";
     private static final String REFS_HEADS = "refs/heads/";
 
-    @Inject private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(DifferentFiles.class);
+
     @Inject private MavenSession mavenSession;
     @Inject private Configuration.Provider configProvider;
 

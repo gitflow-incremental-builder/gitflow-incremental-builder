@@ -5,7 +5,8 @@ import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,7 +16,7 @@ import javax.inject.Singleton;
 @Named("gib")
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-    @Inject private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(MavenLifecycleParticipant.class);
 
     @Inject private UnchangedProjectsRemover unchangedProjectsRemover;
 
@@ -28,7 +29,6 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             logger.info("gitflow-incremental-builder is disabled.");
             return;
         }
-
 
         // check prerequisites
         if (session.getProjectDependencyGraph() == null) {
@@ -44,7 +44,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
             if (!configProvider.get().failOnError || isSkipExecException) {
-                logger.info("gitflow-incremental-builder execution skipped: " + (isSkipExecException ? e.getMessage() : e.toString()));
+                logger.info("gitflow-incremental-builder execution skipped: {}", (isSkipExecException ? e.getMessage() : e.toString()));
                 logger.debug("Full exception:", e);
             } else {
                 throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occurred.", e);

@@ -2,8 +2,9 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,7 +20,8 @@ import java.util.stream.Collectors;
 @Named("gib.changedProjects")
 public class ChangedProjects {
 
-    @Inject private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(ChangedProjects.class);
+
     @Inject private DifferentFiles differentFiles;
     @Inject private MavenSession mavenSession;
     @Inject private Modules modules;
@@ -38,10 +40,10 @@ public class ChangedProjects {
             path = path.getParent();
         }
         if (path != null) {
-            logger.debug("Changed file: " + diffPath);
+            logger.debug("Changed file: {}", diffPath);
             return map.get(path);
         } else {
-            logger.warn("Changed file outside build project: " + diffPath);
+            logger.warn("Changed file outside build project: {}", diffPath);
             return null;
         }
     }
