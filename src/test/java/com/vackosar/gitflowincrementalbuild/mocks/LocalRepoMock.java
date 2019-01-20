@@ -43,7 +43,12 @@ public class LocalRepoMock implements AutoCloseable {
         config.setString("branch", "master", "remote", "origin");
         config.setString("baseBranch", "master", "merge", "refs/heads/master");
         config.setString("push", null, "default", "current");
+
+        // disable all gc
+        // http://download.eclipse.org/jgit/site/5.2.1.201812262042-r/apidocs/org/eclipse/jgit/internal/storage/file/GC.html#setAuto-boolean-
         config.setString("gc", null, "auto", "0");
+        config.setString("gc", null, "autoPackLimit", "0");
+        config.setString("receive", null, "autogc", "false");
 
         RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
         URIish uri = new URIish(repoUrl);
