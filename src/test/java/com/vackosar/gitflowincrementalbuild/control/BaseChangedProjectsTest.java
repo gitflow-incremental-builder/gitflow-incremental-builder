@@ -5,13 +5,11 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -34,9 +32,6 @@ import java.util.stream.Collectors;
  */
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseChangedProjectsTest extends BaseRepoTest {
-
-    @Mock
-    private Logger loggerMock;
 
     @Spy
     @InjectMocks    // note: this won't populate mavenSession because the mock for this is created later via getMavenSessionMock()

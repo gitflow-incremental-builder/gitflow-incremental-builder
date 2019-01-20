@@ -11,7 +11,11 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,12 +35,17 @@ import java.util.stream.Stream;
  */
 public class MavenIntegrationTest extends BaseRepoTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MavenIntegrationTest.class);
+
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
 
     private static String localRepoArg;
     private static String gibVersion;
     private static String gibVersionArg;
     private static boolean initialInstallDone;
+
+    @Rule
+    public final TestName testNameRule = new TestName();
 
     @BeforeClass
     public static void evaluateSystemProperties() throws IOException, InterruptedException {
@@ -45,10 +54,9 @@ public class MavenIntegrationTest extends BaseRepoTest {
         gibVersion = Validate.notEmpty(System.getProperty("gibIntegrationTestVersion"), "gibIntegrationTestVersion not set");
         gibVersionArg = "-DgibVersion=" + gibVersion;
 
-        System.out.println(
-                "The first test method will execute an initial 'mvn install ...' on the test project to populate the test repo."
+        LOGGER.info("The first test method will execute an initial 'mvn install ...' on the test project to populate the test repo."
                 + " This might take a while.");
-        System.out.println("Arguments: " + gibVersionArg + ", " + localRepoArg);
+        LOGGER.info("Arguments: {}, {}", gibVersionArg, localRepoArg);
     }
 
     /**
@@ -78,28 +86,24 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void logVersion() throws IOException, InterruptedException {
         final String output = executeBuild("-N");
-        System.out.println(output);
         Assert.assertTrue(output.contains("gitflow-incremental-builder " + gibVersion + " starting..."));
     }
     
     @Test
     public void worktreeFails() throws Exception {
         final String output = executeBuild("--file=wrkf2/parent/pom.xml");
-        System.out.println(output);
         Assert.assertTrue(output.contains(DifferentFiles.UNSUPPORTED_WORKTREE));
     }
 
     @Test
     public void logChanges() throws Exception {
         final String output = executeBuild("-X", "-N");
-        System.out.println(output);
         Assert.assertTrue(output.contains("[DEBUG] Changed file: "));
     }
 
     @Test
     public void buildAllSkipTest() throws Exception {
         final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForNotImpactedModules, "true"));
-        System.out.println(output);
 
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
@@ -116,7 +120,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void buildWithAlsoMake() throws Exception {
         final String output = executeBuild("-am");
-        System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
@@ -154,7 +157,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void buildWithAlsoMakeSkip() throws Exception {
         final String output = executeBuild("-am", prop(Property.skipTestsForNotImpactedModules, "true"));
-        System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
@@ -172,7 +174,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void buildWithoutAlsoMake() throws Exception {
         final String output = executeBuild();
-        System.out.println(output);
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
@@ -199,7 +200,9 @@ public class MavenIntegrationTest extends BaseRepoTest {
                 new ProcessBuilder(command)
                         .directory(localRepoMock.getBaseCanonicalBaseFolder())
                         .start();
-        return ProcessUtils.awaitProcess(process);
+        String output = ProcessUtils.awaitProcess(process);
+        LOGGER.info("Output of {}():\n{}", testNameRule.getMethodName(), output);
+        return output;
     }
 
     private static String prop(Property property, String value) {

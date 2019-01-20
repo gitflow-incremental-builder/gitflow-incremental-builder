@@ -5,6 +5,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -21,6 +23,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class MavenSessionMock {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MavenSessionMock.class);
 
     public static MavenSession get(Path workDir, Properties topLevelProjectProperties) throws Exception {
         PomFinder finder = new PomFinder();
@@ -74,8 +78,7 @@ public class MavenSessionMock {
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            System.err.println("WARNING: Failed to visit " + file);
-            exc.printStackTrace(System.err);
+            LOGGER.warn("Failed to visit " + file, exc);
             return FileVisitResult.CONTINUE;
         }
 

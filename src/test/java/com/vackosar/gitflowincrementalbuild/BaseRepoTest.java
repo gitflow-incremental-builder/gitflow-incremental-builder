@@ -11,9 +11,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -29,9 +27,6 @@ public abstract class BaseRepoTest {
     /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
     protected Path repoPath;
 
-    protected ByteArrayOutputStream consoleOut;
-    private final PrintStream normalOut;
-
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -40,7 +35,6 @@ public abstract class BaseRepoTest {
     }
 
     public BaseRepoTest(boolean useSymLinkedFolder, boolean withRemote) {
-        this.normalOut = System.out;
         this.useSymLinkedFolder = useSymLinkedFolder;
         this.withRemote = withRemote;
     }
@@ -75,17 +69,10 @@ public abstract class BaseRepoTest {
     }
 
     private void init() {
-        resetConsoleOut();
-
         projectProperties.setProperty(Property.uncommited.fullName(), "false");
         projectProperties.setProperty(Property.untracked.fullName(), "false");
         projectProperties.setProperty(Property.referenceBranch.fullName(), "refs/heads/develop");
         projectProperties.setProperty(Property.compareToMergeBase.fullName(), "false");
-    }
-
-    private void resetConsoleOut() {
-        consoleOut = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(consoleOut));
     }
 
     @After
@@ -93,8 +80,6 @@ public abstract class BaseRepoTest {
         if (localRepoMock != null) {
             localRepoMock.close();
         }
-        System.setOut(normalOut);
-        normalOut.print(consoleOut.toString());
     }
 
     protected MavenSession getMavenSessionMock() throws Exception {
