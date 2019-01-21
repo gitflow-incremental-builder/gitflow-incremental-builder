@@ -3,6 +3,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
 ![Travis CI](https://travis-ci.org/vackosar/gitflow-incremental-builder.svg?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/vackosar/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/gitflow-incremental-builder/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Coverage)
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
@@ -15,6 +16,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [Disable in IDE](#disable-in-ide)
 
 - [Example](#example)
+
 - [Configuration](#configuration)
   - [gib.enabled](#gibenabled)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
@@ -263,7 +265,7 @@ Can be used to disable this extension temporarily or permanently (e.g. to avoid 
 ### gib.disableBranchComparison
 
 Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommited` and `gib.untracked`).
-The following properties are _not_ evaluated when `gib.disableBranchDiff` is enabled:
+The following properties are _not_ evaluated when `gib.disableBranchComparison` is enabled:
 - `gib.referenceBranch`
 - `gib.compareToMergeBase`
 - `gib.fetchReferenceBranch`
@@ -287,6 +289,7 @@ Can be combined with `gib.argsForNotImpactedModules`.
 
 In conjunction with `-am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have _not_ been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
 Arguments have to be sparated with a single space character and values are optional. Example:
+
 ```
 mvn clean install -am -Dgib.argsForNotImpactedModules='-Denforcer.skip -Dcheckstyle.skip=true'
 ```
@@ -296,13 +299,17 @@ Can be combined with `gib.skipTestsForNotImpactedModules`.
 ### gib.forceBuildModules
 
 Defines artifact ids of modules to build forcibly, even if these modules have not been changed and/or do not depend on changed modules. Example:
+
 ```
 mvn clean install -Dgib.forceBuildModules=unchanged-module-1,unchanged-module-2
 ```
+
 Regular expressions are also supported in each comma separated part, e.g.:
+
 ```
 mvn clean install -Dgib.forceBuildModules=unchanged-module-.*,another-module
 ```
+
 Each of these modules is subject to `argsForNotImpactedModules` and `skipTestsForNotImpactedModules`.
 
 This property has no effect in case `buildAll` is enabled.
