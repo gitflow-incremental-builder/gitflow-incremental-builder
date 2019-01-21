@@ -10,3 +10,4 @@
 .project
 .settings/
 .README.md.html
+*.log
