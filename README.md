@@ -1,26 +1,30 @@
-# gitflow-incremental-builder
+# gitflow-incremental-builder (GIB)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
-
 ![Travis CI](https://travis-ci.org/vackosar/gitflow-incremental-builder.svg?branch=master)
-
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/vackosar/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
 
+This extension is **not limited to Git Flow setups!** The [extensive configuration options](#configuration) provide support many other branch setups and/or use cases. 
+
 ## Table of Contents
 
 - [Usage](#usage)
-  * [Disable in IDE](#disable-in-ide)
+  - [Disable in IDE](#disable-in-ide)
+
 - [Example](#example)
 - [Configuration](#configuration)
-  * [gib.enabled](#gibenabled)
-  * [gib.disableBranchComparison](#gibdisablebranchcomparison)
-  * [gib.uncommited](#gibuncommited)
-  * [gib.untracked](#gibuntracked)
-  * [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
-  * [gib.argsForNotImpactedModules](#gibargsfornotimpactedmodules)
-  * [gib.forceBuildModules](#gibforcebuildmodules)
+  - [gib.enabled](#gibenabled)
+  - [gib.disableBranchComparison](#gibdisablebranchcomparison)
+  - [gib.uncommited](#gibuncommited)
+  - [gib.untracked](#gibuntracked)
+  - [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
+  - [gib.argsForNotImpactedModules](#gibargsfornotimpactedmodules)
+  - [gib.forceBuildModules](#gibforcebuildmodules)
+
+- [Requirements](#requirements)
 
 ## Usage
 
@@ -260,10 +264,10 @@ Can be used to disable this extension temporarily or permanently (e.g. to avoid 
 
 Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommited` and `gib.untracked`).
 The following properties are _not_ evaluated when `gib.disableBranchDiff` is enabled:
- - `gib.referenceBranch`
- - `gib.compareToMergeBase`
- - `gib.fetchReferenceBranch`
- - `gib.excludePathRegex`
+- `gib.referenceBranch`
+- `gib.compareToMergeBase`
+- `gib.fetchReferenceBranch`
+- `gib.excludePathRegex`
 
 ### gib.uncommited
 
@@ -275,13 +279,13 @@ Detects files that are not yet tracked by git (see `git status` manual). This do
 
 ### gib.skipTestsForNotImpactedModules
 
-In conjunction with `-am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have *not* been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test *execution* is disbled via `skipTests=true`.
+In conjunction with `-am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have _not_ been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test _execution_ is disbled via `skipTests=true`.
 
 Can be combined with `gib.argsForNotImpactedModules`.
 
 ### gib.argsForNotImpactedModules
 
-In conjunction with `-am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have *not* been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
+In conjunction with `-am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have _not_ been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
 Arguments have to be sparated with a single space character and values are optional. Example:
 ```
 mvn clean install -am -Dgib.argsForNotImpactedModules='-Denforcer.skip -Dcheckstyle.skip=true'
@@ -315,4 +319,5 @@ This property has no effect in case `buildAll` is enabled and an exclusion might
 
 ## Requirements
 
-- Maven version 3+.
+- Maven version 3.3.9+ is recommended (however, GIB _might_ work with Maven down to version 3.1.0)
+- Project must use Git
