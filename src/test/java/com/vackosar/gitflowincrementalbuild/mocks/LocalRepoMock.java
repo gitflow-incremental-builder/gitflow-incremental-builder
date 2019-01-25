@@ -14,6 +14,10 @@ import java.net.URISyntaxException;
 
 public class LocalRepoMock implements AutoCloseable {
 
+    static {
+        JGitIsolation.ensureIsolatedFromSystemAndUserConfig();
+    }
+
     private File baseFolder;
     private File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
     private RemoteRepoMock remoteRepo;
@@ -23,7 +27,7 @@ public class LocalRepoMock implements AutoCloseable {
         this.baseFolder = new File(baseFolder.getAbsolutePath(), "tmp/repo/");
         new UnZipper().act(templateProjectZip, this.baseFolder);
 
-        remoteRepo = new RemoteRepoMock(baseFolder, false);
+        remoteRepo = withRemote ? new RemoteRepoMock(baseFolder, false) : null;
         git = new Git(new FileRepository(new File(this.baseFolder, ".git")));
 
         if (withRemote) {
@@ -48,7 +52,7 @@ public class LocalRepoMock implements AutoCloseable {
         // http://download.eclipse.org/jgit/site/5.2.1.201812262042-r/apidocs/org/eclipse/jgit/internal/storage/file/GC.html#setAuto-boolean-
         config.setString("gc", null, "auto", "0");
         config.setString("gc", null, "autoPackLimit", "0");
-        config.setString("receive", null, "autogc", "false");
+        config.setBoolean("receive", null, "autogc", false);
 
         RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
         URIish uri = new URIish(repoUrl);
@@ -63,7 +67,9 @@ public class LocalRepoMock implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        remoteRepo.close();
+        if (remoteRepo != null) {
+            remoteRepo.close();
+        }
         git.getRepository().close();
         git.close();
     }
@@ -75,5 +81,4 @@ public class LocalRepoMock implements AutoCloseable {
     public File getBaseCanonicalBaseFolder() throws IOException {
         return baseFolder.getCanonicalFile();
     }
-
 }
