@@ -5,21 +5,26 @@ import java.util.Properties;
 
 public enum Property {
     enabled("true"),
-    repositorySshKey(""),
+
+
     disableBranchComparison("false"),
     referenceBranch("refs/remotes/origin/develop"),
+    fetchReferenceBranch("false"),
     baseBranch("HEAD"),
+    fetchBaseBranch("false"),
+    compareToMergeBase("true"),
     uncommited("true"),
     untracked("true"),
+    excludePathRegex(Constants.NEVER_MATCH_REGEX),
+
+    buildAll("false"),
+    buildUpstream("derived"),
+    buildUpstreamMode("changed"),
     skipTestsForNotImpactedModules("false"),
     argsForNotImpactedModules(""),
-    buildAll("false"),
     forceBuildModules(""),
     excludeTransitiveModulesPackagedAs(""),
-    compareToMergeBase("true"),
-    fetchBaseBranch("false"),
-    fetchReferenceBranch("false"),
-    excludePathRegex(Constants.NEVER_MATCH_REGEX),
+
     failOnMissingGitDir("true"),
     failOnError("true");
 

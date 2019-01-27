@@ -3,7 +3,10 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -26,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration.BuildUpstreamMode;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
@@ -145,5 +149,125 @@ public class ConfigurationTest {
         thrown.expectCause(IsInstanceOf.instanceOf(PatternSyntaxException.class));
 
         new Configuration.Provider(mavenSessionMock).get();
+    }
+
+    // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // tests for configuration.buildUpstreamMode (which is calculated from two(!) properties: buildUpstream and buildUpstreamMode)
+
+    @Test
+    public void buildUpstreamMode_never() {
+        System.setProperty(Property.buildUpstream.fullName(), "never");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        verify(mavenExecutionRequestMock, never()).getMakeBehavior();
+    }
+
+    @Test
+    public void buildUpstreamMode_false() {
+        System.setProperty(Property.buildUpstream.fullName(), "false");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        verify(mavenExecutionRequestMock, never()).getMakeBehavior();
+    }
+
+    @Test
+    public void buildUpstreamMode_always() {
+        System.setProperty(Property.buildUpstream.fullName(), "always");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        verify(mavenExecutionRequestMock, never()).getMakeBehavior();
+    }
+
+    @Test
+    public void buildUpstreamMode_true() {
+        System.setProperty(Property.buildUpstream.fullName(), "true");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        verify(mavenExecutionRequestMock, never()).getMakeBehavior();
+    }
+
+    @Test
+    public void buildUpstreamMode_unknown() {
+        System.setProperty(Property.buildUpstream.fullName(), "foo");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(Property.buildUpstream.fullName());
+
+        new Configuration.Provider(mavenSessionMock).get();
+    }
+
+    // tests for mode value 'derived' (default value)
+
+    @Test
+    public void buildUpstreamMode_derived_noMake() {
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+    }
+
+    @Test
+    public void buildUpstreamMode_derived_makeUpstream() {
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+    }
+
+    @Test
+    public void buildUpstreamMode_derived_makeBoth() {
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+    }
+
+    @Test
+    public void buildUpstreamMode_derived_makeDownstream() {
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+    }
+
+    @Test
+    public void buildUpstreamMode_derived_makeUpstream_impacted() {
+        System.setProperty(Property.buildUpstreamMode.fullName(), "impacted");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.IMPACTED, configuration.buildUpstreamMode);
+    }
+
+    @Test
+    public void buildUpstreamMode_derived_makeUpstream_unknown() {
+        System.setProperty(Property.buildUpstreamMode.fullName(), "foo");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(Property.buildUpstreamMode.fullName());
+        thrown.expectCause(IsInstanceOf.instanceOf(IllegalArgumentException.class));
+
+        new Configuration.Provider(mavenSessionMock).get();
+    }
+
+    // just an example to show 'derived' can also be set explicitely
+    @Test
+    public void buildUpstreamMode_derivedExplicit_makeUpstream() {
+        System.setProperty(Property.buildUpstream.fullName(), "derived");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
     }
 }

@@ -22,9 +22,13 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
+  - [gib.buildAll](#gibbuildall)
+  - [gib.buildUpstream](#gibbuildupstream)
+  - [gib.buildUpstreamMode](#gibbuildupstreammode)
   - [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
   - [gib.argsForNotImpactedModules](#gibargsfornotimpactedmodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
+  - [gib.excludeTransitiveModulesPackagedAs](#excludetransitivemodulespackagedas)
 
 - [Requirements](#requirements)
 
@@ -237,24 +241,25 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 Maven pom properties configuration with default values is below:
 ```xml
 <properties>
-	<gib.enabled>true</gib.enabled>
-	<gib.repositorySshKey></gib.repositorySshKey>
-	<gib.disableBranchComparison>false</gib.disableBranchComparison>
-	<gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
-	<gib.baseBranch>HEAD</gib.baseBranch>
-	<gib.uncommited>true</gib.uncommited>
-	<gib.untracked>true</gib.untracked>
-	<gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
-	<gib.argsForNotImpactedModules></gib.argsForNotImpactedModules>
-	<gib.buildAll>false</gib.buildAll>
-	<gib.forceBuildModules></gib.forceBuildModules>
-	<gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>
-	<gib.compareToMergeBase>true</gib.compareToMergeBase>
-	<gib.fetchBaseBranch>false</gib.fetchBaseBranch>
-	<gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
-	<gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
-	<gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>
-	<gib.failOnError>true</gib.failOnError>
+    <gib.enabled>true</gib.enabled>
+    <gib.disableBranchComparison>false</gib.disableBranchComparison>
+    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
+    <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
+    <gib.baseBranch>HEAD</gib.baseBranch>
+    <gib.fetchBaseBranch>false</gib.fetchBaseBranch>
+    <gib.compareToMergeBase>true</gib.compareToMergeBase>
+    <gib.uncommited>true</gib.uncommited>
+    <gib.untracked>true</gib.untracked>
+    <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
+    <gib.buildAll>false</gib.buildAll>
+    <gib.buildUpstream>derived</gib.buildUpstream>
+    <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>
+    <gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
+    <gib.argsForNotImpactedModules></gib.argsForNotImpactedModules>
+    <gib.forceBuildModules></gib.forceBuildModules>
+    <gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>
+    <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>
+    <gib.failOnError>true</gib.failOnError>
 </properties>
 ```
 
@@ -279,15 +284,45 @@ Detects changed files that have not yet been committed. This does **not** includ
 
 Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anymore after it is added to the index.
 
+### gib.buildUpstream
+
+Controls whether or not to build upstream modules (= dependencies and parents of the modules GIB has determined to build):
+
+- `always` or `true`: always build upstream modules
+- `derived` (default value): only build upstream modules if `mvn -am` is called
+- `never` or `false`: never build upstream modules
+
+See also `gib.buildUpstreamMode`.
+
+Since: 3.8
+
+### gib.buildUpstreamMode
+
+This property controls which upstream modules to build (_if_ at all building upstream modules, see `gib.buildUpstream`):
+
+- `changed` (default value): selects only upstream modules of the _directly changed_ modules
+- `impacted`: like `changed` but also selects upstream modules of modules _that depend on_ the directly changed modules (in other words: upstream modules of the downstream modules of the changed modules)
+
+`changed` is a subset of `impacted`.
+
+`impacted` may seem odd at first, but it does come in handy in certain scenarios, e.g. a Jenkins PR job that locally merges target branch into the PR branch before building.
+Here it might be required to freshly compile upstream modules of not directly changed modules to avoid compile errors or test failures which originate from the target branch.
+
+Both strategies can and usually should be combined with `gib.skipTestsForNotImpactedModules` and/or `gib.argsForNotImpactedModules`.
+
+Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also #44.
+
+Since: 3.8
+
 ### gib.skipTestsForNotImpactedModules
 
-In conjunction with `-am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have _not_ been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test _execution_ is disbled via `skipTests=true`.
+In conjunction with `mvn -am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have _not_ been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test _execution_ is disabled via `skipTests=true`.
 
 Can be combined with `gib.argsForNotImpactedModules`.
 
 ### gib.argsForNotImpactedModules
 
-In conjunction with `-am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have _not_ been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
+In conjunction with `mvn -am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have _not_ been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
 Arguments have to be sparated with a single space character and values are optional. Example:
 
 ```

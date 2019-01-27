@@ -36,11 +36,12 @@ class UnchangedProjectsRemover {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
+
         Set<MavenProject> impacted = changed.stream()
-            .flatMap(this::streamProjectWithDependents)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+                .flatMap(this::streamProjectWithDownstreamProjects)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         if (!configProvider.get().buildAll) {
-            Set<MavenProject> rebuild = getRebuildProjects(impacted);
+            Set<MavenProject> rebuild = getRebuildProjects(changed, impacted);
             if (rebuild.isEmpty()) {
                 logger.info("No changed artifacts to build. Executing validate goal on current project only.");
                 mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
@@ -63,20 +64,26 @@ class UnchangedProjectsRemover {
         }
     }
 
-    private Set<MavenProject> getRebuildProjects(Set<MavenProject> changedProjects) {
-        if (configProvider.get().makeUpstream) {
-            return Stream.concat(changedProjects.stream(), collectDependencies(changedProjects))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        } else {
-            return changedProjects;
+    private Set<MavenProject> getRebuildProjects(Set<MavenProject> changed, Set<MavenProject> impacted) {
+        Set<MavenProject> upstreamRequiringProjects;
+        switch (configProvider.get().buildUpstreamMode) {
+            case NONE:
+                return impacted;    // just use impacted without any further processing
+            case CHANGED:
+                upstreamRequiringProjects = changed;
+                break;
+            case IMPACTED:
+                upstreamRequiringProjects = impacted;
+                break;
+            default:
+                throw new IllegalStateException("Unsupported BuildUpstreamMode: " + configProvider.get().buildUpstreamMode);
         }
-    }
-
-    private Stream<MavenProject> collectDependencies(Set<MavenProject> changedProjects) {
-        return changedProjects.stream()
-                .flatMap(this::streamProjectWithDependencies)
-                .filter(p -> ! changedProjects.contains(p))
+        Stream<MavenProject> upstreamProjects = upstreamRequiringProjects.stream()
+                .flatMap(this::streamUpstreamProjects)
+                .filter(p -> ! changed.contains(p))
                 .map(this::applyNotImpactedModuleArgs);
+        return Stream.concat(impacted.stream(), upstreamProjects)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private MavenProject applyNotImpactedModuleArgs(MavenProject mavenProject) {
@@ -93,8 +100,8 @@ class UnchangedProjectsRemover {
         return mavenProject;
     }
 
-    private boolean projectDeclaresTestJarGoal(MavenProject mavenProject) {
-        return mavenProject.getBuildPlugins().stream()
+    private boolean projectDeclaresTestJarGoal(MavenProject project) {
+        return project.getBuildPlugins().stream()
                 .flatMap(p -> p.getExecutions().stream())
                 .flatMap(e -> e.getGoals().stream())
                 .anyMatch(GOAL_TEST_JAR::equals);
@@ -111,17 +118,15 @@ class UnchangedProjectsRemover {
         logger.info("------------------------------------------------------------------------");
     }
 
-    private Stream<MavenProject> streamProjectWithDependents(MavenProject project) {
+    private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project) {
         return Stream.concat(
             Stream.of(project),
             mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
-                .filter(p -> !configProvider.get().excludeTransitiveModulesPackagedAs.contains(p.getPackaging())));
+                    .filter(p -> !configProvider.get().excludeTransitiveModulesPackagedAs.contains(p.getPackaging())));
     }
 
-    private Stream<MavenProject> streamProjectWithDependencies(MavenProject project) {
-        return Stream.concat(
-            Stream.of(project),
-            mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream());
+    private Stream<MavenProject> streamUpstreamProjects(MavenProject project) {
+        return mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream();
     }
 
     private boolean matchesAny(final String str, Collection<Pattern> patterns) {

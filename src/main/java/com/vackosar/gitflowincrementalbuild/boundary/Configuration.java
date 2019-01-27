@@ -8,7 +8,6 @@ import org.apache.maven.execution.MavenSession;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
-import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,25 +31,23 @@ import javax.inject.Singleton;
 
 public class Configuration {
 
-    private static final List<String> alsoMakeBehaviours = Arrays.asList(
-            MavenExecutionRequest.REACTOR_MAKE_UPSTREAM, MavenExecutionRequest.REACTOR_MAKE_BOTH);
-
-    public final Optional<Path> key;
     public final boolean disableBranchComparison;
     public final String referenceBranch;
+    public final boolean fetchReferenceBranch;
     public final String baseBranch;
+    public final boolean fetchBaseBranch;
+    public final boolean compareToMergeBase;
     public final boolean uncommited;
     public final boolean untracked;
-    public final boolean makeUpstream;
+    public final Predicate<String> excludePathRegex;
+
+    public final boolean buildAll;
+    public final BuildUpstreamMode buildUpstreamMode;
     public final boolean skipTestsForNotImpactedModules;
     public final Map<String, String> argsForNotImpactedModules;
-    public final boolean buildAll;
     public final List<Pattern> forceBuildModules;
     public final List<String> excludeTransitiveModulesPackagedAs;
-    public final boolean compareToMergeBase;
-    public final boolean fetchBaseBranch;
-    public final boolean fetchReferenceBranch;
-    public final Predicate<String> excludePathRegex;
+
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
 
@@ -58,20 +55,27 @@ public class Configuration {
         Properties projectProperties = session.getTopLevelProject().getProperties();
         checkProperties(projectProperties);
 
-        key = parseKey(session, projectProperties);
+        // change detection config
+
         disableBranchComparison = Boolean.valueOf(Property.disableBranchComparison.getValue(projectProperties));
         referenceBranch = Property.referenceBranch.getValue(projectProperties);
+        fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue(projectProperties));
         baseBranch = Property.baseBranch.getValue(projectProperties);
+        fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(projectProperties));
+        compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(projectProperties));
         uncommited = Boolean.valueOf(Property.uncommited.getValue(projectProperties));
         untracked = Boolean.valueOf(Property.untracked.getValue(projectProperties));
-        makeUpstream = alsoMakeBehaviours.contains(session.getRequest().getMakeBehavior());
+        excludePathRegex = compilePattern(Property.excludePathRegex, projectProperties).asPredicate();
+
+        // build config
+
+        buildAll = Boolean.valueOf(Property.buildAll.getValue(projectProperties));
+        buildUpstreamMode = parseBuildUpstreamMode(session, projectProperties);
         skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue(projectProperties));
 
         argsForNotImpactedModules = parseDelimited(Property.argsForNotImpactedModules.getValue(projectProperties), " ")
                 .map(Configuration::keyValueStringToEntry)
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
-
-        buildAll = Boolean.valueOf(Property.buildAll.getValue(projectProperties));
 
         forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(projectProperties), ",")
                 .map(str -> compilePattern(str, Property.forceBuildModules))
@@ -80,10 +84,8 @@ public class Configuration {
         excludeTransitiveModulesPackagedAs = parseDelimited(Property.excludeTransitiveModulesPackagedAs.getValue(projectProperties), ",")
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
-        compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(projectProperties));
-        fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue(projectProperties));
-        fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(projectProperties));
-        excludePathRegex = compilePattern(Property.excludePathRegex, projectProperties).asPredicate();
+        // error handling config
+
         failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(projectProperties));
         failOnError = Boolean.valueOf(Property.failOnError.getValue(projectProperties));
     }
@@ -113,13 +115,32 @@ public class Configuration {
         }
     }
 
-    private static Optional<Path> parseKey(MavenSession session, Properties projectProperties) {
-        String keyOptionValue = Property.repositorySshKey.getValue(projectProperties);
-        if (keyOptionValue != null && ! keyOptionValue.isEmpty()) {
-            Path pomDir = session.getCurrentProject().getBasedir().toPath();
-            return Optional.of(pomDir.resolve(keyOptionValue).toAbsolutePath().normalize());
-        } else {
-            return Optional.empty();
+    private static BuildUpstreamMode parseBuildUpstreamMode(MavenSession session, Properties projectProperties) {
+        if (!isBuildStreamActive(Property.buildUpstream, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
+            return BuildUpstreamMode.NONE;
+        }
+        try {
+            String propertyValue = Optional.ofNullable(Property.buildUpstreamMode.getValue(projectProperties)).orElse("");
+            return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullName() + " defines an invalid mode", e);
+        }
+    }
+
+    private static boolean isBuildStreamActive(Property property, Properties projectProperties, MavenSession session, String expectedMakeBehavior) {
+        switch (property.getValue(projectProperties)) {
+            case "derived":
+                String actualMakeBehavior = session.getRequest().getMakeBehavior();
+                return expectedMakeBehavior.equals(actualMakeBehavior) || MavenExecutionRequest.REACTOR_MAKE_BOTH.equals(actualMakeBehavior);
+            case "always":
+            case "true":
+                return true;
+            case "never":
+            case "false":
+                return false;
+            default:
+                throw new IllegalArgumentException(
+                        "GIB property " + property.fullName() + " defines an invalid value: " + property.getValue(projectProperties));
         }
     }
 
@@ -152,6 +173,12 @@ public class Configuration {
 
     private static Pattern compilePattern(Property property, Properties projectProperties) {
         return compilePattern(property.getValue(projectProperties), property);
+    }
+
+    public static enum BuildUpstreamMode {
+        NONE,
+        CHANGED,
+        IMPACTED;
     }
 
     @Singleton
