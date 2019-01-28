@@ -37,30 +37,39 @@ class UnchangedProjectsRemover {
         printDelimiter();
         logProjects(changed, "Changed Artifacts:");
 
-        Set<MavenProject> impacted = changed.stream()
-                .flatMap(this::streamProjectWithDownstreamProjects)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        if (!configProvider.get().buildAll) {
-            Set<MavenProject> rebuild = getRebuildProjects(changed, impacted);
-            if (rebuild.isEmpty()) {
-                logger.info("No changed artifacts to build. Executing validate goal on current project only.");
-                mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
-                mavenSession.getGoals().clear();
-                mavenSession.getGoals().add("validate");
-            } else if (!configProvider.get().forceBuildModules.isEmpty()) {
-                Stream<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
-                        .filter(p -> matchesAny(p.getArtifactId(), configProvider.get().forceBuildModules))
-                        .filter(p -> !rebuild.contains(p))
-                        .map(this::applyNotImpactedModuleArgs);
-                mavenSession.setProjects(
-                        Stream.concat(forceBuildModules, rebuild.stream()).collect(Collectors.toList()));
-            } else {
-                mavenSession.setProjects(new ArrayList<>(rebuild));
-            }
+        // important: buildAll *always* need impacted incl. donwstream, otherwise applyNotImpactedModuleArgs() might disable tests etc. for downstream modules!
+        Configuration cfg = configProvider.get();
+        Set<MavenProject> impacted = cfg.buildAll || cfg.buildDownstream
+                ? changed.stream()
+                        .flatMap(this::streamProjectWithDownstreamProjects)
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+                : changed;
+
+        if (!cfg.buildAll) {
+            modifyProjectList(changed, impacted);
         } else {
             mavenSession.getProjects().stream()
                     .filter(p -> !impacted.contains(p))
                     .forEach(this::applyNotImpactedModuleArgs);
+        }
+    }
+
+    private void modifyProjectList(Set<MavenProject> changed, Set<MavenProject> impacted) {
+        Set<MavenProject> rebuild = getRebuildProjects(changed, impacted);
+        if (rebuild.isEmpty()) {
+            logger.info("No changed artifacts to build. Executing validate goal on current project only.");
+            mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
+            mavenSession.getGoals().clear();
+            mavenSession.getGoals().add("validate");
+        } else if (!configProvider.get().forceBuildModules.isEmpty()) {
+            Stream<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
+                    .filter(p -> matchesAny(p.getArtifactId(), configProvider.get().forceBuildModules))
+                    .filter(p -> !rebuild.contains(p))
+                    .map(this::applyNotImpactedModuleArgs);
+            mavenSession.setProjects(
+                    Stream.concat(forceBuildModules, rebuild.stream()).collect(Collectors.toList()));
+        } else {
+            mavenSession.setProjects(new ArrayList<>(rebuild));
         }
     }
 

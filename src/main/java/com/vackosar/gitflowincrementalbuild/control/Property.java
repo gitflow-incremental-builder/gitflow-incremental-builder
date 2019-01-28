@@ -18,6 +18,7 @@ public enum Property {
     excludePathRegex(Constants.NEVER_MATCH_REGEX),
 
     buildAll("false"),
+    buildDownstream("always"),
     buildUpstream("derived"),
     buildUpstreamMode("changed"),
     skipTestsForNotImpactedModules("false"),

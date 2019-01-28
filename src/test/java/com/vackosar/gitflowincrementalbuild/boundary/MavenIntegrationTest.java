@@ -187,6 +187,22 @@ public class MavenIntegrationTest extends BaseRepoTest {
         Assert.assertTrue(output.contains(" subchild41"));
     }
 
+    @Test
+    public void buildWithAlsoMakeDependents() throws Exception {
+        final String output = executeBuild("-amd", prop(Property.buildDownstream, "derived"));
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" child6"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+    }
+
     private String executeBuild(String... args) throws IOException, InterruptedException {
         final List<String> commandBase = ProcessUtils.cmdArgs("mvn", "-e", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;

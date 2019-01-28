@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -269,5 +271,105 @@ public class ConfigurationTest {
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+    }
+
+    // ///////////////////////////////////////
+    // tests for configuration.buildDownstream
+
+    // 'always' is default
+    @Test
+    public void buildDownstream() {
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertTrue(configuration.buildDownstream);
+        verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
+    }
+
+    @Test
+    public void buildDownstream_never() {
+        System.setProperty(Property.buildDownstream.fullName(), "never");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.buildDownstream);
+        verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
+    }
+
+    @Test
+    public void buildDownstream_false() {
+        System.setProperty(Property.buildDownstream.fullName(), "false");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.buildDownstream);
+        verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
+    }
+
+    @Test
+    public void buildDownstream_always() {
+        System.setProperty(Property.buildDownstream.fullName(), "always");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertTrue(configuration.buildDownstream);
+        verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
+    }
+
+    @Test
+    public void buildDownstream_true() {
+        System.setProperty(Property.buildDownstream.fullName(), "true");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertTrue(configuration.buildDownstream);
+        verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
+    }
+
+    @Test
+    public void buildDownstream_unknown() {
+        System.setProperty(Property.buildDownstream.fullName(), "foo");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(Property.buildDownstream.fullName());
+
+        new Configuration.Provider(mavenSessionMock).get();
+    }
+
+    @Test
+    public void buildDownstream_derived_noMake() {
+        System.setProperty(Property.buildDownstream.fullName(), "derived");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.buildDownstream);
+    }
+
+    @Test
+    public void buildDownstream_derived_makeDownstream() {
+        System.setProperty(Property.buildDownstream.fullName(), "derived");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertTrue(configuration.buildDownstream);
+    }
+
+    @Test
+    public void buildDownstream_derived_makeBoth() {
+        System.setProperty(Property.buildDownstream.fullName(), "derived");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertTrue(configuration.buildDownstream);
+    }
+
+    @Test
+    public void buildDownstream_derived_makeUpstream() {
+        System.setProperty(Property.buildDownstream.fullName(), "derived");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.buildDownstream);
     }
 }

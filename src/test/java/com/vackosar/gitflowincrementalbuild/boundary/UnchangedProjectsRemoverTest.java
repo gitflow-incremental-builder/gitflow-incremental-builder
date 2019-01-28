@@ -290,6 +290,60 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
+    public void singleChanged_buildDownstream_enabled() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        // buildDownstream is enabled by default!
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_disabled() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        projectProperties.put(Property.buildDownstream.fullName(), "false");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_disabled_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        projectProperties.put(Property.buildAll.fullName(), "true");
+        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependentModuleMock, Collections.emptyMap());
+    }
+
+    @Test
     public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 

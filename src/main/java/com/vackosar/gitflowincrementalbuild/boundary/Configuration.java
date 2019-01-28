@@ -42,6 +42,7 @@ public class Configuration {
     public final Predicate<String> excludePathRegex;
 
     public final boolean buildAll;
+    public final boolean buildDownstream;
     public final BuildUpstreamMode buildUpstreamMode;
     public final boolean skipTestsForNotImpactedModules;
     public final Map<String, String> argsForNotImpactedModules;
@@ -70,6 +71,7 @@ public class Configuration {
         // build config
 
         buildAll = Boolean.valueOf(Property.buildAll.getValue(projectProperties));
+        buildDownstream = isBuildStreamActive(Property.buildDownstream, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
         buildUpstreamMode = parseBuildUpstreamMode(session, projectProperties);
         skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue(projectProperties));
 

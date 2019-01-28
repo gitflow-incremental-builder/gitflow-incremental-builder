@@ -23,6 +23,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.buildAll](#gibbuildall)
+  - [gib.buildDownstream](#gibbuilddownstream)
   - [gib.buildUpstream](#gibbuildupstream)
   - [gib.buildUpstreamMode](#gibbuildupstreammode)
   - [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
@@ -252,6 +253,7 @@ Maven pom properties configuration with default values is below:
     <gib.untracked>true</gib.untracked>
     <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
     <gib.buildAll>false</gib.buildAll>
+    <gib.buildDownstream>always</gib.buildDownstream>
     <gib.buildUpstream>derived</gib.buildUpstream>
     <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>
     <gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
@@ -283,6 +285,22 @@ Detects changed files that have not yet been committed. This does **not** includ
 ### gib.untracked
 
 Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anymore after it is added to the index.
+
+### gib.buildAll
+
+Builds all modules. Can be used to (temporarily) override the reduction of modules to build.
+
+Can be combined/useful with `gib.skipTestsForNotImpactedModules` and/or `gib.argsForNotImpactedModules`.
+
+### gib.buildDownstream
+
+Controls whether or not to build downstream modules (= modules that depend on the modules GIB detected as changed):
+
+- `always` or `true` (default value): always build downstream modules
+- `derived`: only build downstream modules if `mvn -amd` is called
+- `never` or `false`: never build downstream modules
+
+Since: 3.8
 
 ### gib.buildUpstream
 
