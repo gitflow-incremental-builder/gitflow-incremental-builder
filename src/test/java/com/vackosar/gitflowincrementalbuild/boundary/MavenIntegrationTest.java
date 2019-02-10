@@ -103,7 +103,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     @Test
     public void buildAllSkipTest() throws Exception {
-        final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForNotImpactedModules, "true"));
+        final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForUpstreamModules, "true"));
 
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
@@ -156,7 +156,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     @Test
     public void buildWithAlsoMakeSkip() throws Exception {
-        final String output = executeBuild("-am", prop(Property.skipTestsForNotImpactedModules, "true"));
+        final String output = executeBuild("-am", prop(Property.skipTestsForUpstreamModules, "true"));
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));

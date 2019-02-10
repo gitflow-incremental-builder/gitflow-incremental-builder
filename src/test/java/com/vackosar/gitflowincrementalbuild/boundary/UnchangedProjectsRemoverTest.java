@@ -131,12 +131,12 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildUpstream_skipTestsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.skipTestsForNotImpactedModules.fullName(), "true");
+        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
 
         underTest.act();
 
@@ -147,12 +147,12 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildUpstream_skipTestsForNotImpactedModules_jarGoal() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_jarGoal() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.skipTestsForNotImpactedModules.fullName(), "true");
+        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
 
         Plugin pluginMock = mock(Plugin.class);
         PluginExecution execMock = mock(PluginExecution.class);
@@ -169,12 +169,12 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildUpstream_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
 
         underTest.act();
 
@@ -207,7 +207,7 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeChanged_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -217,7 +217,7 @@ public class UnchangedProjectsRemoverTest {
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
         projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "foo=bar");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
 
         underTest.act();
 
@@ -252,7 +252,7 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeImpacted_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -262,7 +262,7 @@ public class UnchangedProjectsRemoverTest {
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
         projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");   // is also the default value!
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "foo=bar");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
 
         underTest.act();
 
@@ -275,10 +275,10 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
         projectProperties.put(Property.buildAll.fullName(), "true");
 
         underTest.act();
@@ -322,7 +322,7 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
-    public void singleChanged_buildDownstream_disabled_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_disabled_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
 
@@ -332,7 +332,7 @@ public class UnchangedProjectsRemoverTest {
 
         projectProperties.put(Property.buildDownstream.fullName(), "false");
         projectProperties.put(Property.buildAll.fullName(), "true");
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "foo=bar");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
 
         underTest.act();
 

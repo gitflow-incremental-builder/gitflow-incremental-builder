@@ -112,12 +112,22 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void argsForNotImpactedModules() {
-        System.setProperty(Property.argsForNotImpactedModules.fullName(), "x=true a=false");
+    public void argsForUpstreamModules() {
+        System.setProperty(Property.argsForUpstreamModules.fullName(), "x=true a=false");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
-        assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForNotImpactedModules);
+        assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
+    }
+
+    // deprecated old name of argsForUpstreamModules
+    @Test
+    public void argsForNotImpactedModules() {
+        System.setProperty(Property.argsForUpstreamModules.deprecatedFullName(), "x=true a=false");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
     }
 
     @Test

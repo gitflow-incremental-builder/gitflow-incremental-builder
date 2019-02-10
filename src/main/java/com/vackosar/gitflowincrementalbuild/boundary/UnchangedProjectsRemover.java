@@ -50,7 +50,7 @@ class UnchangedProjectsRemover {
         } else {
             mavenSession.getProjects().stream()
                     .filter(p -> !impacted.contains(p))
-                    .forEach(this::applyNotImpactedModuleArgs);
+                    .forEach(this::applyUpstreamModuleArgs);
         }
     }
 
@@ -65,7 +65,7 @@ class UnchangedProjectsRemover {
             Stream<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
                     .filter(p -> matchesAny(p.getArtifactId(), configProvider.get().forceBuildModules))
                     .filter(p -> !rebuild.contains(p))
-                    .map(this::applyNotImpactedModuleArgs);
+                    .map(this::applyUpstreamModuleArgs);
             mavenSession.setProjects(
                     Stream.concat(forceBuildModules, rebuild.stream()).collect(Collectors.toList()));
         } else {
@@ -90,14 +90,14 @@ class UnchangedProjectsRemover {
         Stream<MavenProject> upstreamProjects = upstreamRequiringProjects.stream()
                 .flatMap(this::streamUpstreamProjects)
                 .filter(p -> ! changed.contains(p))
-                .map(this::applyNotImpactedModuleArgs);
+                .map(this::applyUpstreamModuleArgs);
         return Stream.concat(impacted.stream(), upstreamProjects)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private MavenProject applyNotImpactedModuleArgs(MavenProject mavenProject) {
+    private MavenProject applyUpstreamModuleArgs(MavenProject mavenProject) {
         final Properties projectProperties = mavenProject.getProperties();
-        if (configProvider.get().skipTestsForNotImpactedModules) {
+        if (configProvider.get().skipTestsForUpstreamModules) {
             if (projectDeclaresTestJarGoal(mavenProject)) {
                 logger.debug("{}: {}", mavenProject.getArtifactId(), TEST_JAR_DETECTED);
                 projectProperties.setProperty(MAVEN_TEST_SKIP_EXEC, Boolean.TRUE.toString());
@@ -105,7 +105,7 @@ class UnchangedProjectsRemover {
                 projectProperties.setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
             }
         }
-        configProvider.get().argsForNotImpactedModules.forEach(projectProperties::setProperty);
+        configProvider.get().argsForUpstreamModules.forEach(projectProperties::setProperty);
         return mavenProject;
     }
 

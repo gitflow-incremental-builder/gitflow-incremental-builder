@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -44,8 +45,8 @@ public class Configuration {
     public final boolean buildAll;
     public final boolean buildDownstream;
     public final BuildUpstreamMode buildUpstreamMode;
-    public final boolean skipTestsForNotImpactedModules;
-    public final Map<String, String> argsForNotImpactedModules;
+    public final boolean skipTestsForUpstreamModules;
+    public final Map<String, String> argsForUpstreamModules;
     public final List<Pattern> forceBuildModules;
     public final List<String> excludeTransitiveModulesPackagedAs;
 
@@ -73,9 +74,9 @@ public class Configuration {
         buildAll = Boolean.valueOf(Property.buildAll.getValue(projectProperties));
         buildDownstream = isBuildStreamActive(Property.buildDownstream, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
         buildUpstreamMode = parseBuildUpstreamMode(session, projectProperties);
-        skipTestsForNotImpactedModules = Boolean.valueOf(Property.skipTestsForNotImpactedModules.getValue(projectProperties));
+        skipTestsForUpstreamModules = Boolean.valueOf(Property.skipTestsForUpstreamModules.getValue(projectProperties));
 
-        argsForNotImpactedModules = parseDelimited(Property.argsForNotImpactedModules.getValue(projectProperties), " ")
+        argsForUpstreamModules = parseDelimited(Property.argsForUpstreamModules.getValue(projectProperties), " ")
                 .map(Configuration::keyValueStringToEntry)
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
 
@@ -104,7 +105,8 @@ public class Configuration {
 
     private static void checkProperties(Properties projectProperties) {
         Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .map(Property::fullName)
+                .flatMap(p -> Stream.of(p.fullName(), p.deprecatedFullName()))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
                 .distinct()

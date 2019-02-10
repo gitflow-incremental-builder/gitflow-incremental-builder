@@ -26,8 +26,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.buildDownstream](#gibbuilddownstream)
   - [gib.buildUpstream](#gibbuildupstream)
   - [gib.buildUpstreamMode](#gibbuildupstreammode)
-  - [gib.skipTestsForNotImpactedModules](#gibskiptestsfornotimpactedmodules)
-  - [gib.argsForNotImpactedModules](#gibargsfornotimpactedmodules)
+  - [gib.skipTestsForUpstreamModules](#gibskiptestsforupstreammodules)
+  - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeTransitiveModulesPackagedAs](#excludetransitivemodulespackagedas)
 
@@ -256,8 +256,8 @@ Maven pom properties configuration with default values is below:
     <gib.buildDownstream>always</gib.buildDownstream>
     <gib.buildUpstream>derived</gib.buildUpstream>
     <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>
-    <gib.skipTestsForNotImpactedModules>false</gib.skipTestsForNotImpactedModules>
-    <gib.argsForNotImpactedModules></gib.argsForNotImpactedModules>
+    <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>
+    <gib.argsForUpstreamModules></gib.argsForUpstreamModules>
     <gib.forceBuildModules></gib.forceBuildModules>
     <gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>
@@ -288,9 +288,9 @@ Detects files that are not yet tracked by git (see `git status` manual). This do
 
 ### gib.buildAll
 
-Builds all modules. Can be used to (temporarily) override the reduction of modules to build.
+Builds all modules, including upstream modules (see also `gib.buildUpstream`). Can be used to (temporarily) override the reduction of modules to build.
 
-Can be combined/useful with `gib.skipTestsForNotImpactedModules` and/or `gib.argsForNotImpactedModules`.
+Can be combined/useful with `gib.skipTestsForUpstreamModules` and/or `gib.argsForUpstreamModules`.
 
 ### gib.buildDownstream
 
@@ -326,28 +326,32 @@ This property controls which upstream modules to build (_if_ at all building ups
 `impacted` may seem odd at first, but it does come in handy in certain scenarios, e.g. a Jenkins PR job that locally merges target branch into the PR branch before building.
 Here it might be required to freshly compile upstream modules of not directly changed modules to avoid compile errors or test failures which originate from the target branch.
 
-Both strategies can and usually should be combined with `gib.skipTestsForNotImpactedModules` and/or `gib.argsForNotImpactedModules`.
+Both strategies can and usually should be combined with `gib.skipTestsForUpstreamModules` and/or `gib.argsForUpstreamModules`.
 
 Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also #44.
 
 Since: 3.8
 
-### gib.skipTestsForNotImpactedModules
+### gib.skipTestsForUpstreamModules
 
-In conjunction with `mvn -am` or `gib.buildAll=true` this property disables the compilation/execution of tests for modules that have _not_ been changed by adding `maven.test.skip=true`. In case a not impacted module produces a test jar just the test _execution_ is disabled via `skipTests=true`.
+This property disables the compilation/execution of tests for upstream modules by adding `maven.test.skip=true`. In case an upstream module produces a test jar just the test _execution_ is disabled via `skipTests=true`.
 
-Can be combined with `gib.argsForNotImpactedModules`.
+See `gib.buildUpstream` or `gib.buildAll` to learn when upstream modules are built.
 
-### gib.argsForNotImpactedModules
+Can be combined with `gib.argsForUpstreamModules`.
 
-In conjunction with `mvn -am` or `gib.buildAll=true` this property allows adding arguments/properties for modules that have _not_ been changed to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
+### gib.argsForUpstreamModules
+
+This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
 Arguments have to be sparated with a single space character and values are optional. Example:
 
 ```
-mvn clean install -am -Dgib.argsForNotImpactedModules='-Denforcer.skip -Dcheckstyle.skip=true'
+mvn clean install -am -Dgib.argsForUpstreamModules='-Denforcer.skip -Dcheckstyle.skip=true'
 ```
 
-Can be combined with `gib.skipTestsForNotImpactedModules`.
+See `gib.buildUpstream` or `gib.buildAll` to learn when upstream modules are built.
+
+Can be combined with `gib.skipTestsForUpstreamModules`.
 
 ### gib.forceBuildModules
 
@@ -363,7 +367,7 @@ Regular expressions are also supported in each comma separated part, e.g.:
 mvn clean install -Dgib.forceBuildModules=unchanged-module-.*,another-module
 ```
 
-Each of these modules is subject to `argsForNotImpactedModules` and `skipTestsForNotImpactedModules`.
+Each of these modules is subject to `argsForUpstreamModules` and `skipTestsForUpstreamModules`.
 
 This property has no effect in case `buildAll` is enabled.
 
