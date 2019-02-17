@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -16,12 +17,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Before;
@@ -29,10 +35,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
+import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
@@ -69,7 +75,7 @@ public class UnchangedProjectsRemoverTest {
     private final List<MavenProject> projects = new ArrayList<>(); 
     private final Set<MavenProject> changedProjects = new LinkedHashSet<>();
     private final Properties projectProperties = new Properties();
-    
+
     @Before
     public void setup() throws GitAPIException, IOException {
         when(mavenProjectMock.getProperties()).thenReturn(projectProperties);
@@ -85,55 +91,256 @@ public class UnchangedProjectsRemoverTest {
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get()).thenReturn(changedProjects);
 
+        when(mavenSessionMock.getGoals()).thenReturn(new ArrayList<>());
+
         Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
     }
-    
+
+    @Test
+    public void nothingChanged() throws GitAPIException, IOException {
+        addModuleMock(ARTIFACT_ID_2, false);
+
+        underTest.act();
+
+        assertEquals("Unexpected goal", Collections.singletonList("validate"), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(mavenProjectMock));
+    }
+
     @Test
     public void singleChanged() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
+        verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
     }
 
     @Test
-    public void singleChanged_alsoMake_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
-
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
-        
-        assertEquals("Unexpected value for enforcer.skip",
-                "true", mavenProjectMock.getProperties().getProperty("enforcer.skip"));
-        assertEquals("Unexpected value for argWithNoValue",
-                "", mavenProjectMock.getProperties().getProperty("argWithNoValue"));
-        assertEquals("Unexpected properties for unchanged project",
-                new Properties(), changedModuleMock.getProperties());
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
     }
 
     @Test
-    public void singleChanged_buildAll_argsForNotImpactedModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
-        projectProperties.put(Property.argsForNotImpactedModules.fullName(), "enforcer.skip=true argWithNoValue");
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_jarGoal() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+
+        Plugin pluginMock = mock(Plugin.class);
+        PluginExecution execMock = mock(PluginExecution.class);
+        when(execMock.getGoals()).thenReturn(Collections.singletonList("test-jar"));
+        when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));
+        when(mavenProjectMock.getBuildPlugins()).thenReturn(Collections.singletonList(pluginMock));
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("skipTests", "true"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_argsForUpstreamModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("enforcer.skip", "true", "argWithNoValue", ""));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_modeChanged() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+        MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependsOnBothModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+        MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependsOnBothModuleMock, mavenProjectMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_modeImpacted() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+        MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");   // this is also the default value!
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependsOnBothModuleMock, mavenProjectMock, unchangedModuleMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
+        MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");   // is also the default value!
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependsOnBothModuleMock, mavenProjectMock, unchangedModuleMock));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedModuleMock, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
         projectProperties.put(Property.buildAll.fullName(), "true");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
-        
-        assertEquals("Unexpected value for enforcer.skip",
-                "true", mavenProjectMock.getProperties().getProperty("enforcer.skip"));
-        assertEquals("Unexpected value for argWithNoValue",
-                "", mavenProjectMock.getProperties().getProperty("argWithNoValue"));
-        assertEquals("Unexpected properties for unchanged project",
-                new Properties(), changedModuleMock.getProperties());
+        verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("enforcer.skip", "true", "argWithNoValue", ""));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_enabled() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        // buildDownstream is enabled by default!
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_disabled() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        projectProperties.put(Property.buildDownstream.fullName(), "false");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_disabled_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
+        MavenProject dependentModuleMock = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, dependentModuleMock);   // just for consistency
+
+        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        projectProperties.put(Property.buildAll.fullName(), "true");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependentModuleMock, Collections.emptyMap());
     }
 
     @Test
@@ -144,7 +351,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(Arrays.asList(mavenProjectMock, changedModuleMock));
+        verify(mavenSessionMock).setProjects(Arrays.asList(mavenProjectMock, changedModuleMock));
     }
 
     @Test
@@ -157,7 +364,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
     }
 
@@ -170,7 +377,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
     }
 
@@ -183,7 +390,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
     }
 
@@ -192,14 +399,13 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
 
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar));
+        setDownstreamProjects(changedProjectMock, dependentWar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
     }
 
@@ -209,14 +415,13 @@ public class UnchangedProjectsRemoverTest {
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
         MavenProject dependentJar = addModuleMock(ARTIFACT_ID_2 + "-dependent-jar", false);
 
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar, dependentJar));
+        setDownstreamProjects(changedProjectMock, dependentWar, dependentJar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentJar));
     }
 
@@ -226,14 +431,13 @@ public class UnchangedProjectsRemoverTest {
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
         MavenProject dependentEar = addModuleMock(ARTIFACT_ID_2 + "-dependent-ear", false, "ear");
 
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar, dependentEar));
+        setDownstreamProjects(changedProjectMock, dependentWar, dependentEar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war,ear");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
     }
 
@@ -242,15 +446,14 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
 
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar));
+        setDownstreamProjects(changedProjectMock, dependentWar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
         projectProperties.put(Property.buildAll.fullName(), "true");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock, never())
+        verify(mavenSessionMock, never())
                 .setProjects(anyListOf(MavenProject.class));
     }
 
@@ -259,15 +462,14 @@ public class UnchangedProjectsRemoverTest {
         MavenProject changedProjectMock = addModuleMock(ARTIFACT_ID_2, true);
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, false, "war");
 
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar));
+        setDownstreamProjects(changedProjectMock, dependentWar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
         projectProperties.put(Property.forceBuildModules.fullName(), dependentWar.getArtifactId());
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(dependentWar, changedProjectMock));
     }
 
@@ -282,7 +484,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
     }
 
@@ -292,14 +494,13 @@ public class UnchangedProjectsRemoverTest {
         MavenProject dependentWar = addModuleMock(ARTIFACT_ID_2_DEP_WAR, true, "war");
 
         // war module is changed, must be retained - even if depending on changedProjectMock!
-        when(projectDependencyGraphMock.getDownstreamProjects(changedProjectMock, true))
-                .thenReturn(Arrays.asList(dependentWar));
+        setDownstreamProjects(changedProjectMock, dependentWar);
 
         projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
-        Mockito.verify(mavenSessionMock).setProjects(
+        verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
     }
 
@@ -318,8 +519,35 @@ public class UnchangedProjectsRemoverTest {
 
         when(changedModuleMock.getProperties()).thenReturn(new Properties());
 
-        when(projectDependencyGraphMock.getUpstreamProjects(changedModuleMock, true))
-                .thenReturn(Collections.singletonList(mavenProjectMock));
+        setUpstreamProjects(changedModuleMock, mavenProjectMock);
         return changedModuleMock;
+    }
+
+    private void setUpstreamProjects(MavenProject module, MavenProject... upstreamModules) {
+        when(projectDependencyGraphMock.getUpstreamProjects(module, true)).thenReturn(Arrays.asList(upstreamModules));
+    }
+
+    private void setDownstreamProjects(MavenProject module, MavenProject... downstreamModules) {
+        when(projectDependencyGraphMock.getDownstreamProjects(module, true)).thenReturn(Arrays.asList(downstreamModules));
+    }
+
+    private void assertProjectPropertiesEqual(MavenProject project, Map<String, String> expected) {
+        TreeMap<String, String> actual = project.getProperties().entrySet().stream()
+                .filter(e -> !e.getKey().toString().startsWith(Property.PREFIX))    // we don't want to check for GIB properties here!
+                .collect(Collectors.toMap(
+                        e -> e.getKey().toString(),
+                        e -> e.getValue().toString(),
+                        (a, b) -> a,
+                        TreeMap::new));
+        assertEquals("Unexpected project properties of " + project, new TreeMap<>(expected), actual);
+    }
+
+    private void setUpAndDownstreamsForBuildUpstreamModeTests(MavenProject changedModuleMock, MavenProject unchangedModuleMock,
+        MavenProject dependsOnBothModuleMock) {
+        // dependsOnBothModuleMock directly depends on both changedModuleMock & unchangedModuleMock + transitively on mavenProjectMock
+        setUpstreamProjects(dependsOnBothModuleMock, changedModuleMock, unchangedModuleMock, mavenProjectMock);
+        setDownstreamProjects(changedModuleMock, dependsOnBothModuleMock);
+        setDownstreamProjects(unchangedModuleMock, dependsOnBothModuleMock);
+        setDownstreamProjects(mavenProjectMock, changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);   // just for consistency
     }
 }

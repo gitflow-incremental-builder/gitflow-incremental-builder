@@ -103,7 +103,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     @Test
     public void buildAllSkipTest() throws Exception {
-        final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForNotImpactedModules, "true"));
+        final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForUpstreamModules, "true"));
 
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
@@ -156,7 +156,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     @Test
     public void buildWithAlsoMakeSkip() throws Exception {
-        final String output = executeBuild("-am", prop(Property.skipTestsForNotImpactedModules, "true"));
+        final String output = executeBuild("-am", prop(Property.skipTestsForUpstreamModules, "true"));
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
@@ -174,6 +174,22 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void buildWithoutAlsoMake() throws Exception {
         final String output = executeBuild();
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" child6"));
+
+        Assert.assertTrue(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertTrue(output.contains(" child4"));
+        Assert.assertTrue(output.contains(" subchild41"));
+    }
+
+    @Test
+    public void buildWithAlsoMakeDependents() throws Exception {
+        final String output = executeBuild("-amd", prop(Property.buildDownstream, "derived"));
 
         Assert.assertFalse(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
