@@ -22,6 +22,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
+  - [gib.excludePathRegex](#gibexcludePathRegex)
   - [gib.buildAll](#gibbuildall)
   - [gib.buildDownstream](#gibbuilddownstream)
   - [gib.buildUpstream](#gibbuildupstream)
@@ -285,6 +286,16 @@ Detects changed files that have not yet been committed. This does **not** includ
 ### gib.untracked
 
 Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anymore after it is added to the index.
+
+### gib.excludePathRegex
+
+Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build.
+
+The regular expression does _not_ need to describe the entire (absolute) path, but only the relevant part _inside_ the git repository context. Example:
+```
+/tmp/repo/blacklisted/some-file.txt
+```
+will be excluded when using `-Dgib.excludePathRegex=blacklisted` or `-Dgib.excludePathRegex=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
 
 ### gib.buildAll
 

@@ -64,18 +64,18 @@ public enum Property {
 
     public String getValue(Properties projectProperties) {
         String value = getValue(fullName, projectProperties);
-        if (value != null) {
-            return value;
-        }
-        if (deprecatedFullName != null) {
+        if (value == null && deprecatedFullName != null) {
             value = getValue(deprecatedFullName, projectProperties);
             if (value != null) {
                 LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
                         deprecatedFullName, fullName);
-                return value;
             }
         }
-        return defaultValue;
+        if (value == null) {
+            value = defaultValue;
+        }
+        LOGGER.debug("{}={}", fullName, value);
+        return value;
     }
 
     private static String getValue(String fullName, Properties projectProperties) {
