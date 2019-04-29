@@ -78,7 +78,7 @@ public class MavenSessionMock {
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            if (file.getFileName().toString().equals("gc.log.lock")) {
+            if (file.getFileName().toString().contains("gc.log.lock")) {
                 LOGGER.debug("Failed to visit {}", file);
             } else {
                 LOGGER.warn("Failed to visit " + file, exc);

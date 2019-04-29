@@ -69,7 +69,7 @@ public class DifferentFilesTest extends BaseRepoTest {
     public void listIncludingUncommitted_excluded() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(modifiedFilePath.toString()));
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
 
         Assert.assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -94,7 +94,7 @@ public class DifferentFilesTest extends BaseRepoTest {
     public void listIncludingUntracked_excluded() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(newFilePath.toString()));
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
 
         Assert.assertFalse(invokeUnderTest().contains(newFilePath));
     }
