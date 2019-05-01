@@ -53,9 +53,13 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 ### Disable in IDE
 
 As IDEs like IntelliJ IDEA or Eclipse usually apply their own custom strategy to building changed modules,
-this extension should be disabled in such environments to avoid inconsistencies or errors (e.g. see issue #49).
+this extension should be disabled in such environments to avoid inconsistencies or errors (e.g. see [issue 49](../../issues/49)).
 
 See [gib.enabled](#gibenabled) in the configuration section.
+
+:warning: IntelliJ IDEA is not yet compatible with GIB 3.8+, even if disabled! :warning:
+
+GIB 3.7 has to be used until an IntelliJ IDEA version is released that contains the fix for [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272). See [issue 91](../../issues/91) for more details.
 
 ## Example
 
