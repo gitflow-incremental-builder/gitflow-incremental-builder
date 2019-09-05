@@ -1,3 +1,6 @@
+# https://travis-ci.community/t/install-of-oracle-jdk-8-failing/3038/9
+dist: trusty
+
 language: java
 jdk:
   - oraclejdk8
