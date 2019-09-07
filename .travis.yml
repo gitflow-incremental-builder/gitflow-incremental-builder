@@ -1,14 +1,100 @@
-# https://travis-ci.community/t/install-of-oracle-jdk-8-failing/3038/9
-dist: trusty
-
 language: java
-jdk:
-  - oraclejdk8
+
+# use latest dist by default, but certain setups need to fall back to xenial or even trusty (see also matrix):
+# - oraclejdk8 needs trusty, see https://travis-ci.community/t/install-of-oracle-jdk-8-failing/3038/9
+#   note: as of 08.09.2019, this JDK provided by Travis is rather old (just minor version 151 instead of 222)
+#         and installing a newer one manually seems to require too much effort.
+# - openjdk8 fails on bionic (similar to oraclejdk8 on >trusty), but on xenial the minor version is way more recent
+dist: bionic
+
+# set up matrix for various Maven & JDK combinations
+# note: as of 08.09.2019, oraclejdk11 seems to yield the exact same JDK as openjdk11,
+#       which is why some matrix entries are commented out
+matrix:
+  include:
+  #######
+  # Maven 3.6.2 with various JDKs
+  - name: "Maven 3.6.2 & Open JDK 11"
+    jdk: openjdk11
+    env: MVN_VERSION="3.6.2" OPENJDK_VERSION=11
+  #- name: "Maven 3.6.2 & Oracle JDK 11"
+  #  jdk: oraclejdk11
+  #  env: MVN_VERSION="3.6.2"
+  - name: "Maven 3.6.2 & Open JDK 8"
+    jdk: openjdk8
+    env: MVN_VERSION="3.6.2" OPENJDK_VERSION=8
+    dist: xenial
+  - name: "Maven 3.6.2 & Oracle JDK 8"
+    jdk: oraclejdk8
+    env: MVN_VERSION="3.6.2"
+    dist: trusty
+  #######
+  # Maven 3.5.4 with various JDKs
+  - name: "Maven 3.5.4 & Open JDK 11"
+    jdk: openjdk11
+    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=11
+  #- name: "Maven 3.5.4 & Oracle JDK 11"
+  #  jdk: oraclejdk11
+  #  env: MVN_VERSION="3.5.4"
+  - name: "Maven 3.5.4 & Open JDK 8"
+    jdk: openjdk8
+    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=8
+    dist: xenial
+  - name: "Maven 3.5.4 & Oracle JDK 8"
+    jdk: oraclejdk8
+    env: MVN_VERSION="3.5.4"
+    dist: trusty
+  #######
+  # Maven 3.3.9 with various JDKs
+  - name: "Maven 3.3.9 & Open JDK 11"
+    jdk: openjdk11
+    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=11
+  #- name: "Maven 3.3.9 & Oracle JDK 11"
+  #  jdk: oraclejdk11
+  #  env: MVN_VERSION="3.3.9"
+  - name: "Maven 3.3.9 & Open JDK 8"
+    jdk: openjdk8
+    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=8
+    dist: xenial
+  - name: "Maven 3.3.9 & Oracle JDK 8"
+    jdk: oraclejdk8
+    env: MVN_VERSION="3.3.9"
+    dist: trusty
+
+before_install:
+  # download codacy-coverage-reporter (with explicit version, see https://github.com/vackosar/gitflow-incremental-builder/pull/78#issuecomment-454950381)
+  - wget --no-verbose -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/6.0.4/codacy-coverage-reporter-6.0.4-assembly.jar
+
+install:
+  # some commands for debugging/analyzing the JDKs provided by Travis:
+  #- find /usr -name java -type f -executable -prune -print -exec {} -version \;
+  #- apt list --installed
+  #- update-alternatives --display java
+  #
+  # switch to a (possibly) more recent JDK:
+  - if [ -n "${OPENJDK_VERSION}" ]; then
+      JAVA_HOME_CANDIATE=/usr/lib/jvm/java-${OPENJDK_VERSION}-openjdk-amd64;
+      if [ "${JAVA_HOME}" != "${JAVA_HOME_CANDIATE}" ] && [ -d "${JAVA_HOME_CANDIATE}" ]; then
+        echo "Switching to a (possibly) more recent JDK ${OPENJDK_VERSION} minor version ...";
+        export JAVA_HOME=${JAVA_HOME_CANDIATE};
+        export PATH="$JAVA_HOME/bin:$PATH";
+      fi
+    fi
+  # install custom Maven version:
+  - if [ -n "${MVN_VERSION}" ]; then
+      echo "Download Maven ${MVN_VERSION} ...";
+      wget https://archive.apache.org/dist/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.zip || travis_terminate 1;
+      unzip -qq apache-maven-${MVN_VERSION}-bin.zip || travis_terminate 1;
+      export M2_HOME=${PWD}/apache-maven-${MVN_VERSION};
+      export PATH=${M2_HOME}/bin:$PATH;
+      mvn -version;
+    fi
+
 script:
   mvn verify
 
-before_install:
-  - wget -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/4.0.5/codacy-coverage-reporter-4.0.5-assembly.jar
-
 after_success:
-  - java -jar ~/codacy-coverage-reporter-assembly.jar report -l Java -r target/site/jacoco/jacoco.xml
+  # disable coverage report for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456
+  - if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      java -jar ~/codacy-coverage-reporter-assembly.jar report -l Java -r target/site/jacoco/jacoco.xml;
+    fi
