@@ -16,7 +16,7 @@ matrix:
   # Maven 3.6.2 with various JDKs
   - name: "Maven 3.6.2 & Open JDK 11"
     jdk: openjdk11
-    env: MVN_VERSION="3.6.2" OPENJDK_VERSION=11
+    env: MVN_VERSION="3.6.2" OPENJDK_VERSION=11 COVERAGE_REPORT=true
   #- name: "Maven 3.6.2 & Oracle JDK 11"
   #  jdk: oraclejdk11
   #  env: MVN_VERSION="3.6.2"
@@ -63,7 +63,9 @@ matrix:
 
 before_install:
   # download codacy-coverage-reporter (with explicit version, see https://github.com/vackosar/gitflow-incremental-builder/pull/78#issuecomment-454950381)
-  - wget --no-verbose -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/6.0.4/codacy-coverage-reporter-6.0.4-assembly.jar
+  - if [ "${COVERAGE_REPORT}" == "true" ]; then
+      wget --no-verbose -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/6.0.4/codacy-coverage-reporter-6.0.4-assembly.jar;
+    fi
 
 install:
   # some commands for debugging/analyzing the JDKs provided by Travis:
@@ -95,6 +97,6 @@ script:
 
 after_success:
   # disable coverage report for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456
-  - if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+  - if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${COVERAGE_REPORT}" == "true" ]; then
       java -jar ~/codacy-coverage-reporter-assembly.jar report -l Java -r target/site/jacoco/jacoco.xml;
     fi
