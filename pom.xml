@@ -354,6 +354,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipITs}</skip>
                             <target xmlns:if="ant:if" xmlns:unless="ant:unless">
                                 <mkdir dir="${gibIntegrationTestRepo}"/>
                                 <condition property="onWindows">
@@ -386,6 +387,7 @@
                             <goal>install-file</goal>
                         </goals>
                         <configuration>
+                            <!-- no "skip" available -->
                             <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
                             <localRepositoryPath>${gibIntegrationTestRepo}</localRepositoryPath>
                             <pomFile>${project.basedir}/pom.xml</pomFile>
@@ -425,7 +427,7 @@
                                 <fileset>
                                     <directory>${project.build.directory}</directory>
                                     <excludes>
-                                        <exclude>it/repo/*</exclude>
+                                        <exclude>it/repo/**</exclude>
                                     </excludes>
                                 </fileset>
                             </filesets>
@@ -455,7 +457,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>jar-no-fork</goal>
                                 </goals>
                             </execution>
                         </executions>
