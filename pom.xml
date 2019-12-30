@@ -39,6 +39,7 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javaSourceLevel>1.8</javaSourceLevel>
 
         <!-- Dependency versions -->
         <version.jgit>5.6.0.201912101111-r</version.jgit>
@@ -51,22 +52,22 @@
         <version.mockito-all>1.10.19</version.mockito-all>
 
         <!-- Plugin versions -->
-        <version.maven-enforcer-plugin>3.0.0-M2</version.maven-enforcer-plugin>
+        <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
-        <version.jacoco-maven-plugin>0.8.2</version.jacoco-maven-plugin>
-        <version.plexus-component-metadata>1.7.1</version.plexus-component-metadata>
+        <version.jacoco-maven-plugin>0.8.3</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
+        <version.plexus-component-metadata>2.1.0</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
-        <version.maven-compiler-plugin>3.8.0</version.maven-compiler-plugin>
-        <version.maven-surefire-plugin>2.22.1</version.maven-surefire-plugin>
-        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
-        <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
-        <version.maven-jar-plugin>3.1.0</version.maven-jar-plugin>
-        <version.maven-failsafe-plugin>2.22.1</version.maven-failsafe-plugin>
-        <version.maven-site-plugin>3.7.1</version.maven-site-plugin>
-        <version.maven-install-plugin>2.5.2</version.maven-install-plugin>
+        <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
+        <version.maven-surefire-plugin>3.0.0-M4</version.maven-surefire-plugin>
+        <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
+        <version.maven-javadoc-plugin>3.1.1</version.maven-javadoc-plugin>
+        <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
+        <version.maven-failsafe-plugin>3.0.0-M4</version.maven-failsafe-plugin>
+        <version.maven-site-plugin>3.8.2</version.maven-site-plugin>
+        <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
         <version.maven-antrun-plugin>1.8</version.maven-antrun-plugin>
         <version.ant>1.10.7</version.ant>
-        <version.maven-deploy-plugin>2.8.2</version.maven-deploy-plugin>
+        <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.7</version.versions-maven-plugin>
@@ -179,8 +180,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${version.maven-compiler-plugin}</version>
                     <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
+                        <source>${javaSourceLevel}</source>
+                        <target>${javaSourceLevel}</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -212,6 +213,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${version.maven-javadoc-plugin}</version>
+                    <configuration>
+                        <source>${javaSourceLevel}</source>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -343,6 +347,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- avoid to re-download everything into the integration test repo by pre-propulating it from regular local repo -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -440,28 +466,6 @@
             <id>release</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
