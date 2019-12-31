@@ -7,8 +7,9 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
 ## Prerequisites
 
 - You must be a **collaborator** of GIB (or the owner)
+
 - **GPG**
-  - https://www.gnupg.org/download/
+  - [GnuPG download](https://www.gnupg.org/download/])
   - Key is published
   - `settings.xml` contains something like:
     ```xml
@@ -22,9 +23,9 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
       </profile>
     </profiles>
     ```
-	(Windows example)
+
 - **OSSRH** access
-  - https://central.sonatype.org/pages/ossrh-guide.html
+  - [OSSRH guide](https://central.sonatype.org/pages/ossrh-guide.html])
   - permissions have been granted (may require a ticket by the GIB owner or another collaborator)
   - `settings.xml` contains something like:
     ```xml
@@ -42,7 +43,7 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
 - :information_source: `project/scm/developerConnection` in `pom.xml` is set to `https` protocol (_not_ `ssh` or `git`)
 - `mvn -Prelease,ossrh release:prepare`
 - `mvn -Prelease,ossrh release:perform`
-- see also: https://maven.apache.org/maven-release/maven-release-plugin/
+- see also [`maven-release-plugin`](https://maven.apache.org/maven-release/maven-release-plugin/)
 
 ## Deploy a SNAPSHOT
 
