@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>3.8.1-SNAPSHOT</version>
+    <version>3.8.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
@@ -19,7 +17,8 @@
         <url>https://github.com/vackosar/gitflow-incremental-builder</url>
         <connection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</connection>
         <developerConnection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</developerConnection>
-    </scm>
+      <tag>version/3.8.1</tag>
+  </scm>
 
     <licenses>
         <license>
@@ -98,7 +97,7 @@
         <skipUTs>${skipTests}</skipUTs>
 
         <!-- See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html for empty argLine -->
-        <argLine></argLine>
+        <argLine />
     </properties>
     <dependencies>
         <dependency>
@@ -408,14 +407,13 @@
                         <configuration>
                             <skip>${skipITs}</skip>
                             <target xmlns:if="ant:if" xmlns:unless="ant:unless">
-                                <mkdir dir="${gibIntegrationTestRepo}"/>
+                                <mkdir dir="${gibIntegrationTestRepo}" />
                                 <condition property="onWindows">
                                     <os family="windows" />
                                 </condition>
                                 <!-- no easy way to hard-link on Windows, so copy instead of link but only the most important deps -->
                                 <copy if:set="onWindows" todir="${gibIntegrationTestRepo}">
-                                    <fileset dir="${settings.localRepository}"
-                                             includes="org/apache/maven/**,org/codehaus/plexus/**,org/eclipse/jgit/**,org/sonatype/**" />
+                                    <fileset dir="${settings.localRepository}" includes="org/apache/maven/**,org/codehaus/plexus/**,org/eclipse/jgit/**,org/sonatype/**" />
                                 </copy>
                                 <!-- on non-Windows: assume that rsync is present and just speedily hard-link the entire local repo to the it repo -->
                                 <exec unless:set="onWindows" executable="rsync" failifexecutionfails="false">
