@@ -10,6 +10,7 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
 
 - **GPG**
   - [GnuPG download](https://www.gnupg.org/download/])
+
   - Key is published
   - `settings.xml` contains something like:
     ```xml
@@ -26,6 +27,7 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
 
 - **OSSRH** access
   - [OSSRH guide](https://central.sonatype.org/pages/ossrh-guide.html])
+
   - permissions have been granted (may require a ticket by the GIB owner or another collaborator)
   - `settings.xml` contains something like:
     ```xml
