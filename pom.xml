@@ -87,6 +87,7 @@
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.7</version.versions-maven-plugin>
+        <version.maven-release-plugin>3.0.0-M1</version.maven-release-plugin>
 
         <gibIntegrationTestRepo>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepo>
 
@@ -311,6 +312,15 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>${version.versions-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${version.maven-release-plugin}</version>
+                    <configuration>
+                        <tagNameFormat>version/@{project.version}</tagNameFormat>
+                        <goals>deploy</goals>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
