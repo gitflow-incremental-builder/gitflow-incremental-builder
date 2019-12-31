@@ -17,49 +17,49 @@ matrix:
   - name: "Maven 3.6.3 & Open JDK 11"
     jdk: openjdk11
     env: MVN_VERSION="3.6.3" OPENJDK_VERSION=11 COVERAGE_REPORT=true
-  #- name: "Maven 3.6.3 & Oracle JDK 11"
-  #  jdk: oraclejdk11
-  #  env: MVN_VERSION="3.6.3"
-  - name: "Maven 3.6.3 & Open JDK 8"
-    jdk: openjdk8
-    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=8
-    dist: xenial
-  - name: "Maven 3.6.3 & Oracle JDK 8"
-    jdk: oraclejdk8
-    env: MVN_VERSION="3.6.3"
-    dist: trusty
-  #######
-  # Maven 3.5.4 with various JDKs
-  - name: "Maven 3.5.4 & Open JDK 11"
-    jdk: openjdk11
-    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=11
-  #- name: "Maven 3.5.4 & Oracle JDK 11"
-  #  jdk: oraclejdk11
-  #  env: MVN_VERSION="3.5.4"
-  - name: "Maven 3.5.4 & Open JDK 8"
-    jdk: openjdk8
-    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=8
-    dist: xenial
-  - name: "Maven 3.5.4 & Oracle JDK 8"
-    jdk: oraclejdk8
-    env: MVN_VERSION="3.5.4"
-    dist: trusty
-  #######
-  # Maven 3.3.9 with various JDKs
-  - name: "Maven 3.3.9 & Open JDK 11"
-    jdk: openjdk11
-    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=11
-  #- name: "Maven 3.3.9 & Oracle JDK 11"
-  #  jdk: oraclejdk11
-  #  env: MVN_VERSION="3.3.9"
-  - name: "Maven 3.3.9 & Open JDK 8"
-    jdk: openjdk8
-    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=8
-    dist: xenial
-  - name: "Maven 3.3.9 & Oracle JDK 8"
-    jdk: oraclejdk8
-    env: MVN_VERSION="3.3.9"
-    dist: trusty
+#  #- name: "Maven 3.6.3 & Oracle JDK 11"
+#  #  jdk: oraclejdk11
+#  #  env: MVN_VERSION="3.6.3"
+#  - name: "Maven 3.6.3 & Open JDK 8"
+#    jdk: openjdk8
+#    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=8
+#    dist: xenial
+#  - name: "Maven 3.6.3 & Oracle JDK 8"
+#    jdk: oraclejdk8
+#    env: MVN_VERSION="3.6.3"
+#    dist: trusty
+#  #######
+#  # Maven 3.5.4 with various JDKs
+#  - name: "Maven 3.5.4 & Open JDK 11"
+#    jdk: openjdk11
+#    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=11
+#  #- name: "Maven 3.5.4 & Oracle JDK 11"
+#  #  jdk: oraclejdk11
+#  #  env: MVN_VERSION="3.5.4"
+#  - name: "Maven 3.5.4 & Open JDK 8"
+#    jdk: openjdk8
+#    env: MVN_VERSION="3.5.4" OPENJDK_VERSION=8
+#    dist: xenial
+#  - name: "Maven 3.5.4 & Oracle JDK 8"
+#    jdk: oraclejdk8
+#    env: MVN_VERSION="3.5.4"
+#    dist: trusty
+#  #######
+#  # Maven 3.3.9 with various JDKs
+#  - name: "Maven 3.3.9 & Open JDK 11"
+#    jdk: openjdk11
+#    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=11
+#  #- name: "Maven 3.3.9 & Oracle JDK 11"
+#  #  jdk: oraclejdk11
+#  #  env: MVN_VERSION="3.3.9"
+#  - name: "Maven 3.3.9 & Open JDK 8"
+#    jdk: openjdk8
+#    env: MVN_VERSION="3.3.9" OPENJDK_VERSION=8
+#    dist: xenial
+#  - name: "Maven 3.3.9 & Oracle JDK 8"
+#    jdk: oraclejdk8
+#    env: MVN_VERSION="3.3.9"
+#    dist: trusty
 
 before_install:
   # download codacy-coverage-reporter (with explicit version, see https://github.com/vackosar/gitflow-incremental-builder/pull/78#issuecomment-454950381)
