@@ -9,15 +9,18 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
+
     <issueManagement>
         <url>https://github.com/vackosar/gitflow-incremental-builder/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
+
     <scm>
         <url>https://github.com/vackosar/gitflow-incremental-builder</url>
         <connection>scm:git://github.com/vackosar/gitflow-incremental-builder.git</connection>
         <developerConnection>scm:git:git@github.com:vackosar/gitflow-incremental-builder.git</developerConnection>
     </scm>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -25,6 +28,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <developers>
         <developer>
             <name>Vaclav Kosar</name>
@@ -37,6 +41,18 @@
             <id>famod</id>
         </developer>
     </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javaSourceLevel>1.8</javaSourceLevel>
