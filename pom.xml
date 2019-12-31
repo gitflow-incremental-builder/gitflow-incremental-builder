@@ -17,8 +17,8 @@
 
     <scm>
         <url>https://github.com/vackosar/gitflow-incremental-builder</url>
-        <connection>scm:git://github.com/vackosar/gitflow-incremental-builder.git</connection>
-        <developerConnection>scm:git:git@github.com:vackosar/gitflow-incremental-builder.git</developerConnection>
+        <connection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</connection>
+        <developerConnection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</developerConnection>
     </scm>
 
     <licenses>
