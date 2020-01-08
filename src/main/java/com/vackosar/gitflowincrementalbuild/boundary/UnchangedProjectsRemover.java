@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-@Named("gib.unchangedProjectsRemover")
+@Named
 class UnchangedProjectsRemover {
 
     private static final String MAVEN_TEST_SKIP = "maven.test.skip";

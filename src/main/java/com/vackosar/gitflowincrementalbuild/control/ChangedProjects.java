@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
-@Named("gib.changedProjects")
+@Named
 public class ChangedProjects {
 
     private Logger logger = LoggerFactory.getLogger(ChangedProjects.class);

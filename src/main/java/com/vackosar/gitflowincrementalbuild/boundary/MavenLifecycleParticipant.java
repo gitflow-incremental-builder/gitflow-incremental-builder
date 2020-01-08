@@ -13,7 +13,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named("gib")
+@Named
 public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
     private Logger logger = LoggerFactory.getLogger(MavenLifecycleParticipant.class);
