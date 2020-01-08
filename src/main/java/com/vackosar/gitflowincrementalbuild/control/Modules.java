@@ -11,7 +11,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named("gib.modules")
+@Named
 public class Modules {
 
     public Map<Path, MavenProject> createPathMap(MavenSession session) {

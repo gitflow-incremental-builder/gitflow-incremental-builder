@@ -186,7 +186,7 @@ public class Configuration {
     }
 
     @Singleton
-    @Named("gib.configurationProvider")
+    @Named
     public static class Provider implements javax.inject.Provider<Configuration> {
 
         private final MavenSession mavenSession;
