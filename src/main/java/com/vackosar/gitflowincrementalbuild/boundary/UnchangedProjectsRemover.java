@@ -62,12 +62,14 @@ class UnchangedProjectsRemover {
             mavenSession.getGoals().clear();
             mavenSession.getGoals().add("validate");
         } else if (!configProvider.get().forceBuildModules.isEmpty()) {
-            Stream<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
+            Set<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
                     .filter(p -> matchesAny(p.getArtifactId(), configProvider.get().forceBuildModules))
                     .filter(p -> !rebuild.contains(p))
-                    .map(this::applyUpstreamModuleArgs);
-            mavenSession.setProjects(
-                    Stream.concat(forceBuildModules, rebuild.stream()).collect(Collectors.toList()));
+                    .map(this::applyUpstreamModuleArgs)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            mavenSession.setProjects(mavenSession.getProjects().stream()
+                    .filter(prj -> forceBuildModules.contains(prj) || rebuild.contains(prj))
+                    .collect(Collectors.toList()));
         } else {
             mavenSession.setProjects(new ArrayList<>(rebuild));
         }

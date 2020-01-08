@@ -365,7 +365,7 @@ public class UnchangedProjectsRemoverTest {
         underTest.act();
 
         verify(mavenSessionMock).setProjects(
-                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+                Arrays.asList(mavenProjectMock, changedModuleMock, unchangedModuleMock));
     }
 
     @Test
@@ -378,7 +378,7 @@ public class UnchangedProjectsRemoverTest {
         underTest.act();
 
         verify(mavenSessionMock).setProjects(
-                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+                Arrays.asList(mavenProjectMock, changedModuleMock, unchangedModuleMock));
     }
 
     @Test
@@ -391,7 +391,7 @@ public class UnchangedProjectsRemoverTest {
         underTest.act();
 
         verify(mavenSessionMock).setProjects(
-                Arrays.asList(mavenProjectMock, unchangedModuleMock, changedModuleMock));
+                Arrays.asList(mavenProjectMock, changedModuleMock, unchangedModuleMock));
     }
 
     @Test
@@ -470,7 +470,7 @@ public class UnchangedProjectsRemoverTest {
         underTest.act();
 
         verify(mavenSessionMock).setProjects(
-                Arrays.asList(dependentWar, changedProjectMock));
+                Arrays.asList(changedProjectMock, dependentWar));
     }
 
     @Test
