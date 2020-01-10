@@ -58,9 +58,8 @@ this extension should be disabled in such environments to avoid inconsistencies 
 
 See [gib.enabled](#gibenabled) in the configuration section.
 
-:warning: IntelliJ IDEA is not yet compatible with GIB 3.8+, even if disabled! :warning:
-
-GIB 3.7 has to be used until an IntelliJ IDEA version is released that contains the fix for [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272). See [issue 91](../../issues/91) for more details.
+:information_source: IntelliJ IDEA **2019.3.1** or higher is recommended for GIB 3.8+ (even if disabled).
+See [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272) and [issue 91](../../issues/91) for more details.
 
 ## Example
 
@@ -344,7 +343,7 @@ Here it might be required to freshly compile upstream modules of not directly ch
 
 Both strategies can and usually should be combined with `gib.skipTestsForUpstreamModules` and/or `gib.argsForUpstreamModules`.
 
-Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also #44.
+Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also [issue 44](../../issues/44).
 
 Since: 3.8
 
