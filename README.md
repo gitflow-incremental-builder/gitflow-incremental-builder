@@ -19,6 +19,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Example](#example)
 
 - [Configuration](#configuration)
+  - [gib.help](#gibhelp)
   - [gib.enabled](#gibenabled)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.uncommited](#gibuncommited)
