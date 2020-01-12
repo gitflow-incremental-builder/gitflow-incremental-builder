@@ -105,8 +105,7 @@ public class Configuration {
 
     private static void checkProperties(Properties projectProperties) {
         Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .flatMap(p -> Stream.of(p.fullName(), p.deprecatedFullName()))
-                .filter(Objects::nonNull)
+                .flatMap(p -> p.allNames().stream())
                 .collect(Collectors.toSet());
         String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
                 .distinct()
@@ -127,7 +126,7 @@ public class Configuration {
             String propertyValue = Optional.ofNullable(Property.buildUpstreamMode.getValue(projectProperties)).orElse("");
             return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullName() + " defines an invalid mode", e);
+            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullOrShortName() + " defines an invalid mode", e);
         }
     }
 
@@ -144,7 +143,7 @@ public class Configuration {
                 return false;
             default:
                 throw new IllegalArgumentException(
-                        "GIB property " + property.fullName() + " defines an invalid value: " + property.getValue(projectProperties));
+                        "GIB property " + property.fullOrShortName() + " defines an invalid value: " + property.getValue(projectProperties));
         }
     }
 
@@ -171,7 +170,7 @@ public class Configuration {
         try {
             return Pattern.compile(patternString);
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("GIB property " + property.fullName() + " defines an invalid pattern string", e);
+            throw new IllegalArgumentException("GIB property " + property.fullOrShortName() + " defines an invalid pattern string", e);
         }
     }
 
