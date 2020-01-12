@@ -61,6 +61,21 @@ public class PropertyTest {
     }
 
     @Test
+    public void getValue_fullName_systemProperties_emptyValueMapsToTrue() {
+        // need to use a property that is false per default
+        System.setProperty(Property.buildAll.fullName(), "");
+
+        assertEquals("true", Property.buildAll.getValue(new Properties()));
+    }
+
+    @Test
+    public void getValue_fullName_systemProperties_emptyValueNotMapped() {
+        System.setProperty(Property.referenceBranch.fullName(), "");
+
+        assertEquals("", Property.referenceBranch.getValue(new Properties()));
+    }
+
+    @Test
     public void getValue_fullName_systemProperties_override() {
         System.setProperty(Property.enabled.fullName(), "true");
 

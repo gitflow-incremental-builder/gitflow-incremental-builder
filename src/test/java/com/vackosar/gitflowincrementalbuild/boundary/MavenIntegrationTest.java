@@ -62,7 +62,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     /**
      * Installs all test artifacts/modules to avoid dependency problems when only building a subset incrementally.
      * <p/>
-     * This also downloads all required maven core and plugin dependencies into the test repo.
+     * This might download all required maven core and plugin dependencies into the test repo, but test setup in pom.xml tries to prevent that.
      * <p/>
      * This is performed only once for the entire class but cannot be moved to {@link BeforeClass} as {@link BaseRepoTest} (re-)creates the
      * test project for each test in {@link Before}.
@@ -105,6 +105,17 @@ public class MavenIntegrationTest extends BaseRepoTest {
     public void buildAllSkipTest() throws Exception {
         final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForUpstreamModules, "true"));
 
+        assertBuilAllSkipTest(output);
+    }
+
+    @Test
+    public void buildAllSkipTest_emptyPropertyValues() throws Exception {
+        final String output = executeBuild(prop(Property.buildAll, ""), prop(Property.skipTestsForUpstreamModules, ""));
+
+        assertBuilAllSkipTest(output);
+    }
+
+    private static void assertBuilAllSkipTest(final String output) {
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertTrue(output.contains(" child2"));
         Assert.assertTrue(output.contains(" subchild1"));
@@ -116,7 +127,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
         Assert.assertTrue(output.contains(" child6"));
         Assert.assertTrue(output.contains("[INFO] Tests are skipped."));
     }
-    
+
     @Test
     public void buildWithAlsoMake() throws Exception {
         final String output = executeBuild("-am");
@@ -222,6 +233,10 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private static String prop(Property property, String value) {
-        return "-D" + property.fullName() + "=" + value;
+        String propString =  "-D" + property.fullName();
+        if (value != null && !value.isEmpty()) {
+            propString += "=" + value;
+        }
+        return propString;
     }
 }

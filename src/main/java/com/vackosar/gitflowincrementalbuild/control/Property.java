@@ -11,23 +11,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public enum Property {
-    enabled("true", "e"),
+    enabled("true", "e", true),
 
-    disableBranchComparison("false", "dbc"),
+    disableBranchComparison("false", "dbc", true),
     referenceBranch("refs/remotes/origin/develop", "rb"),
-    fetchReferenceBranch("false", "frb"),
+    fetchReferenceBranch("false", "frb", true),
     baseBranch("HEAD", "bb"),
-    fetchBaseBranch("false", "fbb"),
-    compareToMergeBase("true", "ctmb"),
-    uncommited("true", "uc"),
-    untracked("true", "ut"),
+    fetchBaseBranch("false", "fbb", true),
+    compareToMergeBase("true", "ctmb", true),
+    uncommited("true", "uc", true),
+    untracked("true", "ut", true),
     excludePathRegex(Constants.NEVER_MATCH_REGEX, "epr"),
 
-    buildAll("false", "ba"),
-    buildDownstream("always", "bd"),
-    buildUpstream("derived", "bu"),
+    buildAll("false", "ba", true),
+    buildDownstream("always", "bd", true),
+    buildUpstream("derived", "bu", true),
     buildUpstreamMode("changed", "bum"),
-    skipTestsForUpstreamModules("false", "stfum") {
+    skipTestsForUpstreamModules("false", "stfum", true) {
         @Override
         public String deprecatedFullName() {
             return PREFIX + "skipTestsForNotImpactedModules";
@@ -42,8 +42,8 @@ public enum Property {
     forceBuildModules("", "fbm"),
     excludeTransitiveModulesPackagedAs("", "etmpa"),
 
-    failOnMissingGitDir("true", "fomgd"),
-    failOnError("true", "foe");
+    failOnMissingGitDir("true", "fomgd", true),
+    failOnError("true", "foe", true);
 
     public static final String PREFIX = "gib.";
 
@@ -54,13 +54,20 @@ public enum Property {
     private final String defaultValue;
     private final List<String> allNames;
 
+    private final boolean mapEmptyValueToTrue;
+
     Property(String defaultValue, String unprefixedShortName) {
+        this(defaultValue, unprefixedShortName, false);
+    }
+
+    Property(String defaultValue, String unprefixedShortName, boolean mapNoValueToTrue) {
         this.fullName = PREFIX + name();
         this.defaultValue = defaultValue;
         this.shortName = PREFIX + unprefixedShortName;
         this.allNames = Stream.of(fullName, shortName, deprecatedFullName())
                 .filter(Objects::nonNull)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.mapEmptyValueToTrue = mapNoValueToTrue;
     }
 
     private String exemplify() {
@@ -104,9 +111,14 @@ public enum Property {
 
     private String getValue(String name, Properties properties) {
         String value = properties.getProperty(name);
-        if (value != null && name.equals(deprecatedFullName())) {
-            LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
-                    deprecatedFullName(), fullOrShortName());
+        if (value != null) {
+            if (name.equals(deprecatedFullName())) {
+                LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
+                        deprecatedFullName(), fullOrShortName());
+            }
+            if (mapEmptyValueToTrue && value.isEmpty()) {
+                value = "true";
+            }
         }
         return value;
     }
