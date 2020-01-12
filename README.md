@@ -247,28 +247,43 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 Maven pom properties configuration with default values is below:
 ```xml
 <properties>
-    <gib.enabled>true</gib.enabled>
-    <gib.disableBranchComparison>false</gib.disableBranchComparison>
-    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>
-    <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>
-    <gib.baseBranch>HEAD</gib.baseBranch>
-    <gib.fetchBaseBranch>false</gib.fetchBaseBranch>
-    <gib.compareToMergeBase>true</gib.compareToMergeBase>
-    <gib.uncommited>true</gib.uncommited>
-    <gib.untracked>true</gib.untracked>
-    <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>
-    <gib.buildAll>false</gib.buildAll>
-    <gib.buildDownstream>always</gib.buildDownstream>
-    <gib.buildUpstream>derived</gib.buildUpstream>
-    <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>
-    <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>
-    <gib.argsForUpstreamModules></gib.argsForUpstreamModules>
-    <gib.forceBuildModules></gib.forceBuildModules>
-    <gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>
-    <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>
-    <gib.failOnError>true</gib.failOnError>
+    <gib.help>false</gib.help>                                                            <!-- or <gib.h>... -->
+    <gib.enabled>true</gib.enabled>                                                       <!-- or <gib.e>... -->
+    <gib.disableBranchComparison>false</gib.disableBranchComparison>                      <!-- or <gib.dbc>... -->
+    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>                <!-- or <gib.rb>... -->
+    <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                            <!-- or <gib.frb>... -->
+    <gib.baseBranch>HEAD</gib.baseBranch>                                                 <!-- or <gib.bb>... -->
+    <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                      <!-- or <gib.fbb>... -->
+    <gib.compareToMergeBase>true</gib.compareToMergeBase>                                 <!-- or <gib.ctmb>... -->
+    <gib.uncommited>true</gib.uncommited>                                                 <!-- or <gib.uc>... -->
+    <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
+    <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>                                   <!-- or <gib.epr>... -->
+    <gib.buildAll>false</gib.buildAll>                                                    <!-- or <gib.ba>... -->
+    <gib.buildDownstream>always</gib.buildDownstream>                                     <!-- or <gib.bd>... -->
+    <gib.buildUpstream>derived</gib.buildUpstream>                                        <!-- or <gib.bu>... -->
+    <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>                                <!-- or <gib.bum>... -->
+    <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>              <!-- or <gib.stfum>... -->
+    <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                             <!-- or <gib.afum>... -->
+    <gib.forceBuildModules></gib.forceBuildModules>                                       <!-- or <gib.fbm>... -->
+    <gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>     <!-- or <gib.etmpa>... -->
+    <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                               <!-- or <gib.fomgd>... -->
+    <gib.failOnError>true</gib.failOnError>                                               <!-- or <gib.foe>... -->
 </properties>
 ```
+
+Each property can also be set via `-D` on the command line and to reduce typing to a minimum, each property has a short name (see code block above).
+
+E.g. `-Dgib.e=true` yields the same result as `-Dgib.enabled=true`.
+
+Properties that support the value `true` can be specified _without_ a value, e.g. `-Dgib.enabled` is the same as `-Dgib.enabled=true`.
+
+System properties (`-D`) take precedence over project properties from the POM and secondarily to that a full name takes precedence over the respective short name.
+
+### gib.help
+
+Logs the available properties etc.
+
+Note: Independent of `gib.enabled`.
 
 ### gib.enabled
 

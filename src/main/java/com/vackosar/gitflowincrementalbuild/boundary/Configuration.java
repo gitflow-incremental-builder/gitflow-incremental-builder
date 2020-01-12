@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class Configuration {
     public final boolean failOnError;
 
     private Configuration(MavenSession session) {
-        Properties projectProperties = session.getTopLevelProject().getProperties();
+        Properties projectProperties = getProjectProperties(session);
         checkProperties(projectProperties);
 
         // change detection config
@@ -100,13 +99,27 @@ public class Configuration {
      * @return whether or not GIB is enabled or not
      */
     public static boolean isEnabled(MavenSession session) {
-        return Boolean.valueOf(Property.enabled.getValue(session.getTopLevelProject().getProperties()));
+        return Boolean.valueOf(Property.enabled.getValue(getProjectProperties(session)));
+    }
+
+    /**
+     * Returns the value for {@link Property#help} without initializing all the other configuration fields (help can be requested even if
+     * {@link #isEnabled(MavenSession)} returns {@code false}).
+     *
+     * @param session the current session
+     * @return whether or not to print GIB help
+     */
+    public static boolean isHelpRequested(MavenSession session) {
+        return Boolean.valueOf(Property.help.getValue(getProjectProperties(session)));
+    }
+
+    private static Properties getProjectProperties(MavenSession session) {
+        return session.getTopLevelProject().getProperties();
     }
 
     private static void checkProperties(Properties projectProperties) {
         Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .flatMap(p -> Stream.of(p.fullName(), p.deprecatedFullName()))
-                .filter(Objects::nonNull)
+                .flatMap(p -> p.allNames().stream())
                 .collect(Collectors.toSet());
         String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
                 .distinct()
@@ -127,7 +140,7 @@ public class Configuration {
             String propertyValue = Optional.ofNullable(Property.buildUpstreamMode.getValue(projectProperties)).orElse("");
             return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullName() + " defines an invalid mode", e);
+            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullOrShortName() + " defines an invalid mode", e);
         }
     }
 
@@ -144,7 +157,7 @@ public class Configuration {
                 return false;
             default:
                 throw new IllegalArgumentException(
-                        "GIB property " + property.fullName() + " defines an invalid value: " + property.getValue(projectProperties));
+                        "GIB property " + property.fullOrShortName() + " defines an invalid value: " + property.getValue(projectProperties));
         }
     }
 
@@ -171,7 +184,7 @@ public class Configuration {
         try {
             return Pattern.compile(patternString);
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("GIB property " + property.fullName() + " defines an invalid pattern string", e);
+            throw new IllegalArgumentException("GIB property " + property.fullOrShortName() + " defines an invalid pattern string", e);
         }
     }
 

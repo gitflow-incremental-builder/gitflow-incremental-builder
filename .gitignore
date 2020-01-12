@@ -9,5 +9,5 @@
 .classpath
 .project
 .settings/
-.README.md.html
+.*.md.html
 *.log

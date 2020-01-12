@@ -26,11 +26,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
+import com.vackosar.gitflowincrementalbuild.SystemPropertiesResetRule;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration.BuildUpstreamMode;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
@@ -46,20 +46,7 @@ public class ConfigurationTest {
     private final ExpectedException thrown = ExpectedException.none();
 
     @Rule
-    public final RuleChain ruleChain = RuleChain
-            // properly reset system properties after each test
-            .outerRule((base, description) -> new Statement() {
-                @Override
-                public void evaluate() throws Throwable {
-                    final Properties backup = (Properties) System.getProperties().clone();
-                    try {
-                        base.evaluate();
-                    } finally {
-                        System.setProperties(backup);
-                    }
-                }
-            })
-            .around(thrown);
+    public final RuleChain ruleChain = RuleChain.outerRule(new SystemPropertiesResetRule()).around(thrown);
 
     @Mock
     private MavenExecutionRequest mavenExecutionRequestMock;

@@ -37,6 +37,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class MavenLifecycleParticipantTest {
 
+    private static final String TEST_IMPL_VERSION = "3.8.1";    // just an existing version, no need to be the latest one
+
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
@@ -49,7 +51,7 @@ public class MavenLifecycleParticipantTest {
     private UnchangedProjectsRemover unchangedProjectsRemoverMock;
 
     @InjectMocks
-    private MavenLifecycleParticipant underTest;
+    private MavenLifecycleParticipant underTest = new MavenLifecycleParticipant(TEST_IMPL_VERSION);
 
     private final Properties projectProperties = new Properties();
 
@@ -67,6 +69,15 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
+    public void defaultlyEnabled() throws Exception {
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(loggerSpy).info(contains("starting..."), eq(TEST_IMPL_VERSION));
+        verify(unchangedProjectsRemoverMock).act();
+    }
+
+    @Test
     public void disabled() throws Exception {
         projectProperties.setProperty(Property.enabled.fullName(), "false");
 
@@ -78,12 +89,32 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void defaultlyEnabled() throws Exception {
+    public void disabled_helpRequested() throws Exception {
+        projectProperties.setProperty(Property.enabled.fullName(), "false");
+        projectProperties.setProperty(Property.help.fullName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerSpy).info(contains("starting..."));
+        verifyHelpLogged(true);
+        verifyZeroInteractions(unchangedProjectsRemoverMock);
+    }
+
+    @Test
+    public void helpRequested() throws Exception {
+        projectProperties.setProperty(Property.help.fullName(), "true");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verifyHelpLogged(true);
         verify(unchangedProjectsRemoverMock).act();
+    }
+
+    @Test
+    public void defaultlyNoHelp() throws Exception {
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verifyHelpLogged(false);
     }
 
     @Test
@@ -127,5 +158,10 @@ public class MavenLifecycleParticipantTest {
 
         verify(loggerSpy).warn(contains("ProjectDependencyGraph"));
         verifyZeroInteractions(unchangedProjectsRemoverMock);
+    }
+
+    private void verifyHelpLogged(boolean logged) {
+        verify(loggerSpy, logged ? Mockito.times(1) : Mockito.never())
+                .info(contains("help:"), eq(TEST_IMPL_VERSION), anyString(), anyString(), anyString());
     }
 }

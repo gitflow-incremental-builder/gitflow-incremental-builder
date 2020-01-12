@@ -22,8 +22,23 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Inject private Configuration.Provider configProvider;
 
+    private final String implVersion;
+
+    public MavenLifecycleParticipant() {
+        implVersion = getClass().getPackage().getImplementationVersion();
+    }
+
+    // only for testing!
+    MavenLifecycleParticipant(String implVersion) {
+        this.implVersion = implVersion;
+    }
+
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+
+        if (Configuration.isHelpRequested(session)) {
+            logHelp();
+        }
 
         if (!Configuration.isEnabled(session)) {
             logger.info("gitflow-incremental-builder is disabled.");
@@ -34,11 +49,11 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         if (session.getProjectDependencyGraph() == null) {
             logger.warn("Execution of gitflow-incremental-builder is not supported in this environment: "
                     + "Current MavenSession does not provide a ProjectDependencyGraph. "
-                    + "Consider disabling gitflow-incremental-builder via property: " + Property.enabled.fullName());
+                    + "Consider disabling gitflow-incremental-builder via property: " + Property.enabled.fullOrShortName());
             return;
         }
 
-        logger.info("gitflow-incremental-builder " + getClass().getPackage().getImplementationVersion() + " starting...");
+        logger.info("gitflow-incremental-builder {} starting...", implVersion);
         try {
             unchangedProjectsRemover.act();
         } catch (Exception e) {
@@ -51,5 +66,13 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             }
         }
         logger.info("gitflow-incremental-builder exiting...");
+    }
+
+    private void logHelp() {
+        logger.info("gitflow-incremental-builder {} help:\n{}\nFor more help see: {}/tree/version/{}#configuration\n",
+                implVersion,
+                Property.exemplifyAll(),
+                "https://github.com/vackosar/gitflow-incremental-builder",
+                implVersion);
     }
 }
