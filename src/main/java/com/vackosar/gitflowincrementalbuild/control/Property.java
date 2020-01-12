@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public enum Property {
+    help("false", "h", true),
     enabled("true", "e", true),
 
     disableBranchComparison("false", "dbc", true),

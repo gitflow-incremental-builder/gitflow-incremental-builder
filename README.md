@@ -247,6 +247,7 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 Maven pom properties configuration with default values is below:
 ```xml
 <properties>
+    <gib.help>false</gib.help>                                                            <!-- or <gib.h>... -->
     <gib.enabled>true</gib.enabled>                                                       <!-- or <gib.e>... -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                      <!-- or <gib.dbc>... -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>                <!-- or <gib.rb>... -->
@@ -277,6 +278,12 @@ E.g. `-Dgib.e=true` yields the same result as `-Dgib.enabled=true`.
 Properties that support the value `true` can be specified _without_ a value, e.g. `-Dgib.enabled` is the same as `-Dgib.enabled=true`.
 
 System properties (`-D`) take precedence over project properties from the POM and secondarily to that a full name takes precedence over the respective short name.
+
+### gib.help
+
+Logs the available properties etc.
+
+Note: Independent of `gib.enabled`.
 
 ### gib.enabled
 

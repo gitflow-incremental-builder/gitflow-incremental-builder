@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class Configuration {
     public final boolean failOnError;
 
     private Configuration(MavenSession session) {
-        Properties projectProperties = session.getTopLevelProject().getProperties();
+        Properties projectProperties = getProjectProperties(session);
         checkProperties(projectProperties);
 
         // change detection config
@@ -100,7 +99,22 @@ public class Configuration {
      * @return whether or not GIB is enabled or not
      */
     public static boolean isEnabled(MavenSession session) {
-        return Boolean.valueOf(Property.enabled.getValue(session.getTopLevelProject().getProperties()));
+        return Boolean.valueOf(Property.enabled.getValue(getProjectProperties(session)));
+    }
+
+    /**
+     * Returns the value for {@link Property#help} without initializing all the other configuration fields (help can be requested even if
+     * {@link #isEnabled(MavenSession)} returns {@code false}).
+     *
+     * @param session the current session
+     * @return whether or not to print GIB help
+     */
+    public static boolean isHelpRequested(MavenSession session) {
+        return Boolean.valueOf(Property.help.getValue(getProjectProperties(session)));
+    }
+
+    private static Properties getProjectProperties(MavenSession session) {
+        return session.getTopLevelProject().getProperties();
     }
 
     private static void checkProperties(Properties projectProperties) {
