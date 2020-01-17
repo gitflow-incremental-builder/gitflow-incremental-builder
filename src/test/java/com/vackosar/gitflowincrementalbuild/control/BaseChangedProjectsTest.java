@@ -46,7 +46,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
     private MavenSession mavenSessionMock;
 
     public BaseChangedProjectsTest(boolean useSymLinkedFolder) {
-        super(useSymLinkedFolder, /* withRemote */ false);
+        super(useSymLinkedFolder, /* remoteRepoServerType */ null);
     }
 
     @Before

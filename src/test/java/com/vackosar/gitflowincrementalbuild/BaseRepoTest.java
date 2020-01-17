@@ -3,6 +3,7 @@ package com.vackosar.gitflowincrementalbuild;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.execution.MavenSession;
@@ -21,7 +22,7 @@ public abstract class BaseRepoTest {
     /** The project properties for the top-level project of {@link #getMavenSessionMock() MavenSessionMock} for config init. */
     protected final Properties projectProperties = new Properties();
     private final boolean useSymLinkedFolder;
-    private final boolean withRemote;
+    private final TestServerType remoteRepoServerType;
 
     protected LocalRepoMock localRepoMock;
     /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
@@ -31,12 +32,12 @@ public abstract class BaseRepoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public BaseRepoTest() {
-        this(false, false);
+        this(false, null);
     }
 
-    public BaseRepoTest(boolean useSymLinkedFolder, boolean withRemote) {
+    public BaseRepoTest(boolean useSymLinkedFolder, TestServerType remoteRepoServerType) {
         this.useSymLinkedFolder = useSymLinkedFolder;
-        this.withRemote = withRemote;
+        this.remoteRepoServerType = remoteRepoServerType;
     }
 
     @Before
@@ -64,7 +65,7 @@ public abstract class BaseRepoTest {
 
             repoBaseFolder = link.toFile();
         }
-        localRepoMock = new LocalRepoMock(repoBaseFolder, withRemote);
+        localRepoMock = new LocalRepoMock(repoBaseFolder, remoteRepoServerType);
         repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
     }
 
