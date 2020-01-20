@@ -14,32 +14,21 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.Assert;
 import org.junit.Test;
-import org.powermock.reflect.Whitebox;
-import org.slf4j.Logger;
-
-import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
-import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
-public class DifferentFilesTest extends BaseRepoTest {
+public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     private static final String REFS_HEADS_FEATURE_2 = "refs/heads/feature/2";
     private static final String HEAD = "HEAD";
-    private static final String FETCH_FILE = "fetch-file";
-    private static final String DEVELOP = "refs/heads/develop";
-    private static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
-
-    private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(DifferentFiles.class);
 
     public DifferentFilesTest() {
-        super(/* useSymLinkedFolder */ false, /* withRemote */ true);
+        super(TestServerType.GIT_PROTOCOL);
     }
 
     @Test(expected = SkipExecutionException.class)
@@ -171,13 +160,7 @@ public class DifferentFilesTest extends BaseRepoTest {
 
     @Test
     public void fetch() throws Exception {
-        Git remoteGit = localRepoMock.getRemoteRepo().getGit();
-        remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        remoteGit.checkout().setName(DEVELOP).call();
-        remoteGit.getRepository().getDirectory().toPath().resolve(FETCH_FILE).toFile().createNewFile();
-        remoteGit.add().addFilepattern(".").call();
-        remoteGit.commit().setMessage(FETCH_FILE).call();
-        Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        addCommitToRemoteRepo(FETCH_FILE);
         projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
         projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
 
@@ -186,21 +169,15 @@ public class DifferentFilesTest extends BaseRepoTest {
         Git localGit = localRepoMock.getGit();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
-        Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        assertCommitExists(FETCH_FILE, localGit);
     }
 
     @Test
     public void fetchNonExistent() throws Exception {
-        Git remoteGit = localRepoMock.getRemoteRepo().getGit();
-        remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        remoteGit.checkout().setName(DEVELOP).call();
-        remoteGit.getRepository().getDirectory().toPath().resolve(FETCH_FILE).toFile().createNewFile();
-        remoteGit.add().addFilepattern(".").call();
-        remoteGit.commit().setMessage(FETCH_FILE).call();
+        addCommitToRemoteRepo(FETCH_FILE);
         Git localGit = localRepoMock.getGit();
         localGit.branchDelete().setBranchNames(DEVELOP).call();
         localGit.branchDelete().setBranchNames(REMOTE_DEVELOP).call();
-        Assert.assertEquals(FETCH_FILE, remoteGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
         projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
         projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
 
@@ -208,23 +185,7 @@ public class DifferentFilesTest extends BaseRepoTest {
 
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
-        Assert.assertEquals(FETCH_FILE, localGit.log().setMaxCount(1).call().iterator().next().getFullMessage());
-    }
-
-    private Set<Path> invokeUnderTest() throws Exception {
-        return invokeUnderTest(getMavenSessionMock());
-    }
-
-    private Set<Path> invokeUnderTest(final MavenSession mavenSessionMock) throws Exception {
-        mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
-
-        DifferentFiles underTest = new DifferentFiles();
-        Whitebox.setInternalState(underTest, mavenSessionMock, new Configuration.Provider(mavenSessionMock), loggerSpy);
-
-        Set<Path> result = underTest.get();
-
-        Assert.assertNotNull("Resulting set is unexpectedly null", result);
-        return result;
+        assertCommitExists(FETCH_FILE, localGit);
     }
 
     private Path modifyTrackedFile(Path repoPath) throws IOException {

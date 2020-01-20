@@ -1,9 +1,8 @@
-package com.vackosar.gitflowincrementalbuild.mocks;
+package com.vackosar.gitflowincrementalbuild.mocks.server;
 
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.DaemonClient;
 import org.eclipse.jgit.transport.ServiceMayNotContinueException;
 import org.eclipse.jgit.transport.resolver.RepositoryResolver;
 import org.eclipse.jgit.transport.resolver.ServiceNotAuthorizedException;
@@ -14,12 +13,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RepoResolver implements RepositoryResolver<DaemonClient> {
+class RepoResolver<C> implements RepositoryResolver<C> {
 
     private static final String DOT_GIT = ".git";
     private Map<String, Repository> repositories = new HashMap<>();
     private final File repoDir;
     private final boolean bare;
+
+    public RepoResolver(File repoDir) {
+        this(repoDir, false);
+    }
 
     public RepoResolver(File repoDir, boolean bare) {
         this.repoDir = repoDir;
@@ -27,7 +30,7 @@ public class RepoResolver implements RepositoryResolver<DaemonClient> {
     }
 
     @Override
-    public Repository open(DaemonClient client, String name)
+    public Repository open(C client, String name)
             throws RepositoryNotFoundException,
             ServiceNotAuthorizedException, ServiceNotEnabledException,
             ServiceMayNotContinueException {

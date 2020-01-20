@@ -22,6 +22,10 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.help](#gibhelp)
   - [gib.enabled](#gibenabled)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
+  - [gib.referenceBranch](#gibreferencebranch)
+  - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
+  - [gib.baseBranch](#gibbasebranch)
+  - [gib.fetchBaseBranch](#gibfetchbasebranch)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
@@ -297,7 +301,33 @@ The following properties are _not_ evaluated when `gib.disableBranchComparison` 
 - `gib.referenceBranch`
 - `gib.compareToMergeBase`
 - `gib.fetchReferenceBranch`
-- `gib.excludePathRegex`
+
+### gib.referenceBranch
+
+The branch to compare `baseBranch` to.
+
+### gib.fetchReferenceBranch
+
+Fetches the `referenceBranch` from the remote repository.
+
+In case the remote repo requires **authentication**, GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
+These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
+See also [DelegatingCredentialsProvider in DifferentFiles.java](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/DifferentFiles.java).
+
+Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
+This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!
+
+As GIB does _not_ (yet) provide a console input passthrough mechanism to native Git, console input queries by native Git are disabled. This means that if _no_ credential helper is configured, GIB will _not_ be able to fetch from a remote repo that requires authentication.
+
+### gib.baseBranch
+
+The branch that is compared to `referenceBranch`. Usually just the current `HEAD`.
+
+### gib.fetchBaseBranch
+
+Fetches the `baseBranch` from the remote repository.
+
+See [gib.fetchReferenceBranch](#gibfetchreferencebranch) for **authentication** details.
 
 ### gib.uncommited
 

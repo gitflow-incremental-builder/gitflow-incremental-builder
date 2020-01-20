@@ -2,12 +2,12 @@ package com.vackosar.gitflowincrementalbuild.mocks;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.transport.Daemon;
+
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServer;
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 public class RemoteRepoMock implements AutoCloseable {
 
@@ -20,9 +20,13 @@ public class RemoteRepoMock implements AutoCloseable {
     private final Git git;
     private final File repoFolder;
     private final File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
-    private final Daemon server;
+    private final TestServer testServer;
 
-    public RemoteRepoMock(File baseFolder, boolean bare) throws IOException {
+    public RemoteRepoMock(File baseFolder, TestServerType testServerType) throws IOException {
+        this(baseFolder, false, testServerType);
+    }
+
+    public RemoteRepoMock(File baseFolder, boolean bare, TestServerType testServerType) throws IOException {
         this.repoFolder = new File(baseFolder, "tmp/remote");
 
         if (bare) {
@@ -31,20 +35,13 @@ public class RemoteRepoMock implements AutoCloseable {
             unpackTemplateProject();
         }
 
-        server = start(repoFolder, bare);
-        repoUrl = String.format("git://%s:%s/repo.git", server.getAddress().getHostName(), server.getAddress().getPort());
-        git = new Git(new FileRepository(new File(repoFolder, ".git")));
-    }
-
-    private static Daemon start(File repoFolder, boolean bare) {
+        testServer = testServerType.buildServer();
+        repoUrl = testServer.start(repoFolder);
         try {
-            Daemon server = new Daemon(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-            server.getService("git-receive-pack").setEnabled(true);
-            server.setRepositoryResolver(new RepoResolver(repoFolder, bare));
-            server.start();
-            return server;
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to start JGit daemon for repo at: " + repoFolder, e);
+            git = new Git(new FileRepository(new File(repoFolder, ".git")));
+        } catch (IOException | RuntimeException e) {
+            close();
+            throw e;
         }
     }
 
@@ -53,10 +50,14 @@ public class RemoteRepoMock implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
-        server.stop();
-        git.getRepository().close();
-        git.close();
+    public void close() {
+        if (testServer != null) {
+            testServer.stop();
+        }
+        if (git != null) {
+            git.getRepository().close();
+            git.close();
+        }
     }
 
     public Git getGit() {

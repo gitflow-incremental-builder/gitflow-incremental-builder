@@ -8,6 +8,8 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,15 +25,20 @@ public class LocalRepoMock implements AutoCloseable {
     private RemoteRepoMock remoteRepo;
     private Git git;
 
-    public LocalRepoMock(File baseFolder, boolean withRemote) throws IOException, URISyntaxException, GitAPIException {
+    public LocalRepoMock(File baseFolder, TestServerType remoteRepoServerType) throws IOException, URISyntaxException, GitAPIException {
         this.baseFolder = new File(baseFolder.getAbsolutePath(), "tmp/repo/");
         new UnZipper().act(templateProjectZip, this.baseFolder);
 
-        remoteRepo = withRemote ? new RemoteRepoMock(baseFolder, false) : null;
+        remoteRepo = remoteRepoServerType != null ? new RemoteRepoMock(baseFolder, remoteRepoServerType) : null;
         git = new Git(new FileRepository(new File(this.baseFolder, ".git")));
 
-        if (withRemote) {
-            configureRemote(git, remoteRepo.repoUrl);
+        if (remoteRepoServerType != null) {
+            try {
+                configureRemote(git, remoteRepo.repoUrl);
+            } catch (IOException | URISyntaxException | GitAPIException | RuntimeException e) {
+                close();
+                throw e;
+            }
         }
     }
 
@@ -62,16 +69,17 @@ public class LocalRepoMock implements AutoCloseable {
         remoteConfig.update(config);
 
         config.save();
-        git.fetch().call();
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (remoteRepo != null) {
             remoteRepo.close();
         }
-        git.getRepository().close();
-        git.close();
+        if (git != null) {
+            git.getRepository().close();
+            git.close();
+        }
     }
 
     public RemoteRepoMock getRemoteRepo() {
