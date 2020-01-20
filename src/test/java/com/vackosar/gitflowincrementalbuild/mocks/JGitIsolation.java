@@ -1,8 +1,9 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
@@ -37,7 +38,9 @@ public class JGitIsolation {
         };
 
         // note: cannot directly use Mockito.spy(SystemReader.getInstance()) because org.eclipse.jgit.util.SystemReader.Default is invisible
-        SystemReader spiedSystemReader = mock(SystemReader.class, AdditionalAnswers.delegatesTo(SystemReader.getInstance()));
+        SystemReader spiedSystemReader = mock(SystemReader.class, withSettings()
+                .defaultAnswer(AdditionalAnswers.delegatesTo(SystemReader.getInstance()))
+                .lenient());
         doReturn(emptyConfig).when(spiedSystemReader).openSystemConfig(any(Config.class), any(FS.class));
         doReturn(emptyConfig).when(spiedSystemReader).openUserConfig(any(Config.class), any(FS.class));
         SystemReader.setInstance(spiedSystemReader);

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public class MavenSessionMock {
 
@@ -36,7 +37,7 @@ public class MavenSessionMock {
 
         MavenProject topLevelProject = projects.get(0);
         topLevelProject.getModel().setProperties(topLevelProjectProperties);
-        MavenSession mavenSession = mock(MavenSession.class);
+        MavenSession mavenSession = mock(MavenSession.class, withSettings().lenient());
         when(mavenSession.getCurrentProject()).thenReturn(topLevelProject);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
         when(mavenSession.getRequest()).thenReturn(request);

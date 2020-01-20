@@ -4,13 +4,12 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.google.common.collect.ImmutableMap;
@@ -79,7 +78,6 @@ public class UnchangedProjectsRemoverTest {
     @Before
     public void setup() throws GitAPIException, IOException {
         when(mavenProjectMock.getProperties()).thenReturn(projectProperties);
-        when(mavenProjectMock.getBasedir()).thenReturn(new File("."));
         when(mavenProjectMock.getArtifactId()).thenReturn(ARTIFACT_ID_1);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(mavenProjectMock);
@@ -283,7 +281,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
+        verify(mavenSessionMock, never()).setProjects(anyList());
 
         assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("enforcer.skip", "true", "argWithNoValue", ""));
         assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
@@ -336,7 +334,7 @@ public class UnchangedProjectsRemoverTest {
 
         underTest.act();
 
-        verify(mavenSessionMock, never()).setProjects(anyListOf(MavenProject.class));
+        verify(mavenSessionMock, never()).setProjects(anyList());
 
         assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("foo", "bar"));
         assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
@@ -454,7 +452,7 @@ public class UnchangedProjectsRemoverTest {
         underTest.act();
 
         verify(mavenSessionMock, never())
-                .setProjects(anyListOf(MavenProject.class));
+                .setProjects(anyList());
     }
 
     @Test
