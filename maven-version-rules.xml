@@ -5,7 +5,7 @@
     <!-- https://www.mojohaus.org/versions-maven-plugin/version-rules.html -->
 
     <ignoreVersions>
-        <ignoreVersion type="regex">.*-alpha-?\d*</ignoreVersion>
-        <ignoreVersion type="regex">.*-beta-?\d*</ignoreVersion>
+        <ignoreVersion type="regex">.*[-.]alpha-?\d*</ignoreVersion>
+        <ignoreVersion type="regex">.*[-.]beta-?\d*</ignoreVersion>
     </ignoreVersions>
 </ruleset>
