@@ -1,9 +1,13 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -19,12 +23,9 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -43,10 +44,8 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationTest {
 
-    private final ExpectedException thrown = ExpectedException.none();
-
     @Rule
-    public final RuleChain ruleChain = RuleChain.outerRule(new SystemPropertiesResetRule()).around(thrown);
+    public final SystemPropertiesResetRule sysPropResetRule = new SystemPropertiesResetRule();
 
     @Mock
     private MavenExecutionRequest mavenExecutionRequestMock;
@@ -69,11 +68,12 @@ public class ConfigurationTest {
     public void invalidProperty() {
         String invalidProperty = Property.PREFIX + "invalid";
         System.setProperty(invalidProperty, "invalid");
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(invalidProperty);
-        thrown.expectMessage(Property.disableBranchComparison.fullName());  // just one of those valid ones
 
-        new Configuration.Provider(mavenSessionMock).get();
+        IllegalArgumentException expectedException = assertThrows(IllegalArgumentException.class,
+                () -> new Configuration.Provider(mavenSessionMock).get());
+
+        assertThat(expectedException.getMessage(), containsString(invalidProperty));
+        assertThat(expectedException.getMessage(), containsString(Property.disableBranchComparison.fullName())); // just one of those valid ones
     }
 
     @Test
@@ -143,11 +143,12 @@ public class ConfigurationTest {
     @Test
     public void forceBuildModules_patternInvalid() {
         System.setProperty(Property.forceBuildModules.fullName(), "*-some-artifact");   // pattern is missing the dot
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(Property.forceBuildModules.fullName());
-        thrown.expectCause(IsInstanceOf.instanceOf(PatternSyntaxException.class));
 
-        new Configuration.Provider(mavenSessionMock).get();
+        IllegalArgumentException expectedException = assertThrows(IllegalArgumentException.class,
+                () -> new Configuration.Provider(mavenSessionMock).get());
+
+        assertThat(expectedException.getMessage(), containsString(Property.forceBuildModules.fullName()));
+        assertThat(expectedException.getCause(), instanceOf(PatternSyntaxException.class));
     }
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,10 +197,11 @@ public class ConfigurationTest {
     @Test
     public void buildUpstreamMode_unknown() {
         System.setProperty(Property.buildUpstream.fullName(), "foo");
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(Property.buildUpstream.fullName());
 
-        new Configuration.Provider(mavenSessionMock).get();
+        IllegalArgumentException expectedException = assertThrows(IllegalArgumentException.class,
+                () -> new Configuration.Provider(mavenSessionMock).get());
+
+        assertThat(expectedException.getMessage(), containsString(Property.buildUpstream.fullName()));
     }
 
     // tests for mode value 'derived' (default value)
@@ -252,11 +254,12 @@ public class ConfigurationTest {
     public void buildUpstreamMode_derived_makeUpstream_unknown() {
         System.setProperty(Property.buildUpstreamMode.fullName(), "foo");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(Property.buildUpstreamMode.fullName());
-        thrown.expectCause(IsInstanceOf.instanceOf(IllegalArgumentException.class));
 
-        new Configuration.Provider(mavenSessionMock).get();
+        IllegalArgumentException expectedException = assertThrows(IllegalArgumentException.class,
+                () -> new Configuration.Provider(mavenSessionMock).get());
+
+        assertThat(expectedException.getMessage(), containsString(Property.buildUpstreamMode.fullName()));
+        assertThat(expectedException.getCause(), instanceOf(IllegalArgumentException.class));
     }
 
     // just an example to show 'derived' can also be set explicitely
@@ -325,10 +328,11 @@ public class ConfigurationTest {
     @Test
     public void buildDownstream_unknown() {
         System.setProperty(Property.buildDownstream.fullName(), "foo");
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(Property.buildDownstream.fullName());
 
-        new Configuration.Provider(mavenSessionMock).get();
+        IllegalArgumentException expectedException = assertThrows(IllegalArgumentException.class,
+                () -> new Configuration.Provider(mavenSessionMock).get());
+
+        assertThat(expectedException.getMessage(), containsString(Property.buildDownstream.fullName()));
     }
 
     @Test

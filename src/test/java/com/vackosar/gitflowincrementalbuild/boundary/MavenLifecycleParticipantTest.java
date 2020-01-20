@@ -9,11 +9,8 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.hamcrest.core.IsSame;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,6 +21,8 @@ import org.slf4j.Logger;
 
 import java.util.Properties;
 
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -38,9 +37,6 @@ import static org.mockito.Mockito.when;
 public class MavenLifecycleParticipantTest {
 
     private static final String TEST_IMPL_VERSION = "3.8.1";    // just an existing version, no need to be the latest one
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenLifecycleParticipant.class);
 
@@ -121,10 +117,11 @@ public class MavenLifecycleParticipantTest {
     public void onRuntimeException() throws Exception {
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
         doThrow(runtimeException).when(unchangedProjectsRemoverMock).act();
-        thrown.expect(MavenExecutionException.class);
-        thrown.expectCause(IsSame.sameInstance(runtimeException));
 
-        underTest.afterProjectsRead(mavenSessionMock);
+        MavenExecutionException expectedException = assertThrows(MavenExecutionException.class,
+                () -> underTest.afterProjectsRead(mavenSessionMock));
+
+        assertSame(runtimeException, expectedException.getCause());
     }
 
     @Test
