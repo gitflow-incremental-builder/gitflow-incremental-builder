@@ -49,7 +49,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.8.1</version>
+            <version>3.9.0</version>
         </extension>
     </extensions>
     ...
