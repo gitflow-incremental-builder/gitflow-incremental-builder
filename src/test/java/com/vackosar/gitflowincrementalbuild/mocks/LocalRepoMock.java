@@ -34,7 +34,7 @@ public class LocalRepoMock implements AutoCloseable {
 
         if (remoteRepoServerType != null) {
             try {
-                configureRemote(git, remoteRepo.repoUrl);
+                configureRemote(git, remoteRepo.repoUri.toString());
             } catch (IOException | URISyntaxException | GitAPIException | RuntimeException e) {
                 close();
                 throw e;

@@ -1,11 +1,14 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.util.FS;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.powermock.reflect.Whitebox;
@@ -24,7 +27,8 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
     protected final Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(DifferentFiles.class);
 
-    protected Path nativeGitUserHome;
+    protected Path userHome;
+    private File jGitUserHomeBackup;
 
     public BaseDifferentFilesTest(TestServerType remoteRepoServerType) {
         super(false, remoteRepoServerType);
@@ -33,8 +37,17 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     @Override
     @Before
     public void before() throws Exception {
+        jGitUserHomeBackup = FS.DETECTED.userHome();
         super.before();
-        nativeGitUserHome = temporaryFolder.newFolder("nativeGitUserHome").toPath();
+        userHome = temporaryFolder.newFolder("userHome").toPath();
+        FS.DETECTED.setUserHome(userHome.toFile());
+    }
+
+    @Override
+    @After
+    public void after() throws Exception {
+        FS.DETECTED.setUserHome(jGitUserHomeBackup);
+        super.after();
     }
 
     protected void addCommitToRemoteRepo(String newFileNameAndMessage) throws Exception {
@@ -63,7 +76,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
         // isolate a possible native git invocation from the settings of the system the test is runing on
         underTest.putAdditionalNativeGitEnvironment("GIT_CONFIG_NOSYSTEM", "1");
-        underTest.putAdditionalNativeGitEnvironment("HOME", nativeGitUserHome.toAbsolutePath().toString());
+        underTest.putAdditionalNativeGitEnvironment("HOME", userHome.toAbsolutePath().toString());
 
         Set<Path> result = underTest.get();
 

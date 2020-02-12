@@ -181,6 +181,12 @@
             <version>${version.jetty}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.junit.ssh</artifactId>
+            <version>${version.jgit}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <defaultGoal>clean install</defaultGoal>

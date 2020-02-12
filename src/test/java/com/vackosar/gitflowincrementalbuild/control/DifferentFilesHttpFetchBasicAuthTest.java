@@ -34,7 +34,7 @@ public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest
         addCommitToRemoteRepo(FETCH_FILE);
         projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
         projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
-        Files.write(nativeGitUserHome.resolve(".git-credentials"), buildCredentialsFileContent().getBytes());
+        Files.write(userHome.resolve(".git-credentials"), buildCredentialsFileContent().getBytes());
 
         invokeUnderTest();
 
@@ -45,7 +45,7 @@ public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest
     }
 
     private String buildCredentialsFileContent() {
-        String usrPass = HTTP_PROTOCOL_BASIC_AUTH.getUsername() + ":" + HTTP_PROTOCOL_BASIC_AUTH.getPassword() + "@";
-        return localRepoMock.getRemoteRepo().repoUrl.replace("://", "://" + usrPass);
+        String usrPass = HTTP_PROTOCOL_BASIC_AUTH.getUserName() + ":" + HTTP_PROTOCOL_BASIC_AUTH.getUserSecret() + "@";
+        return localRepoMock.getRemoteRepo().repoUri.toString().replace("://", "://" + usrPass);
     }
 }
