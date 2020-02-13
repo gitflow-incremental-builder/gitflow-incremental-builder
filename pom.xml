@@ -70,7 +70,7 @@
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
-        <version.jacoco-maven-plugin>0.8.3</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
+        <version.jacoco-maven-plugin>0.8.5</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
         <version.plexus-component-metadata>2.1.0</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
