@@ -1,0 +1,16 @@
+# Documentation in https://dependabot.com/docs/config-file/
+version: 1
+update_configs:
+  - package_manager: "java:maven"
+    directory: "/"
+    ignored_updates:
+      - match:
+          dependency_name: "org.apache.maven:maven-core"
+      - match:
+          dependency_name: "org.slf4j:slf4j-api"
+      - match:
+          dependency_name: "ch.qos.logback:logback-classic"
+      - match:
+          dependency_name: "javax.inject:javax.inject"
+      - match:
+          dependency_name: "junit:junit"
