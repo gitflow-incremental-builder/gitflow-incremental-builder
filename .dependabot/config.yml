@@ -3,7 +3,7 @@ version: 1
 update_configs:
   - package_manager: "java:maven"
     directory: "/"
-    update_schedule: "weekly"
+    update_schedule: "daily"
     ignored_updates:
       - match:
           dependency_name: "org.apache.maven:maven-core"
