@@ -1,7 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.mocks.server;
 
-import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Collections;
 
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -15,6 +15,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jgit.http.server.GitServlet;
+import org.eclipse.jgit.lib.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,32 +40,32 @@ class HttpProtocolServer implements TestServer {
     }
 
     @Override
-    public String start(File repoFolder) {
+    public URI start(Repository repo) {
         InetSocketAddress address = TestServerUtils.buildRandomLocalPortAddress();
 
         server = new Server(address);
-        configureServer(server, repoFolder);
+        configureServer(server, repo);
 
         try {
             server.start();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to start Jetty servlet container for repo at: " + repoFolder, e);
+            throw new RuntimeException("Failed to start Jetty servlet container for repo at: " + repo.getDirectory(), e);
         }
         return TestServerUtils.buildRepoUrl("http", address, server.getURI().getPort());
     }
 
-    private void configureServer(Server server, File repoFolder) {
+    private void configureServer(Server server, Repository repo) {
 
-        server.setHandler(buildServletHandler(repoFolder));
+        server.setHandler(buildServletHandler(repo));
         
         if (username != null) {
             addBasicAuth(server);
         }
     }
 
-    private ServletHandler buildServletHandler(File repoFolder) {
+    private ServletHandler buildServletHandler(Repository repo) {
         GitServlet gitServlet = new GitServlet();
-        gitServlet.setRepositoryResolver(new RepoResolver<>(repoFolder));
+        gitServlet.setRepositoryResolver(new SinglePredefinedRepoResolver<>(repo));
 
         ServletHolder holder = new ServletHolder(gitServlet);
         ServletHandler servletHandler = new ServletHandler();
@@ -107,6 +108,8 @@ class HttpProtocolServer implements TestServer {
             server.stop();
         } catch (Exception e) {
             LOGGER.warn("Failed to stop Jetty servlet container", e);
+        } finally {
+            server = null;
         }
     }
 

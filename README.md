@@ -7,7 +7,8 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/gitflow-incremental-builder/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Coverage)
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
-Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.
+Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>
+Powered by [JGit](https://www.eclipse.org/jgit/).
 
 This extension is **not limited to Git Flow setups!** The [extensive configuration options](#configuration) provide support many other branch setups and/or use cases. 
 
@@ -37,6 +38,10 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeTransitiveModulesPackagedAs](#excludetransitivemodulespackagedas)
+
+- [Authentication](#authentication)
+  - [HTTP](#http)
+  - [SSH](#ssh)
 
 - [Requirements](#requirements)
 
@@ -310,14 +315,7 @@ The branch to compare `baseBranch` to.
 
 Fetches the `referenceBranch` from the remote repository.
 
-In case the remote repo requires **authentication**, GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
-These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
-See also [DelegatingCredentialsProvider in DifferentFiles.java](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/DifferentFiles.java).
-
-Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
-This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!
-
-As GIB does _not_ (yet) provide a console input passthrough mechanism to native Git, console input queries by native Git are disabled. This means that if _no_ credential helper is configured, GIB will _not_ be able to fetch from a remote repo that requires authentication.
+See also: [Authentication](#authentication)
 
 ### gib.baseBranch
 
@@ -327,7 +325,7 @@ The branch that is compared to `referenceBranch`. Usually just the current `HEAD
 
 Fetches the `baseBranch` from the remote repository.
 
-See [gib.fetchReferenceBranch](#gibfetchreferencebranch) for **authentication** details.
+See also: [Authentication](#authentication)
 
 ### gib.uncommited
 
@@ -441,6 +439,33 @@ which are needed to (hot-)deploy the changes via `mvn` on the command line.
 In this scenario, by defining `-Dgib.excludeTransitiveModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear` deployment modules will be built. 
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+
+## Authentication
+
+When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides basic support to authenticate against a possibly protected remote repository.
+
+### HTTP
+
+For HTTP(S), GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
+These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
+See also [DelegatingCredentialsProvider in DifferentFiles.java](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/DifferentFiles.java).
+
+Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
+This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!
+
+As GIB does _not_ (yet) provide a console input passthrough mechanism to native Git, console input queries by native Git are disabled. This means that if _no_ credential helper is configured, GIB will _not_ be able to fetch from a remote repo that requires authentication.
+
+### SSH
+
+For SSH, GIB pretty much relies on the default JGit/[JSch](http://www.jcraft.com/jsch/) mechanisms.<br/>
+Your private key will be picked up automatically in case it is located in `~/.ssh/` (as `identity`, `id_rsa` or `id_dsa`) **and is _not_ password protected** (see [issue 117](../../issues/117)).
+
+To use a custom key, create a [SSH config](https://www.cyberciti.biz/faq/create-ssh-config-file-on-linux-unix/) in `~/.ssh/config` like the following:
+
+```
+Host git.somedomain.org
+  IdentityFile ~/.ssh/my_key
+```
 
 ## Requirements
 

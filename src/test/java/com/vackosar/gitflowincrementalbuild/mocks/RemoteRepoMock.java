@@ -8,6 +8,7 @@ import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 public class RemoteRepoMock implements AutoCloseable {
 
@@ -15,7 +16,7 @@ public class RemoteRepoMock implements AutoCloseable {
         JGitIsolation.ensureIsolatedFromSystemAndUserConfig();
     }
 
-    public final String repoUrl;
+    public final URI repoUri;
 
     private final Git git;
     private final File repoFolder;
@@ -35,14 +36,15 @@ public class RemoteRepoMock implements AutoCloseable {
             unpackTemplateProject();
         }
 
-        testServer = testServerType.buildServer();
-        repoUrl = testServer.start(repoFolder);
         try {
             git = new Git(new FileRepository(new File(repoFolder, ".git")));
         } catch (IOException | RuntimeException e) {
             close();
             throw e;
         }
+
+        testServer = testServerType.buildServer();
+        repoUri = testServer.start(git.getRepository());
     }
 
     private void unpackTemplateProject() {
