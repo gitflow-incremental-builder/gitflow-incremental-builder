@@ -93,7 +93,8 @@ install:
     fi
 
 script:
-  mvn verify
+  ls -la /usr/lib/jvm/
+  # mvn verify
 
 after_success:
   # disable coverage report for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456
