@@ -26,9 +26,11 @@ import org.slf4j.LoggerFactory;
  * JGit-{@link CredentialsProvider} for HTTP(S) that is delegating all credential requests to native Git via {@code git credential fill}. This will consult
  * all configured credential helpers, if any (for the repo, the user and the system). Such a helper might query the user for the credentials in case it
  * cannot yet provide them. However, the assumption here is that the credentials should already exist. Therefore this provider does <i>not</i> give feedback
- * to native Git via {@code git credential approve} or {@code git credential verify}.<p/>
+ * to native Git via {@code git credential approve} or {@code git credential verify}.
+ * <p>
  * This provider will suppress any console input requests (see
  * <a href="https://git-scm.com/docs/git#Documentation/git.txt-codeGITTERMINALPROMPTcode">GIT_TERMINAL_PROMPT</a>).
+ * </p>
  *
  * @see <a href="https://git-scm.com/docs/git-credential">Git documentation: git credential</a>
  */

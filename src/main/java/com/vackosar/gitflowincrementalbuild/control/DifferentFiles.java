@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
@@ -14,6 +15,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
@@ -165,6 +167,11 @@ public class DifferentFiles {
             String shortName = extractShortName(remoteName, branchName);
             git.fetch()
                     .setCredentialsProvider(credentialsProvider)
+                    .setTransportConfigCallback(transport -> {
+                        if (transport instanceof SshTransport) {
+                            ((SshTransport) transport).setSshSessionFactory(new AgentProxyAwareJschConfigSessionFactory());
+                        }
+                    })
                     .setRemote(remoteName)
                     .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName))
                     .call();

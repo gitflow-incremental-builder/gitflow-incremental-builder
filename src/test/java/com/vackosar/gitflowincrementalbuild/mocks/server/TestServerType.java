@@ -48,6 +48,11 @@ public enum TestServerType {
         }
 
         @Override
+        public String getUserSecretEncrypted() {
+            return SshProtocolServer.USER_KEY_PRIVATE_ENC;
+        }
+
+        @Override
         public String getServerPublicKey() {
             return SshProtocolServer.SERVER_KEY_PUBLIC;
         }
@@ -63,6 +68,13 @@ public enum TestServerType {
      * @return the (optional) user secret (password or private key)
      */
     public String getUserSecret() {
+        return null;
+    }
+
+    /**
+     * @return the (optional) user secret (password or private key) in encrypted form
+     */
+    public String getUserSecretEncrypted() {
         return null;
     }
 

@@ -21,48 +21,83 @@ public class SshProtocolServer implements TestServer {
 
     static final String USER_KEY_PRIVATE =
             "-----BEGIN RSA PRIVATE KEY-----\n" +
-            "MIIEowIBAAKCAQEArrj2oR3Ak7npWLVzazEq0u29nofvuXWmakSSMb2pN372S8m4\n" +
-            "GHoITJKmusK0xFI2qgAxz/4CCEF8G9Kr+fEHFiNbV8PF0aeLXA9T2zcuNoavP9Gp\n" +
-            "7PsfrCpD8Vloqg4t3qa76yBT511vR90xwnazfIr+fp7ODs6xfI0OirXSwtKOk4p/\n" +
-            "ntWwj0Itaja2X2d9j9faQ7WQs+XNZf3tSwmnUsC3n4wnzzamD51MiL4R0SCZEiPN\n" +
-            "IiuGQBWUea8cI6beZ3bWXcxwFeHDsyXvI5IEJuBDcrbRK0xVESiYm/nz0gvehbLT\n" +
-            "GnXxKNkZIErPqmyAyFgpuBD/2QwbszKa3fRcrwIDAQABAoIBAHgVI1wkSKC/G4Me\n" +
-            "Yk7/ocEKKFJ2dunt1AwhSKDrCwvbNIduAhrAdEe8Wt7sxrRPFMbOD24100u9RgER\n" +
-            "T6UeZJJwhmzRXnnzPrJszmNRj29mLbgc7z6ycVgwTDXqDychS6FE0s6Mj13qN3sa\n" +
-            "qQJP9pfYJ4T6vAAtSoqhn6bxxAKk87+X2HI3CcsJNnbDovFOVPaxS9kqfge9JSUX\n" +
-            "cl7vSbRLzIyUGz5tf5EOxBSK/EA2Mj+aP5Wn8N7SdvKKKDx5trXn7wgaxw2pY2QZ\n" +
-            "Nfe/qUp/XwEMG6ztWOzxDjTkw8TW/qwEotvlbf8DCE/aggit91JLrb26JTPl/BiZ\n" +
-            "DyMHY/ECgYEA6U85NCECxEd3nkzU9qR/qQOGXzeRfoR6VVLEVw6+UI4+i7MDN9vk\n" +
-            "BzS7wM/JyGzbSrieVA16KKfxP81Oa4h6GJugv3BqHoUExf0StInUL22C8UzcRgw4\n" +
-            "JMsiRx2kLPmwL940YdNA2+hYKkF/JEg53R4eSeAB0y0R9+jO3+M380sCgYEAv7cV\n" +
-            "MkpG2GYaDXAw6tFTZXCJEwvsSRlFFqVP+7VEAOQZxUyMtlPHwlzllgZqWlsm1uSs\n" +
-            "6Qlfs2xnoxb5BFJeU6Y3+nDha3JIdi7zPcck5CMWONqBekIMwVnfMoeVGXbHLEdJ\n" +
-            "QCKGG9qRgqCIbu0dsIrepxRogPhv8vzuzD7j+a0CgYAVipYKhR2/R6X4vLlRCIEs\n" +
-            "9sFaW0QYvVyaMikkrJzPzUJjHaUnbCsSq0DGnajQ05QvwvoDYrcrt83jiS47aX90\n" +
-            "dDIUWunBZaC6MxKeDrfDpUXYx7Ly2L/6TbMdg9QbvvYQhWCqw5mSdFJnnGKD1BNb\n" +
-            "oiNDyOYCPIATNrCbJVyOHwKBgQChd7Sdh5uFlPDqUoyQqT7BF/gLF6appmPe/9qO\n" +
-            "mAuvaG4gEyoMQiHjnFQteDfI5C6hHTZYi3GT74CWBroynqEdeMh64OmqkjVffImX\n" +
-            "hYuXrcmAluAoNUsC6gunRjQYn0Z/D4ctQiaLfRnC2CwwqPqxfzSpqfGedh/rmoYR\n" +
-            "dgKSfQKBgC8HXWN6XKFb4GODjVjdpGOI3aIz5X2UfqL7HKQNuMkNVk0fuTiGKZ4m\n" +
-            "Ilid053O84lyvgy37+nqfGlXzSfRBQ6LGf6D5+w1RP+dzRSlWh3N1Bb0dO+plnY+\n" +
-            "dEdsqsHKdJb8ugkirjSHsegNI3/CR9Xgex0t1BSSMYpS98kGcDXE\n" +
-            "-----END RSA PRIVATE KEY-----\n";
+            "MIIEogIBAAKCAQEAhuM4WyNt2LcevyP+ljuJq8fQb/mZDmBDpkE6XCLiDd3fYgQ3\n" +
+            "kFMs9/QDJCtpX4dsuQDyCceo4oba9y0Uys550t+ypOujcXy+pE0O0ZvR1dAOU4vV\n" +
+            "94UEZayDOM7DQaHOn+EzZujLoOz745S89OlZGiotIcbZH4jdUyUxBAwhFLPNHEJe\n" +
+            "kB0pF9D3Usjg0cz5w2u26IVXzHATdcqAMx9GmysNZ858STia/zRT3HLkzddknwzw\n" +
+            "A6pLkfia8kSy/g+KJj8O9FDafnPoPcTkEjdAerB5xUCIQAqrqa/Z3sVjzoyW/mrz\n" +
+            "OhfTIBFZdJmZn77G7UM+nJh+X5ymK+M82ZizFwIDAQABAoIBAAJziKenWiyxDz78\n" +
+            "AXlrdZIInJIcYBqxxyjzUIMyIxeLa67VUsktqciLx67VlyGkTWaDTOK+nSQYvUv2\n" +
+            "psUUwYQCirWSjrLWSISl3doTUdnn4QrFpMrNwQmz++KBZ2z+6slfB1ccbe7rv5wg\n" +
+            "LNrqjrL6Bz3w5is7ioIjT+O58LP2lceJAcDphU+CGLPoXrr7OBYJRyaSKyEhEclD\n" +
+            "ZDzvtr+LU8tG16Cl8S4hzQWnuVZrwb4SXdxq49ZdVfUiLNU9iToqbmHzh9REbPuA\n" +
+            "O8GzQJP4xZ5cV9eBWmMxfTPBScPDMPEoYaBAUdXhwMYYe2n3332G9G+mneA7QlNa\n" +
+            "3Nxin4ECgYEAu4p0dJwhxonlbp/yb03dVX7MOKDh4EinERM4+yuIAO4UgONydtCD\n" +
+            "2EBb9oxR8JkP035fnxwLJYVSQSkDLwudMcSZPQmracl+1fDwOUtS9USAemnPzTkU\n" +
+            "xGhZwq+iKAPKPtt9MpyhJ6+HTXneixak7O49yOtf+eIkb6hafZ0gbsECgYEAuCBb\n" +
+            "7kT1Goqbvm8dPP5AO1HfE7MK64V2RgV1eA/77zZsBkLhF9n0NN2WINC4ffR9ly7X\n" +
+            "B6efGAXzBFoZwfoa+hWhZziwqiQHgMw/OYPTruXwCCQ1Jaw2MfBUEjAbYkGiKn42\n" +
+            "BUL7s8d3NKL6Wyyc3qOS5tacI5UVpfBBjb7Wb9cCgYBhT8h5sYI9GNR6AHi1lHui\n" +
+            "nzass55A2LIHxCeu/LmHcgIllt+QE0Y2cb7GQa1K4ME7hrlrQAvwnis+MF+8i5Q3\n" +
+            "fMHe0COnsqwjqu+bayBSsAbSfhEbdeD2wQbCZIwJo13QG+fs2SUuCIB2jSQSm99c\n" +
+            "KYrZtHiKmvM5FOxPfbaUgQKBgDp4rDkCVQPUuJjFGHfiFevAmCLdXL5mZ6Tc3uz9\n" +
+            "xne0xKFIY8r7P/350E8jeTMmjSuRiF+571/lo8LiCgP7tM1uSQ9KhW/CeU+BjSJq\n" +
+            "prKH+q3bMbWA9sTtGQWdmVSemyz7X5RULTJuSYDBsNd7V2WsdF4yEOuL0JAdt/OX\n" +
+            "gumJAoGAeMx63gkm0h43ua40Qtdy2b7AoCVR8HZ118HTTvC/sq/3r/rXZ6JdeWv2\n" +
+            "IZVLA8wOLnWA0zd8wZpbYdzzmsgm5wRfrxNPXaOEQx+36Utxo4sQzFdUCjFL72LB\n" +
+            "tyIXZV8hlOXoHAAXMU0AxeERKIh65/1/FnnG1glah5kmRY0e0MI=\n" +
+            "-----END RSA PRIVATE KEY-----";
+
+    /**
+     * Encrypted variant of {@link #USER_KEY_PRIVATE}, password is "changeit".
+     */
+    static final String USER_KEY_PRIVATE_ENC =
+            "-----BEGIN RSA PRIVATE KEY-----\n" +
+            "Proc-Type: 4,ENCRYPTED\n" +
+            "DEK-Info: DES-EDE3-CBC,41CB4B152855CBE1\n" +
+            "\n" +
+            "64dk8t6J55hIP48MccNLujJJyzYWMI4TGCYtX2rL9H0vyl/Bq5IbRBd/pOMugR7q\n" +
+            "bJXm9UpWq1HOo6afE0YNq+a2/RuZIQvhenbTqaTfwOiFj9vgidnKzx1pu3rpVKR9\n" +
+            "5UHuzVZi6W43hvwv5UAV16FnCfk5uOBq8DDRYl5S5qgswQDKPegLA5hzv0ceIASp\n" +
+            "s5ArK1BFf4wJ4DDsNVIr6xuH2cxMEAzcsycczQX/c4JTbjutm/ZIdVkz0RJr0FBh\n" +
+            "WWtWVlYJshJemhAERkbTryhbkWjwm2eC83xlMXkLrlvHM5Uw3IPcQTFgs3BKAqqr\n" +
+            "UvoKjpBdPsw7rPTyoxGJ/co2EeDRNsfRgTSho12qfU2rhfGUETnvHps/Pb8T1MQ1\n" +
+            "L9o4q3xeSW4hxA39inhWEcq6+UyQMUH+jJYduIJpThiYYDD6rKDZdBeE9D9dPc1W\n" +
+            "bByxLd4Qkx8vTnk44Ry+3NR9o2aduqjxfrKyEEfK7FaaDBck0iwoq8IY32s+ZJIP\n" +
+            "n+26kNoDa3oedmxlWcgFgNXTWJbB+jcu0NI6eyimMdmHSrcgleMgl9G+/zvmqc0G\n" +
+            "TExYaTh72W/Yay/CIVRFWFRPqd9S5vt6P+Bk7aH1P/vF0Wn1l5kJuhk1l4q2Ut4e\n" +
+            "Z+M2hjSY4+J350lS9lsLIjlW8BoKkkVvtXhAKyKpNThNucLqx0A1E3cHexOfPLzm\n" +
+            "mHfSgkKi/iM6+XJLst6gIEFFuavQs4DORl3ZpaEez4+zMcwmC9+gFqBjUQ4W/ZQg\n" +
+            "C6uJJgaEgpSkl1ESN8vu7QHGRZNeYQSwxAy3QpPd1HGdAmcrGCJiicdru1N4Ez8J\n" +
+            "2tGgiOfwxaZaf0jIumWbl1HjJD/2FiLMZFIq3u+0hOLNqLEfjuJYfarBAWK+jMYf\n" +
+            "jT51aDKCmN2ivMKyIgPEWoLICa2uwizOkj4OZ69flBm9ZNpNVGHEccjM7l9dM8nt\n" +
+            "2lAZwbWLGY00UPPn8Uqg6KHGTCiV6S+H4pxHkLAQ/xfx8ssOY1/yTNpyP/6sD4A2\n" +
+            "bCygQv9OxB5mtFzmLfD1RmNlEnOQ7JpF3RG2X1oPqVZhriUko4IGnGI8F94yYZH4\n" +
+            "koO8z1ktVpXKaa2Km+74UI4P8CiEdB5DSGYq2mdjLTH5WDQkUTaKSEjTEyKQU8YB\n" +
+            "14zfOGnkUCBSz5fXuN8dm3OBEbiEwWtIMGzfrZz3XKIvyFpkQXyvcv9Qt4mz1Dz8\n" +
+            "JA4s5cBe2dMXCRJZuJcwSYctNwS8/CoVCzrgnJBzEaF5BVB9CE9zaZXXH7B4PcHR\n" +
+            "2GWfOjn92Y4JKE6jXCK1HKS7F6BgeglBnmgkDhanMZUwc+lDY9y4cE1Mugfe2oxC\n" +
+            "M3qBmn5IZMHt1XPbcF6ZyIQo5lcNHxWz12sau6c4+kwtdk4Qb0o+7pxagMLo/tZ6\n" +
+            "lu51AkrbosbR3AsKA497vfbzsXOopWAbXVQcVrcPTnMv9zGNuXy3uCnCPEESqIKj\n" +
+            "XYL168leLgu2Bu1iXUsxCGy+sWaSl1NgmvdHndeKT53SCTyWBtSQmMvy/fmXAb5D\n" +
+            "2CwcTtXLDkoUKwnklaMberUW63WcdbyLMhLoPtPT2PKjUut6mHaYZw==\n" +
+            "-----END RSA PRIVATE KEY-----";
 
     static final String USER_KEY_PUBLIC =
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCuuPahHcCTuelYtXNrMSrS7b2eh++5daZq" +
-            "RJIxvak3fvZLybgYeghMkqa6wrTEUjaqADHP/gIIQXwb0qv58QcWI1tXw8XRp4tc" +
-            "D1PbNy42hq8/0ans+x+sKkPxWWiqDi3eprvrIFPnXW9H3THCdrN8iv5+ns4OzrF8" +
-            "jQ6KtdLC0o6Tin+e1bCPQi1qNrZfZ32P19pDtZCz5c1l/e1LCadSwLefjCfPNqYP" +
-            "nUyIvhHRIJkSI80iK4ZAFZR5rxwjpt5ndtZdzHAV4cOzJe8jkgQm4ENyttErTFUR" +
-            "KJib+fPSC96FstMadfEo2RkgSs+qbIDIWCm4EP/ZDBuzMprd9Fyv foo";
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCG4zhbI23Ytx6/I/6WO4mrx9Bv" +
+            "+ZkOYEOmQTpcIuIN3d9iBDeQUyz39AMkK2lfh2y5APIJx6jihtr3LRTKznnS37Kk" +
+            "66NxfL6kTQ7Rm9HV0A5Ti9X3hQRlrIM4zsNBoc6f4TNm6Mug7PvjlLz06VkaKi0h" +
+            "xtkfiN1TJTEEDCEUs80cQl6QHSkX0PdSyODRzPnDa7bohVfMcBN1yoAzH0abKw1n" +
+            "znxJOJr/NFPccuTN12SfDPADqkuR+JryRLL+D4omPw70UNp+c+g9xOQSN0B6sHnF" +
+            "QIhACqupr9nexWPOjJb+avM6F9MgEVl0mZmfvsbtQz6cmH5fnKYr4zzZmLMX foo";
 
     static final String SERVER_KEY_PUBLIC =
-            "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAzeJw/xy/ecnRuPvCPIqZma4F7ai2pAaXfpwr" +
-            "pp0aclzcm836OAYYcllncCI9HnOk4aDt2TtWfOeX6+2uNWYdk7pBBIg9BtCWdd8a" +
-            "1jruLPhGPkio2eZuieVtK9VXU/krz2uwOY5TbhytzFZL9rSEB97eZGPquTbJCxTb" +
-            "OpZI8eR8oWs00mg0O7pbsqVD9DNP3wzAzb4XUS2stlM9BNWUP3h/J4qV9dSI7OAq" +
-            "YXQDfuF1pJC6Jz0E5YoMBB3FZIjrS8zAWNwBJSC9rcNjGxN5NJrRGjT5/Bk7vDk8" +
-            "Y6oIkZGU9nO47LfbJiDiIfL6ErK4Wdbr+dvZxkJSDizy/mCQdw==";
+            "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAzeJw/xy/ecnRuPvCPIqZma4F7ai2" +
+            "pAaXfpwrpp0aclzcm836OAYYcllncCI9HnOk4aDt2TtWfOeX6+2uNWYdk7pBBIg9" +
+            "BtCWdd8a1jruLPhGPkio2eZuieVtK9VXU/krz2uwOY5TbhytzFZL9rSEB97eZGPq" +
+            "uTbJCxTbOpZI8eR8oWs00mg0O7pbsqVD9DNP3wzAzb4XUS2stlM9BNWUP3h/J4qV" +
+            "9dSI7OAqYXQDfuF1pJC6Jz0E5YoMBB3FZIjrS8zAWNwBJSC9rcNjGxN5NJrRGjT5" +
+            "/Bk7vDk8Y6oIkZGU9nO47LfbJiDiIfL6ErK4Wdbr+dvZxkJSDizy/mCQdw==";
 
     private static final String SERVER_KEY_PRIVATE =
             "-----BEGIN RSA PRIVATE KEY-----\n" +
