@@ -5,11 +5,11 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
@@ -54,6 +54,14 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
         // add .ssh/config pointing to custom key
         String sshConfigEntry = String.format("Host %s\n  IdentityFile %s", repoUri.getHost(), privateKeyPath);
         Files.write(sshDir.resolve("config"), Collections.singleton(sshConfigEntry));
+
+        test();
+    }
+
+    @Test
+    @Ignore // TODO issue-117: introduce @Category(ManualTest.class) and add more info
+    public void fetchWithPassphraseEncryptedKey() throws Exception {
+        writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
 
         test();
     }

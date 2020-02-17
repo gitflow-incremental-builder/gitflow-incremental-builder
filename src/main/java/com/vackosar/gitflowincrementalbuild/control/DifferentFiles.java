@@ -1,10 +1,12 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 import org.apache.maven.execution.MavenSession;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,6 +16,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
@@ -163,11 +166,18 @@ public class DifferentFiles {
             }
             String remoteName = extractRemoteName(branchName);
             String shortName = extractShortName(remoteName, branchName);
-            git.fetch()
+            FetchCommand fetchCommand = git.fetch()
                     .setCredentialsProvider(credentialsProvider)
                     .setRemote(remoteName)
-                    .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName))
-                    .call();
+                    .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName));
+            if (configuration.useJschAgentProxy) {
+                fetchCommand.setTransportConfigCallback(transport -> {
+                    if (transport instanceof SshTransport) {
+                        ((SshTransport) transport).setSshSessionFactory(new AgentProxyAwareJschConfigSessionFactory());
+                    }
+                });
+            }
+            fetchCommand.call();
         }
 
         private String extractRemoteName(String branchName) {

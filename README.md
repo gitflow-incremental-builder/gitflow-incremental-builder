@@ -27,6 +27,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
   - [gib.baseBranch](#gibbasebranch)
   - [gib.fetchBaseBranch](#gibfetchbasebranch)
+  - [gib.useJschAgentProxy](#gibuseJschAgentProxy)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
@@ -264,6 +265,7 @@ Maven pom properties configuration with default values is below:
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                            <!-- or <gib.frb>... -->
     <gib.baseBranch>HEAD</gib.baseBranch>                                                 <!-- or <gib.bb>... -->
     <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                      <!-- or <gib.fbb>... -->
+    <gib.useJschAgentProxy>true</gib.useJschAgentProxy>                                   <!-- or <gib.ujap>... -->
     <gib.compareToMergeBase>true</gib.compareToMergeBase>                                 <!-- or <gib.ctmb>... -->
     <gib.uncommited>true</gib.uncommited>                                                 <!-- or <gib.uc>... -->
     <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
@@ -326,6 +328,14 @@ The branch that is compared to `referenceBranch`. Usually just the current `HEAD
 Fetches the `baseBranch` from the remote repository.
 
 See also: [Authentication](#authentication)
+
+### gib.useJschAgentProxy
+
+Can be used to disable the usage of [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) when fetching via SSH.
+
+This might reduce overhead in case you don't use an agent at all (like `ssh-agent` or `pageant` from `PuTTY`).
+
+See also: [SSH](#ssh) in the [Authentication](#authentication) section
 
 ### gib.uncommited
 
@@ -448,17 +458,17 @@ When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides bas
 
 For HTTP(S), GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
 These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
-See also [DelegatingCredentialsProvider in DifferentFiles.java](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/DifferentFiles.java).
+See also [HttpDelegatingCredentialsProvider](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/HttpDelegatingCredentialsProvider.java).
 
 Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
 This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!
 
-As GIB does _not_ (yet) provide a console input passthrough mechanism to native Git, console input queries by native Git are disabled. This means that if _no_ credential helper is configured, GIB will _not_ be able to fetch from a remote repo that requires authentication.
+As GIB does _not_ (yet) provide a console input passthrough mechanism to native Git, console input queries by native Git are disabled. This means that if _no_ credential helper is configured, GIB will _not_ be able to fetch via HTTP(S) from a remote repo that requires authentication.
 
 ### SSH
 
 For SSH, GIB pretty much relies on the default JGit/[JSch](http://www.jcraft.com/jsch/) mechanisms.<br/>
-Your private key will be picked up automatically in case it is located in `~/.ssh/` (as `identity`, `id_rsa` or `id_dsa`) **and is _not_ password protected** (see [issue 117](../../issues/117)).
+Your private key will be picked up automatically in case it is located in `~/.ssh/` (as `identity`, `id_rsa` or `id_dsa`).
 
 To use a custom key, create a [SSH config](https://www.cyberciti.biz/faq/create-ssh-config-file-on-linux-unix/) in `~/.ssh/config` like the following:
 
@@ -466,6 +476,13 @@ To use a custom key, create a [SSH config](https://www.cyberciti.biz/faq/create-
 Host git.somedomain.org
   IdentityFile ~/.ssh/my_key
 ```
+
+If your key is protected by a **passphrase**, you will have to use a SSH agent (`ssh-agent` on Linux or `pageant` from `PuTTY` on Windows) and add your key(s) to it.
+
+GIB then uses [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) to get the unencrypted keys from the running agent. Please note that although `jsch-agent-proxy` also provides _write_ access, GIB will only _read_ keys/identities.<br/>
+See also [AgentProxyAwareJschConfigSessionFactory](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/AgentProxyAwareJschConfigSessionFactory.java).
+
+Hint: When using an agent, you don't need to put your key in a standard location, you don't need `~/.ssh/config` and your key is also _not required_ to be passphrase protected.
 
 ## Requirements
 
