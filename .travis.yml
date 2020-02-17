@@ -17,6 +17,10 @@ matrix:
   - name: "Maven 3.6.3 & Open JDK 11"
     jdk: openjdk11
     env: MVN_VERSION="3.6.3" OPENJDK_VERSION=11 COVERAGE_REPORT=true
+  # Maven 3.6.3 with various JDKs
+  - name: "Maven 3.6.3 & Open JDK 13"
+    jdk: openjdk13
+    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=13
   #- name: "Maven 3.6.3 & Oracle JDK 11"
   #  jdk: oraclejdk11
   #  env: MVN_VERSION="3.6.3"
