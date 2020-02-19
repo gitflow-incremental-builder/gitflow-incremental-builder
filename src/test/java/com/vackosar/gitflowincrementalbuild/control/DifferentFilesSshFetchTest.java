@@ -1,20 +1,50 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vackosar.gitflowincrementalbuild.ProcessUtils;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DifferentFilesSshFetchTest.class);
+    
+    @Rule
+    public TestRule runOnlyWhenRule = (base, description) -> new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+            Optional.ofNullable(description.getAnnotation(RunOnlyWhen.class)).map(RunOnlyWhen::value).ifPresent(
+                    condition -> assumeTrue(description.getMethodName() + "() is only supported when running " + condition, condition.present()));
+            base.evaluate();
+        }
+    };
 
     private Path sshDir;
     private URI repoUri;
@@ -43,6 +73,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
     @Test
     public void fetchWithDefaultKeyLocation() throws Exception {
+        projectProperties.put(Property.useJschAgentProxy.name(), "false");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecret());
 
         test();
@@ -50,6 +81,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
     @Test
     public void fetchWithCustomKeyLocation() throws Exception {
+        projectProperties.put(Property.useJschAgentProxy.name(), "false");
         Path privateKeyPath = writePrivateKey("my_key", TestServerType.SSH_PROTOCOL.getUserSecret());
         // add .ssh/config pointing to custom key
         String sshConfigEntry = String.format("Host %s\n  IdentityFile %s", repoUri.getHost(), privateKeyPath);
@@ -59,9 +91,32 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    @Ignore // TODO issue-117: introduce @Category(ManualTest.class) and add more info
+    @RunOnlyWhen(RunCondition.ON_TRAVIS_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on Travis-CI 
     public void fetchWithPassphraseEncryptedKey() throws Exception {
+        projectProperties.put(Property.useJschAgentProxy.name(), "true");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
+        Path unencryptedPrivateKeyPath = writePrivateKey("id_rsa_unencrypted", TestServerType.SSH_PROTOCOL.getUserSecret());
+        ProcessUtils.startAndWaitForProcess("ssh-add", unencryptedPrivateKeyPath.toAbsolutePath().toString());
+        Files.delete(unencryptedPrivateKeyPath);
+
+        test();
+    }
+
+    @Test
+    @RunOnlyWhen(RunCondition.ON_WINDOWS_FORCED)    // expects putty on PATH, requires user interaction and "pollutes" pageant
+    public void fetchWithPassphraseEncryptedKey_manualWindowsTest() throws Exception {
+        projectProperties.put(Property.useJschAgentProxy.name(), "true");
+        writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
+        Path unencryptedPrivateKeyPath = writePrivateKey("id_rsa_unencrypted", TestServerType.SSH_PROTOCOL.getUserSecret()).toAbsolutePath();
+        Path ppkPath = unencryptedPrivateKeyPath.resolveSibling("key.ppk").toAbsolutePath();
+        
+        LOGGER.info("*** USER ACTION REQUIRED! *** Launching puttygen. Save ppk as (and close puttygen!): " + ppkPath);
+        ProcessUtils.startAndWaitForProcess("puttygen", unencryptedPrivateKeyPath.toString());
+        Files.delete(unencryptedPrivateKeyPath);
+
+        LOGGER.info("Launching pageant in background.");
+        ProcessUtils.startAndWaitForProcess("start", "pageant", ppkPath.toString());
+        // no need to delete ppk (which might also cause a failure due to concurrent pageant access)
 
         test();
     }
@@ -80,6 +135,45 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     }
 
     private Path writePrivateKey(String fileName, String key) throws IOException {
-        return Files.write(sshDir.resolve(fileName), Collections.singleton(key));
+        Path privateKey = Files.write(sshDir.resolve(fileName), Collections.singleton(key));
+        return SystemUtils.IS_OS_WINDOWS
+                ? privateKey
+                : Files.setPosixFilePermissions(privateKey, new HashSet<>(Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)));
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    private @interface RunOnlyWhen {
+
+        RunCondition value();
+    }
+
+    enum RunCondition {
+        ON_TRAVIS_OR_FORCED {
+            @Override
+            boolean present() {
+                // https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
+                return System.getenv().containsKey("TRAVIS") || Boolean.getBoolean(name());
+            }
+
+            @Override
+            public String toString() {
+                return "on Travis-CI or with -D" + name() + "=true";
+            }
+        },
+        ON_WINDOWS_FORCED {
+            @Override
+            boolean present() {
+                return SystemUtils.IS_OS_WINDOWS && Boolean.getBoolean(name());
+            }
+
+            @Override
+            public String toString() {
+                return "on Windows with -D" + name() + "=true";
+            }
+        };
+
+        abstract boolean present();
     }
 }

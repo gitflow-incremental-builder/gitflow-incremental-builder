@@ -56,9 +56,7 @@ public abstract class BaseRepoTest {
             // - creation of junctions should work without elevated rights but can only be created
             //   via mklink.exe /J ...
             if (SystemUtils.IS_OS_WINDOWS) {
-                ProcessUtils.awaitProcess(new ProcessBuilder(ProcessUtils.cmdArgs(
-                        "mklink", "/J", link.toAbsolutePath().toString(), linkTarget.toAbsolutePath().toString()))
-                        .start());
+                ProcessUtils.startAndWaitForProcess("mklink", "/J", link.toAbsolutePath().toString(), linkTarget.toAbsolutePath().toString());
             } else {
                 Files.createSymbolicLink(link, linkTarget);
             }

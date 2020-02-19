@@ -96,7 +96,9 @@ install:
     fi
 
 script:
-  mvn verify
+  # ssh-agent for DifferentFilesSshFetchTest.fetchWithPassphraseEncryptedKey()
+  - eval $(ssh-agent)
+  - mvn verify
 
 after_success:
   # disable coverage report for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456
