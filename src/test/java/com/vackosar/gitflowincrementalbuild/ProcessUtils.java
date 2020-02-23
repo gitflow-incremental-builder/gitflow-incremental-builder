@@ -2,6 +2,7 @@ package com.vackosar.gitflowincrementalbuild;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -27,7 +28,7 @@ public class ProcessUtils {
                 .redirectErrorStream(true)
                 .directory(dir)
                 .start();
-        final AtomicReference<String> outHolder = captureOutput(process);
+        final AtomicReference<String> outHolder = captureOutput(process.getInputStream());
         final int returnCode = process.waitFor();
         if (returnCode > 0) {
             LOGGER.error("stdOut/stdErr:\n{}", outHolder.get());
@@ -36,10 +37,10 @@ public class ProcessUtils {
         return outHolder.get();
     }
 
-    private static AtomicReference<String> captureOutput(final Process process) {
+    private static AtomicReference<String> captureOutput(final InputStream inStream) {
         final AtomicReference<String> outHolder = new AtomicReference<>();
         new Thread(() -> {
-            try (Scanner scanner = new Scanner(process.getInputStream())) {
+            try (Scanner scanner = new Scanner(inStream)) {
                 outHolder.set(scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "");
             }
         }).start();
