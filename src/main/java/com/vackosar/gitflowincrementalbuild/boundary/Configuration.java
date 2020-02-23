@@ -130,7 +130,7 @@ public class Configuration {
                 .collect(Collectors.joining("\n\t"));
         if (!invalidPropertyNames.isEmpty()) {
             throw new IllegalArgumentException(
-                    String.format("Invalid GIB properties found:\n\t%s\nAllowed properties:\n%s", invalidPropertyNames, Property.exemplifyAll()));
+                    String.format("Invalid GIB properties found:%n\t%s%nAllowed properties:%n%s", invalidPropertyNames, Property.exemplifyAll()));
         }
     }
 

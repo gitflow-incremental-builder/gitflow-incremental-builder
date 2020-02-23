@@ -3,6 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control.jgit;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class HttpDelegatingCredentialsProvider extends CredentialsProvider {
         }
         procBuilder.directory(projectDir.toFile());
 
-        ExecutionResult result = fs.execute(procBuilder, new ByteArrayInputStream(buildGitCommandInput(uri).getBytes()));
+        ExecutionResult result = fs.execute(procBuilder, new ByteArrayInputStream(buildGitCommandInput(uri).getBytes(Charset.defaultCharset())));
         if (result.getRc() != 0) {
             logger.info(bufferToString(result.getStdout()));
             logger.error(bufferToString(result.getStderr()));
@@ -156,7 +157,7 @@ public class HttpDelegatingCredentialsProvider extends CredentialsProvider {
     private String bufferToString(TemporaryBuffer buffer) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         buffer.writeTo(baos, null);
-        return baos.toString();
+        return baos.toString(Charset.defaultCharset().name());
     }
 
     private CredentialsPair extractCredentials(String nativeGitOutput) {
@@ -176,7 +177,7 @@ public class HttpDelegatingCredentialsProvider extends CredentialsProvider {
         return credPair;
     }
 
-    private class CredentialsPair {
+    private static class CredentialsPair {
         private String username;
         private char[] password;
     }
