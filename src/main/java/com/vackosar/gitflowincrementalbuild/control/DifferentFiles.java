@@ -1,27 +1,24 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 import org.apache.maven.execution.MavenSession;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.CredentialItem;
-import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
-import org.eclipse.jgit.util.FS;
-import org.eclipse.jgit.util.FS.ExecutionResult;
-import org.eclipse.jgit.util.TemporaryBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,20 +26,14 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -92,8 +83,8 @@ public class DifferentFiles {
     /**
      * Only for testing!
      *
-     * @param key environment key for {@link DelegatingCredentialsProvider#lookupCredentials(URIish)}
-     * @param value environment value for {@link DelegatingCredentialsProvider#lookupCredentials(URIish)}
+     * @param key environment key for {@link HttpDelegatingCredentialsProvider#DelegatingCredentialsProvider(Path, Map)}
+     * @param value environment value for {@link HttpDelegatingCredentialsProvider#DelegatingCredentialsProvider(Path, Map)}
      */
     void putAdditionalNativeGitEnvironment(String key, String value) {
         additionalNativeGitEnvironment.put(key, value);
@@ -129,13 +120,13 @@ public class DifferentFiles {
         private final Git git;
         private final Path workTree;
         private final Configuration configuration;
-        private final DelegatingCredentialsProvider credentialsProvider;
+        private final HttpDelegatingCredentialsProvider credentialsProvider;
 
         public Worker(Git git, Configuration configuration) {
             this.git = git;
             this.workTree = git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath();
             this.configuration = configuration;
-            this.credentialsProvider = new DelegatingCredentialsProvider(workTree);
+            this.credentialsProvider = new HttpDelegatingCredentialsProvider(workTree, additionalNativeGitEnvironment);
         }
 
         private Set<Path> getBranchDiff() throws IOException {
@@ -175,11 +166,18 @@ public class DifferentFiles {
             }
             String remoteName = extractRemoteName(branchName);
             String shortName = extractShortName(remoteName, branchName);
-            git.fetch()
+            FetchCommand fetchCommand = git.fetch()
                     .setCredentialsProvider(credentialsProvider)
                     .setRemote(remoteName)
-                    .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName))
-                    .call();
+                    .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName));
+            if (configuration.useJschAgentProxy) {
+                fetchCommand.setTransportConfigCallback(transport -> {
+                    if (transport instanceof SshTransport) {
+                        ((SshTransport) transport).setSshSessionFactory(new AgentProxyAwareJschConfigSessionFactory());
+                    }
+                });
+            }
+            fetchCommand.call();
         }
 
         private String extractRemoteName(String branchName) {
@@ -255,162 +253,6 @@ public class DifferentFiles {
             boolean excluded = configuration.excludePathRegex.test(path.toString());
             logger.debug("excluded {}: {}", excluded, path);
             return !excluded;
-        }
-    }
-
-    /**
-     * JGit-{@link CredentialsProvider} for HTTP(S) that is delegating all credential requests to native Git via {@code git credential fill}. This will consult
-     * all configured credential helpers, if any (for the repo, the user and the system). Such a helper might query the user for the credentials in case it
-     * cannot yet provide them. However, the assumption here is that the credentials should already exist. Therefore this provider does <i>not</i> give feedback
-     * to native Git via {@code git credential approve} or {@code git credential verify}.<p/>
-     * This provider will suppress any console input requests (see
-     * <a href="https://git-scm.com/docs/git#Documentation/git.txt-codeGITTERMINALPROMPTcode">GIT_TERMINAL_PROMPT</a>).
-     *
-     * @see <a href="https://git-scm.com/docs/git-credential">Git documentation: git credential</a>
-     */
-    private class DelegatingCredentialsProvider extends CredentialsProvider {
-
-        private Logger logger = LoggerFactory.getLogger(DelegatingCredentialsProvider.class);
-
-        private final Path projectDir;
-
-        private final Map<URIish, CredentialsPair> credentials = new HashMap<>();
-
-        public DelegatingCredentialsProvider(Path projectDir) {
-            this.projectDir = projectDir;
-        }
-
-        @Override
-        public boolean isInteractive() {
-            // possibly interactive in case some credential helper asks for input
-            return true;
-        }
-
-        @Override
-        public boolean supports(CredentialItem... items) {
-            return Arrays.stream(items)
-                    .allMatch(item -> item instanceof CredentialItem.Username || item instanceof CredentialItem.Password);
-        }
-
-        @Override
-        public boolean get(URIish uri, CredentialItem... items) throws UnsupportedCredentialItem {
-
-            // only handle HTTP(s)
-            if (uri.getScheme() != null && !uri.getScheme().startsWith("http")) {
-                return false;
-            }
-
-            CredentialsPair credentialsPair = credentials.computeIfAbsent(uri, u -> {
-                try {
-                    return lookupCredentials(uri);
-                } catch (IOException | InterruptedException | RuntimeException e) {
-                    logger.warn("Failed to look up credentials via 'git credential fill' for: " + uri, e);
-                    return null;
-                }
-            });
-            if (credentialsPair == null) {
-                return false;
-            }
-
-            // map extracted credentials to CredentialItems, see also: org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-            for (CredentialItem item : items) {
-                if (item instanceof CredentialItem.Username) {
-                    ((CredentialItem.Username) item).setValue(credentialsPair.username);
-                } else if (item instanceof CredentialItem.Password) {
-                    ((CredentialItem.Password) item).setValue(credentialsPair.password);
-                } else if (item instanceof CredentialItem.StringType && item.getPromptText().equals("Password: ")) {
-                    ((CredentialItem.StringType) item).setValue(new String(credentialsPair.password));
-                } else {
-                    throw new UnsupportedCredentialItem(uri, item.getClass().getName() + ":" + item.getPromptText());
-                }
-            }
-
-            return true;
-        }
-
-        @Override
-        // see also: org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider.clear()
-        public void reset(URIish uri) {
-            Optional.ofNullable(credentials.remove(uri))
-                    .ifPresent(credPair -> {
-                        credPair.username = null;
-                        Arrays.fill(credPair.password, (char) 0);
-                        credPair.password = null;
-                    });
-        }
-
-        public void resetAll() {
-            new HashSet<>(credentials.keySet()).forEach(this::reset);
-        }
-
-        private CredentialsPair lookupCredentials(URIish uri) throws IOException, InterruptedException {
-            // utilize JGit command execution capabilities
-            FS fs = FS.detect();
-            ProcessBuilder procBuilder = fs.runInShell("git", new String[] {"credential", "fill"});
-
-            // prevent native git from requesting console input (not implemented)
-            procBuilder.environment().put("GIT_TERMINAL_PROMPT", "0");
-
-            // add additional environment entries, if present (test only)
-            if (!additionalNativeGitEnvironment.isEmpty()) {
-                procBuilder.environment().putAll(additionalNativeGitEnvironment);
-            }
-            procBuilder.directory(projectDir.toFile());
-
-            ExecutionResult result = fs.execute(procBuilder, new ByteArrayInputStream(buildGitCommandInput(uri).getBytes()));
-            if (result.getRc() != 0) {
-                logger.info(bufferToString(result.getStdout()));
-                logger.error(bufferToString(result.getStderr()));
-                throw new IllegalStateException("Native Git invocation failed with return code " + result.getRc()
-                        + ". See previous log output for more details.");
-            }
-
-            return extractCredentials(bufferToString(result.getStdout()));
-        }
-
-        // build input for "git credential fill" as per https://git-scm.com/docs/git-credential#_typical_use_of_git_credential
-        private String buildGitCommandInput(URIish uri) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("protocol=").append(uri.getScheme()).append("\n");
-            builder.append("host=").append(uri.getHost());
-            if (uri.getPort() != -1) {
-                builder.append(":").append(uri.getPort());
-            }
-            builder.append("\n");
-            Optional.ofNullable(uri.getPath())
-                    .map(path -> path.startsWith("/") ? path.substring(1) : path)
-                    .ifPresent(path -> builder.append("path=").append(path).append("\n"));
-            Optional.ofNullable(uri.getUser())
-                    .ifPresent(user -> builder.append("username=").append(user).append("\n"));
-            return builder.toString();
-        }
-
-        private String bufferToString(TemporaryBuffer buffer) throws IOException {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            buffer.writeTo(baos, null);
-            return baos.toString();
-        }
-
-        private CredentialsPair extractCredentials(String nativeGitOutput) {
-            Matcher matcher = Pattern.compile("(?<=username=).+|(?<=password=).+").matcher(nativeGitOutput);
-            if (!matcher.find()) {
-                throw new IllegalStateException("Could not find username in native Git output");
-            }
-            String username = matcher.group();
-            if (!matcher.find()) {
-                throw new IllegalStateException("Could not find password in native Git output");
-            }
-            char[] password = matcher.group().toCharArray();
-
-            CredentialsPair credPair = new CredentialsPair();
-            credPair.username = username;
-            credPair.password = password;
-            return credPair;
-        }
-
-        private class CredentialsPair {
-            private String username;
-            private char[] password;
         }
     }
 }

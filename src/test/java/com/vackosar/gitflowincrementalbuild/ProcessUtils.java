@@ -1,7 +1,11 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,27 +18,37 @@ public class ProcessUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessUtils.class);
 
-    public static String awaitProcess(Process process) throws InterruptedException {
-        final String stdOut = convertStreamToString(process.getInputStream());
-        final String stdErr = convertStreamToString(process.getErrorStream());
+    public static String startAndWaitForProcess(String... args) throws InterruptedException, IOException {
+        return startAndWaitForProcess(Arrays.asList(args), new File("."));
+    }
+
+    public static String startAndWaitForProcess(List<String> args, File dir) throws InterruptedException, IOException {
+        final Process process = new ProcessBuilder(cmdArgs(args))
+                .redirectErrorStream(true)
+                .directory(dir)
+                .start();
+        final AtomicReference<String> outHolder = captureOutput(process);
         final int returnCode = process.waitFor();
         if (returnCode > 0) {
-            LOGGER.info("stdOut:\n{}", stdOut);
-            LOGGER.error("stdErr:\n{}", stdErr);
+            LOGGER.error("stdOut/stdErr:\n{}", outHolder.get());
             Assert.fail("Process failed with return code " + returnCode);
         }
-        return stdOut;
+        return outHolder.get();
     }
 
-    public static String convertStreamToString(java.io.InputStream is) {
-        try (java.util.Scanner s = new java.util.Scanner(is)) {
-            return s.useDelimiter("\\A").hasNext() ? s.next() : "";
-        }
+    private static AtomicReference<String> captureOutput(final Process process) {
+        final AtomicReference<String> outHolder = new AtomicReference<>();
+        new Thread(() -> {
+            try (Scanner scanner = new Scanner(process.getInputStream())) {
+                outHolder.set(scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "");
+            }
+        }).start();
+        return outHolder;
     }
 
-    public static List<String> cmdArgs(String... args) {
+    private static List<String> cmdArgs(List<String> args) {
         return SystemUtils.IS_OS_WINDOWS
-            ? Stream.concat(Stream.of("cmd", "/c"), Arrays.stream(args)).collect(Collectors.toList())
-            : Arrays.asList(args);
+            ? Stream.concat(Stream.of("cmd", "/c"), args.stream()).collect(Collectors.toList())
+            : args;
     }
 }

@@ -75,11 +75,9 @@ public class MavenIntegrationTest extends BaseRepoTest {
         if (initialInstallDone) {
             return;
         }
-        ProcessUtils.awaitProcess(new ProcessBuilder(
-                ProcessUtils.cmdArgs(
-                        "mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false")))
-                .directory(localRepoMock.getBaseCanonicalBaseFolder())
-                .start());
+        ProcessUtils.startAndWaitForProcess(
+                Arrays.asList("mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false")),
+                localRepoMock.getBaseCanonicalBaseFolder());
         initialInstallDone = true;
     }
 
@@ -215,19 +213,15 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private String executeBuild(String... args) throws IOException, InterruptedException {
-        final List<String> commandBase = ProcessUtils.cmdArgs("mvn", "-e", "package", localRepoArg, gibVersionArg);
+        final List<String> commandBase = Arrays.asList("mvn", "-e", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
-        if (Arrays.stream(args).noneMatch(s->s.startsWith("--file"))) {
+        if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
         } else {
             commandBaseWithFile = commandBase;
         }
         List<String> command = Stream.concat(commandBaseWithFile.stream(), Arrays.stream(args)).collect(Collectors.toList());
-        final Process process =
-                new ProcessBuilder(command)
-                        .directory(localRepoMock.getBaseCanonicalBaseFolder())
-                        .start();
-        String output = ProcessUtils.awaitProcess(process);
+        String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder());
         LOGGER.info("Output of {}():\n{}", testNameRule.getMethodName(), output);
         return output;
     }

@@ -19,6 +19,7 @@ public enum Property {
     fetchReferenceBranch("false", "frb", true),
     baseBranch("HEAD", "bb"),
     fetchBaseBranch("false", "fbb", true),
+    useJschAgentProxy("true", "ujap"),
     compareToMergeBase("true", "ctmb", true),
     uncommited("true", "uc", true),
     untracked("true", "ut", true),
