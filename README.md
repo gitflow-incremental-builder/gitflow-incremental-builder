@@ -1,5 +1,5 @@
 # gitflow-incremental-builder (GIB)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub license](https://img.shields.io/github/license/vackosar/gitflow-incremental-builder.svg)](https://github.com/vackosar/gitflow-incremental-builder/blob/master/LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/vackosar/gitflow-incremental-builder?label=latest%20release)](https://github.com/vackosar/gitflow-incremental-builder/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
 ![Travis CI](https://travis-ci.org/vackosar/gitflow-incremental-builder.svg?branch=master)
