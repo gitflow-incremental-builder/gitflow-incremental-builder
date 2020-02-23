@@ -90,6 +90,8 @@
         <version.versions-maven-plugin>2.7</version.versions-maven-plugin>
         <version.maven-release-plugin>3.0.0-M1</version.maven-release-plugin>
         <version.animal-sniffer-maven-plugin>1.18</version.animal-sniffer-maven-plugin>
+        <version.spotbugs-maven-plugin>3.1.12.2</version.spotbugs-maven-plugin>
+        <version.spotbugs>4.0.0</version.spotbugs>
 
         <gibIntegrationTestRepo>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepo>
 
@@ -373,6 +375,19 @@
                     <artifactId>animal-sniffer-maven-plugin</artifactId>
                     <version>${version.animal-sniffer-maven-plugin}</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${version.spotbugs-maven-plugin}</version>
+                    <dependencies>
+                        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs</artifactId>
+                            <version>${version.spotbugs}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -504,6 +519,18 @@
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <goals>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>

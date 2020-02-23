@@ -33,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -110,9 +112,12 @@ public class DifferentFiles {
     }
 
     private boolean isWorktree(FileRepositoryBuilder builder) {
-        Path gitDirParent = builder.getGitDir().toPath().getParent();
-        return gitDirParent.getFileName().toString().equals("worktrees")
-                && gitDirParent.getParent().getFileName().toString().equals(".git");
+        return Optional.ofNullable(builder.getGitDir().toPath().getParent())
+                .filter(parent -> parent.getFileName().toString().equals("worktrees"))
+                .map(Path::getParent)
+                .filter(Objects::nonNull)
+                .map(parentParent -> parentParent.getFileName().toString().equals(".git"))
+                .orElse(false);
     }
 
     private class Worker {
