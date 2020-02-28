@@ -69,7 +69,7 @@ this extension should be disabled in such environments to avoid inconsistencies 
 
 See [gib.enabled](#gibenabled) in the configuration section.
 
-:information_source: IntelliJ IDEA **2019.3.1** or higher is recommended for GIB 3.8+ (even if disabled).
+:information_source: If using IntelliJ IDEA, version **2019.3.1** or higher is required for GIB 3.8+ (even if disabled).
 See [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272) and [issue 91](../../issues/91) for more details.
 
 ## Example
@@ -458,7 +458,7 @@ When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides bas
 
 For HTTP(S), GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
 These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
-See also [HttpDelegatingCredentialsProvider](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/HttpDelegatingCredentialsProvider.java).
+See also [HttpDelegatingCredentialsProvider](../master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/HttpDelegatingCredentialsProvider.java).
 
 Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
 This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!
@@ -480,7 +480,7 @@ Host git.somedomain.org
 If your key is protected by a **passphrase**, you will have to use a SSH agent (`ssh-agent` on Linux or `pageant` from `PuTTY` on Windows) and add your key(s) to it.
 
 GIB then uses [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) to get the unencrypted keys from the running agent. Please note that although `jsch-agent-proxy` also provides _write_ access, GIB will only _read_ keys/identities.<br/>
-See also [AgentProxyAwareJschConfigSessionFactory](../blob/master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/AgentProxyAwareJschConfigSessionFactory.java).
+See also [AgentProxyAwareJschConfigSessionFactory](../master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/AgentProxyAwareJschConfigSessionFactory.java).
 
 Hint: When using an agent, you don't need to put your key in a standard location, you don't need `~/.ssh/config` and your key is also _not required_ to be passphrase protected.
 
