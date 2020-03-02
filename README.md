@@ -10,7 +10,7 @@ A maven extension for incremental building of multi-module projects when using [
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>
 Powered by [JGit](https://www.eclipse.org/jgit/).
 
-This extension is **not limited to Git Flow setups!** The [extensive configuration options](#configuration) provide support many other branch setups and/or use cases. 
+This extension is **not limited to Git Flow setups!** The [extensive configuration options](#configuration) provide support for many other branch setups and/or use cases. 
 
 ## Table of Contents
 
@@ -297,6 +297,8 @@ Logs the available properties etc.
 
 Note: Independent of `gib.enabled`.
 
+Since: 3.9.0
+
 ### gib.enabled
 
 Can be used to disable this extension temporarily or permanently (e.g. to avoid clashes with IDE building strategy).
@@ -336,6 +338,8 @@ Can be used to disable the usage of [`jsch-agent-proxy`](https://github.com/ymnk
 This might reduce overhead in case you don't use an agent at all (like `ssh-agent` or `pageant` from `PuTTY`).
 
 See also: [SSH](#ssh) in the [Authentication](#authentication) section
+
+Since: 3.9.1
 
 ### gib.uncommited
 
