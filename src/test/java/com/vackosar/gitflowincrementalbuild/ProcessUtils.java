@@ -1,12 +1,13 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,23 +29,23 @@ public class ProcessUtils {
                 .redirectErrorStream(true)
                 .directory(dir)
                 .start();
-        final AtomicReference<String> outHolder = captureOutput(process.getInputStream());
+        final StringBuilder outBuilder = captureOutput(process.getInputStream());
         final int returnCode = process.waitFor();
         if (returnCode > 0) {
-            LOGGER.error("stdOut/stdErr:\n{}", outHolder.get());
+            LOGGER.error("stdOut/stdErr:\n{}", outBuilder.toString());
             Assert.fail("Process failed with return code " + returnCode);
         }
-        return outHolder.get();
+        return outBuilder.toString();
     }
 
-    private static AtomicReference<String> captureOutput(final InputStream inStream) {
-        final AtomicReference<String> outHolder = new AtomicReference<>();
+    private static StringBuilder captureOutput(final InputStream inStream) {
+        final StringBuilder outBuilder = new StringBuilder(10240);
+        // https://www.baeldung.com/run-shell-command-in-java#Output
         new Thread(() -> {
-            try (Scanner scanner = new Scanner(inStream)) {
-                outHolder.set(scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "");
-            }
+            new BufferedReader(new InputStreamReader(inStream, Charset.defaultCharset())).lines()
+                    .forEach(l -> outBuilder.append(l).append("\n"));
         }).start();
-        return outHolder;
+        return outBuilder;
     }
 
     private static List<String> cmdArgs(List<String> args) {
