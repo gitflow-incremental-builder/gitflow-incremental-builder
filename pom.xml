@@ -65,7 +65,7 @@
         <version.javax.inject>1</version.javax.inject>
         <version.junit>4.13</version.junit>
         <version.powermock-reflect>2.0.5</version.powermock-reflect>
-        <version.mockito>3.3.0</version.mockito>
+        <version.mockito>3.3.3</version.mockito>
         <version.jetty>9.4.27.v20200227</version.jetty>
 
         <!-- Plugin versions -->
