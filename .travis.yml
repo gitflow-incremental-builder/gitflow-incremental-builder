@@ -26,9 +26,9 @@ jobs:
       apt:
         packages:
           - lynx
-  - name: "Maven 3.6.3 & Open JDK 13"
-    jdk: openjdk13
-    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=13
+  - name: "Maven 3.6.3 & Open JDK 14"
+    jdk: openjdk14
+    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=14
   #- name: "Maven 3.6.3 & Oracle JDK 11"
   #  jdk: oraclejdk11
   #  env: MVN_VERSION="3.6.3"
