@@ -1,3 +1,8 @@
+# only build pushes to master (and PR branches, of course)
+branches:
+  only:
+  - master
+
 language: java
 
 # use latest dist by default, but certain setups need to fall back to xenial or even trusty (see also matrix):
