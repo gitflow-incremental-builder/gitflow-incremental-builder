@@ -35,9 +35,13 @@ class UnchangedProjectsRemover {
     void act() throws GitAPIException, IOException {
         Set<MavenProject> changed = changedProjects.get();
         printDelimiter();
+        if (changed.isEmpty()) {
+            handleNoChangesDetected();
+            return;
+        }
         logProjects(changed, "Changed Artifacts:");
 
-        // important: buildAll *always* need impacted incl. donwstream, otherwise applyNotImpactedModuleArgs() might disable tests etc. for downstream modules!
+        // note: buildAll *always* needs impacted incl. downstream, otherwise applyNotImpactedModuleArgs() might disable tests etc. for downstream modules!
         Configuration cfg = configProvider.get();
         Set<MavenProject> impacted = cfg.buildAll || cfg.buildDownstream
                 ? changed.stream()
@@ -54,14 +58,24 @@ class UnchangedProjectsRemover {
         }
     }
 
-    private void modifyProjectList(Set<MavenProject> changed, Set<MavenProject> impacted) {
-        Set<MavenProject> rebuild = getRebuildProjects(changed, impacted);
-        if (rebuild.isEmpty()) {
-            logger.info("No changed artifacts to build. Executing validate goal on current project only.");
+    private void handleNoChangesDetected() {
+        Configuration cfg = configProvider.get();
+        if (cfg.buildAllIfNoChanges) {
+            logger.info("No changed artifacts detected: Building all modules in buildAll mode.");
+            logger.info("- skip tests: {}", cfg.skipTestsForUpstreamModules);
+            logger.info("- additional args: {}", cfg.argsForUpstreamModules);
+            mavenSession.getProjects().stream().forEach(this::applyUpstreamModuleArgs);
+        } else {
+            logger.info("No changed artifacts detected: Executing validate goal on current project only, skipping all submodules.");
             mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
             mavenSession.getGoals().clear();
             mavenSession.getGoals().add("validate");
-        } else if (!configProvider.get().forceBuildModules.isEmpty()) {
+        }
+    }
+
+    private void modifyProjectList(Set<MavenProject> changed, Set<MavenProject> impacted) {
+        Set<MavenProject> rebuild = getRebuildProjects(changed, impacted);
+        if (!configProvider.get().forceBuildModules.isEmpty()) {
             Set<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
                     .filter(p -> matchesAny(p.getArtifactId(), configProvider.get().forceBuildModules))
                     .filter(p -> !rebuild.contains(p))
