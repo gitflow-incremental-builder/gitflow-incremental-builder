@@ -371,7 +371,7 @@ Can be combined/useful with `gib.skipTestsForUpstreamModules` and/or `gib.argsFo
 
 In case no changes are detected, GIB will (by default) just invoke goal `validate` in the "current project" (usually the root module), skipping any submodules.
 
-If this property is enabled, GIB will instead auto-activate [gib.buildAll](#gibbuildall) for all modules and will leave everthing else untouched.
+If this property is enabled, GIB will instead auto-activate [gib.buildAll](#gibbuildall) for all modules and will leave the goals untouched.
 
 Since: 3.9.2
 
