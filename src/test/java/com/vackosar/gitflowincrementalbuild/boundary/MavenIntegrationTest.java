@@ -150,7 +150,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
         final String output = executeBuild(prop(Property.baseBranch, "refs/heads/develop"));
 
-        Assert.assertTrue(output.contains("Executing validate goal on current project only."));
+        Assert.assertTrue(output.contains("Executing validate goal on current project only"));
         Assert.assertTrue(output.contains(" child1"));
         Assert.assertFalse(output.contains(" child2"));
         Assert.assertFalse(output.contains(" subchild1"));

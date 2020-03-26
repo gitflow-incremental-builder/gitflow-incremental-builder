@@ -26,6 +26,7 @@ public enum Property {
     excludePathRegex(Constants.NEVER_MATCH_REGEX, "epr"),
 
     buildAll("false", "ba", true),
+    buildAllIfNoChanges("false", "bainc", true),
     buildDownstream("always", "bd", true),
     buildUpstream("derived", "bu", true),
     buildUpstreamMode("changed", "bum"),

@@ -32,6 +32,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
   - [gib.buildAll](#gibbuildall)
+  - [gib.buildAllIfNoChanges](#gibbuildallifnochanges)
   - [gib.buildDownstream](#gibbuilddownstream)
   - [gib.buildUpstream](#gibbuildupstream)
   - [gib.buildUpstreamMode](#gibbuildupstreammode)
@@ -130,7 +131,7 @@ Branches are the same now:
 ```
 $ git diff develop
 ```
-Thus incremental does not build and test anything:
+Thus incremental does not build and test anything (see [gib.buildAllIfNoChanges](#gibbuildallifnochanges) for an alternate mode):
 ```
 $ mvn test
 [INFO] Scanning for projects...
@@ -271,6 +272,7 @@ Maven pom properties configuration with default values is below:
     <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
     <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>                                   <!-- or <gib.epr>... -->
     <gib.buildAll>false</gib.buildAll>                                                    <!-- or <gib.ba>... -->
+    <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                              <!-- or <gib.bainc>... -->
     <gib.buildDownstream>always</gib.buildDownstream>                                     <!-- or <gib.bd>... -->
     <gib.buildUpstream>derived</gib.buildUpstream>                                        <!-- or <gib.bu>... -->
     <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>                                <!-- or <gib.bum>... -->
@@ -364,6 +366,14 @@ will be excluded when using `-Dgib.excludePathRegex=blacklisted` or `-Dgib.exclu
 Builds all modules, including upstream modules (see also `gib.buildUpstream`). Can be used to (temporarily) override the reduction of modules to build.
 
 Can be combined/useful with `gib.skipTestsForUpstreamModules` and/or `gib.argsForUpstreamModules`.
+
+### gib.buildAllIfNoChanges
+
+In case no changes are detected, GIB will (by default) just invoke goal `validate` in the "current project" (usually the root module), skipping any submodules.
+
+If this property is enabled, GIB will instead auto-activate [gib.buildAll](#gibbuildall) for all modules and will leave everthing else untouched.
+
+Since: 3.9.2
 
 ### gib.buildDownstream
 

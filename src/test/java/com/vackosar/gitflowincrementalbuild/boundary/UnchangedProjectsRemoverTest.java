@@ -106,6 +106,23 @@ public class UnchangedProjectsRemoverTest {
     }
 
     @Test
+    public void nothingChanged_buildAllIfNoChanges() throws GitAPIException, IOException {
+        MavenProject unchangedModuleMock = addModuleMock(ARTIFACT_ID_2, false);
+
+        projectProperties.put(Property.buildAllIfNoChanges.fullName(), "true");
+        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+
+        underTest.act();
+
+        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(mavenProjectMock, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(unchangedModuleMock, ImmutableMap.of("maven.test.skip", "true"));
+    }
+
+    @Test
     public void singleChanged() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(ARTIFACT_ID_2, true);
 
