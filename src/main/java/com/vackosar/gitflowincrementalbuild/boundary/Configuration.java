@@ -117,6 +117,18 @@ public class Configuration {
         return Boolean.valueOf(Property.help.getValue(getProjectProperties(session)));
     }
 
+    /**
+     * Returns whether or not the given make behaviour is active for the given session.
+     * 
+     * @param expectedMakeBehavior one of {@link MavenExecutionRequest#REACTOR_MAKE_DOWNSTREAM} or {@link MavenExecutionRequest#REACTOR_MAKE_UPSTREAM}
+     * @param session the session providing the request
+     * @return whether the given behaviour (or {@link MavenExecutionRequest#REACTOR_MAKE_BOTH}) is active or not
+     */
+    public static boolean isMakeBehaviourActive(String expectedMakeBehavior, MavenSession session) {
+        String actualMakeBehavior = session.getRequest().getMakeBehavior();
+        return expectedMakeBehavior.equals(actualMakeBehavior) || MavenExecutionRequest.REACTOR_MAKE_BOTH.equals(actualMakeBehavior);
+    }
+
     private static Properties getProjectProperties(MavenSession session) {
         return session.getTopLevelProject().getProperties();
     }
@@ -151,8 +163,7 @@ public class Configuration {
     private static boolean isBuildStreamActive(Property property, Properties projectProperties, MavenSession session, String expectedMakeBehavior) {
         switch (property.getValue(projectProperties)) {
             case "derived":
-                String actualMakeBehavior = session.getRequest().getMakeBehavior();
-                return expectedMakeBehavior.equals(actualMakeBehavior) || MavenExecutionRequest.REACTOR_MAKE_BOTH.equals(actualMakeBehavior);
+                return isMakeBehaviourActive(expectedMakeBehavior, session);
             case "always":
             case "true":
                 return true;
