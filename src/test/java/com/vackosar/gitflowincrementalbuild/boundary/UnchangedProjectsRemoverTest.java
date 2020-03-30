@@ -178,6 +178,33 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
     }
 
+    // linear: A <- B <- C <- D
+    @Test
+    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules_linear() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject unchangedIntermediateModuleMock = addModuleMock("module-C", false);
+        MavenProject dependsOnIntermediateModuleMock = addModuleMock("module-D", true);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpstreamProjects(dependsOnIntermediateModuleMock, unchangedIntermediateModuleMock, changedModuleMock, moduleA);
+        setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+        setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(
+                Arrays.asList(moduleA, changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock));
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedIntermediateModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependsOnIntermediateModuleMock, Collections.emptyMap());
+    }
+
     @Test
     public void singleChanged_buildUpstream_modeImpacted() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
@@ -188,7 +215,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");   // this is also the default value!
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
 
         underTest.act();
 
@@ -210,7 +237,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");   // is also the default value!
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
         projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
 
         underTest.act();
@@ -221,6 +248,33 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
         assertProjectPropertiesEqual(unchangedModuleMock, ImmutableMap.of("foo", "bar"));
         assertProjectPropertiesEqual(dependsOnBothModuleMock, Collections.emptyMap());
+    }
+
+    // linear: A <- B <- C <- D
+    @Test
+    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules_linear() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject unchangedIntermediateModuleMock = addModuleMock("module-C", false);
+        MavenProject dependsOnIntermediateModuleMock = addModuleMock("module-D", false);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        setUpstreamProjects(dependsOnIntermediateModuleMock, unchangedIntermediateModuleMock, changedModuleMock, moduleA);
+        setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+        setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+
+        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
+        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(
+                Arrays.asList(moduleA, changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock));
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("foo", "bar"));
+        assertProjectPropertiesEqual(changedModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(unchangedIntermediateModuleMock, Collections.emptyMap());
+        assertProjectPropertiesEqual(dependsOnIntermediateModuleMock, Collections.emptyMap());
     }
 
     @Test
