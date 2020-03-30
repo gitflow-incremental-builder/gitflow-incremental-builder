@@ -375,6 +375,8 @@ In case no changes are detected, GIB will (by default) just invoke goal `validat
 
 If this property is enabled, GIB will instead auto-activate [gib.buildAll](#gibbuildall) for all modules and will leave the goals untouched.
 
+This property is ignored when [explicitly selected projects](#explicitly-selected-projects) are involved.
+
 Since: 3.9.2
 
 ### gib.buildDownstream
@@ -470,7 +472,7 @@ This property has no effect in case `buildAll` is enabled and an exclusion might
 
 ## Explicitly selected projects
 
-Special rules appy when `mvn -pl ...` (or `--projects ...`) is used:
+Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is used:
 
 - _Every_ such "preselected" project is _always_ built, including tests etc., **regardless of being changed or not!**
 
