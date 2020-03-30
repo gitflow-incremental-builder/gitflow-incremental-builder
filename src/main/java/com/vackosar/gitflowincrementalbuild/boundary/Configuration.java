@@ -49,7 +49,7 @@ public class Configuration {
     public final boolean skipTestsForUpstreamModules;
     public final Map<String, String> argsForUpstreamModules;
     public final List<Pattern> forceBuildModules;
-    public final List<String> excludeTransitiveModulesPackagedAs;
+    public final List<String> excludeDownstreamModulesPackagedAs;
 
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
@@ -87,7 +87,7 @@ public class Configuration {
                 .map(str -> compilePattern(str, Property.forceBuildModules))
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
-        excludeTransitiveModulesPackagedAs = parseDelimited(Property.excludeTransitiveModulesPackagedAs.getValue(projectProperties), ",")
+        excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(projectProperties), ",")
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
         // error handling config

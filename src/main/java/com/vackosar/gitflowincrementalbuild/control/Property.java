@@ -43,7 +43,12 @@ public enum Property {
         }
     },
     forceBuildModules("", "fbm"),
-    excludeTransitiveModulesPackagedAs("", "etmpa"),
+    excludeDownstreamModulesPackagedAs("", "edmpa"){
+        @Override
+        public String deprecatedFullName() {
+            return PREFIX + "excludeTransitiveModulesPackagedAs";
+        }
+    },
 
     failOnMissingGitDir("true", "fomgd", true),
     failOnError("true", "foe", true);

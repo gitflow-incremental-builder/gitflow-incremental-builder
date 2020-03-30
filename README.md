@@ -39,7 +39,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.skipTestsForUpstreamModules](#gibskiptestsforupstreammodules)
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
-  - [gib.excludeTransitiveModulesPackagedAs](#gibexcludetransitivemodulespackagedas)
+  - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
 
@@ -281,7 +281,7 @@ Maven pom properties configuration with default values is below:
     <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>              <!-- or <gib.stfum>... -->
     <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                             <!-- or <gib.afum>... -->
     <gib.forceBuildModules></gib.forceBuildModules>                                       <!-- or <gib.fbm>... -->
-    <gib.excludeTransitiveModulesPackagedAs></gib.excludeTransitiveModulesPackagedAs>     <!-- or <gib.etmpa>... -->
+    <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>     <!-- or <gib.edmpa>... -->
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                               <!-- or <gib.fomgd>... -->
     <gib.failOnError>true</gib.failOnError>                                               <!-- or <gib.foe>... -->
 </properties>
@@ -460,13 +460,14 @@ Each of these modules is subject to `argsForUpstreamModules` and `skipTestsForUp
 
 This property has no effect in case `buildAll` is enabled.
 
-### gib.excludeTransitiveModulesPackagedAs
+### gib.excludeDownstreamModulesPackagedAs
 
 Defines the packaging (e.g. `jar`) of modules that depend on changed modules but shall not be built.
 
 One possible use case for this is mainly working in an IDE, fixing all compile errors etc. and then just quickly building the least possible amount of modules
 which are needed to (hot-)deploy the changes via `mvn` on the command line.
-In this scenario, by defining `-Dgib.excludeTransitiveModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear` deployment modules will be built. 
+In this scenario, by defining `-Dgib.excludeDownstreamModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear`
+deployment modules will be built.
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
 

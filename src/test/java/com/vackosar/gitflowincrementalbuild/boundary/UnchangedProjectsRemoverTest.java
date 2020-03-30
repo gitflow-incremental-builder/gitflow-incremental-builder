@@ -395,13 +395,13 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_oneExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_oneExcluded() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
@@ -410,14 +410,14 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeTransitiveModulesPackagedAs_twoTransitive_oneExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_oneExcluded() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentJar = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
         setDownstreamProjects(changedProjectMock, dependentWar, dependentJar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
@@ -426,14 +426,14 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeTransitiveModulesPackagedAs_twoTransitive_twoExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_twoExcluded() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentEar = addModuleMock(AID_MODULE_B + "-dependent-ear", false, "ear");
 
         setDownstreamProjects(changedProjectMock, dependentWar, dependentEar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war,ear");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war,ear");
 
         underTest.act();
 
@@ -442,13 +442,13 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_buildAll() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_buildAll() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
         projectProperties.put(Property.buildAll.fullName(), "true");
 
         underTest.act();
@@ -458,13 +458,13 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeTransitiveModulesPackagedAs_oneTransitive_forceBuildModules() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_forceBuildModules() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
         projectProperties.put(Property.forceBuildModules.fullName(), dependentWar.getArtifactId());
 
         underTest.act();
@@ -474,13 +474,13 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void twoChanged_excludeTransitiveModulesPackagedAs_changedNotExcluded() throws GitAPIException, IOException {
+    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, true, "war");
 
         // war module is changed, must be retained!
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 
@@ -489,14 +489,14 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void twoChanged_excludeTransitiveModulesPackagedAs_changedNotExcluded_transitive() throws GitAPIException, IOException {
+    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded_transitive() throws GitAPIException, IOException {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, true, "war");
 
         // war module is changed, must be retained - even if depending on changedProjectMock!
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeTransitiveModulesPackagedAs.fullName(), "war");
+        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
 
         underTest.act();
 

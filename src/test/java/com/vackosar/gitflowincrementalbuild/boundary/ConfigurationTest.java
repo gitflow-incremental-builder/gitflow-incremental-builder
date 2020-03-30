@@ -118,12 +118,22 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void excludeTransitiveModulesPackagedAs() {
-        System.setProperty(Property.excludeTransitiveModulesPackagedAs.fullName(), "ear,war");
+    public void excludeDownstreamModulesPackagedAs() {
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.fullName(), "ear,war");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
-        assertEquals(Arrays.asList("ear", "war"), configuration.excludeTransitiveModulesPackagedAs);
+        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
+    }
+
+    // deprecated old name of excludeDownstreamModulesPackagedAs
+    @Test
+    public void excludeTransitiveModulesPackagedAs() {
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedFullName(), "ear,war");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
 
     @Test
