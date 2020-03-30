@@ -39,7 +39,9 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.skipTestsForUpstreamModules](#gibskiptestsforupstreammodules)
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
-  - [gib.excludeTransitiveModulesPackagedAs](#excludetransitivemodulespackagedas)
+  - [gib.excludeTransitiveModulesPackagedAs](#gibexcludetransitivemodulespackagedas)
+
+- [Explicitly selected projects](#explicitly-selected-projects)
 
 - [Authentication](#authentication)
   - [HTTP](#http)
@@ -379,7 +381,7 @@ Since: 3.9.2
 
 Controls whether or not to build downstream modules (= modules that depend on the modules GIB detected as changed):
 
-- `always` or `true` (default value): always build downstream modules
+- `always` or `true` (default value): always build downstream modules (depends on `-amd` when `-pl` is used)
 - `derived`: only build downstream modules if `mvn -amd` is called
 - `never` or `false`: never build downstream modules
 
@@ -389,7 +391,7 @@ Since: 3.8
 
 Controls whether or not to build upstream modules (= dependencies and parents of the modules GIB has determined to build):
 
-- `always` or `true`: always build upstream modules
+- `always` or `true`: always build upstream modules (depends on `-am` when `-pl` is used)
 - `derived` (default value): only build upstream modules if `mvn -am` is called
 - `never` or `false`: never build upstream modules
 
@@ -410,6 +412,8 @@ This property controls which upstream modules to build (_if_ at all building ups
 Here it might be required to freshly compile upstream modules of not directly changed modules to avoid compile errors or test failures which originate from the target branch.
 
 Both strategies can and usually should be combined with `gib.skipTestsForUpstreamModules` and/or `gib.argsForUpstreamModules`.
+
+This property is ignored when [explicitly selected projects](#explicitly-selected-projects) are involved.
 
 Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also [issue 44](../../issues/44).
 
@@ -463,6 +467,26 @@ which are needed to (hot-)deploy the changes via `mvn` on the command line.
 In this scenario, by defining `-Dgib.excludeTransitiveModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear` deployment modules will be built. 
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+
+## Explicitly selected projects
+
+Special rules appy when `mvn -pl ...` (or `--projects ...`) is used:
+
+- _Every_ such "preselected" project is _always_ built, including tests etc., **regardless of being changed or not!**
+
+- Downstream projects of these selected projects are built if:
+  - `-amd` (`--also-make-dependents`) is used
+  - _and_:
+    - [`buildDownstream`](#gibbuilddownstream) is _not_ `never` or `false`
+    - _or_ [`buildAll`](#gibbuildall) is enabled
+
+- Upstream projects of these selected projects are built if:
+  - `-am` (`--also-make`) is used
+  - _and_:
+    - they are **changed** (or depend on other changed upstream modules) _and_ [`buildUpstream`](#gibbuildUpstream) is _not_ `never` or `false`
+    - _or_ [`buildAll`](#gibbuildall) is enabled
+
+Other properties/features are applied as usual to the resulting subset of modules/projects.
 
 ## Authentication
 
