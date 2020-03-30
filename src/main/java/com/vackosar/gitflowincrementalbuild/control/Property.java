@@ -30,18 +30,8 @@ public enum Property {
     buildDownstream("always", "bd", true),
     buildUpstream("derived", "bu", true),
     buildUpstreamMode("changed", "bum"),
-    skipTestsForUpstreamModules("false", "stfum", true) {
-        @Override
-        public String deprecatedFullName() {
-            return PREFIX + "skipTestsForNotImpactedModules";
-        }
-    },
-    argsForUpstreamModules("", "afum") {
-        @Override
-        public String deprecatedFullName() {
-            return PREFIX + "argsForNotImpactedModules";
-        }
-    },
+    skipTestsForUpstreamModules("false", "stfum", true),
+    argsForUpstreamModules("", "afum"),
     forceBuildModules("", "fbm"),
     excludeDownstreamModulesPackagedAs("", "edmpa"){
         @Override
