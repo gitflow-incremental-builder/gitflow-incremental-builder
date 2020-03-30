@@ -160,7 +160,7 @@ class UnchangedProjectsRemover {
             }
             upstreamProjects = upstreamRequiringProjects.stream()
                     .flatMap(this::streamUpstreamProjects)
-                    .filter(proj -> ! changed.contains(proj))
+                    .filter(proj -> !impacted.contains(proj))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
