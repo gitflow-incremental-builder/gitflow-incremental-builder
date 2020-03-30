@@ -107,23 +107,23 @@ public class ConfigurationTest {
         assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
     }
 
-    // deprecated old name of argsForUpstreamModules
     @Test
-    public void argsForNotImpactedModules() {
-        System.setProperty(Property.argsForUpstreamModules.deprecatedFullName(), "x=true a=false");
+    public void excludeDownstreamModulesPackagedAs() {
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.fullName(), "ear,war");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
-        assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
+        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
 
+    // deprecated old name of excludeDownstreamModulesPackagedAs
     @Test
     public void excludeTransitiveModulesPackagedAs() {
-        System.setProperty(Property.excludeTransitiveModulesPackagedAs.fullName(), "ear,war");
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedFullName(), "ear,war");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
-        assertEquals(Arrays.asList("ear", "war"), configuration.excludeTransitiveModulesPackagedAs);
+        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
 
     @Test
