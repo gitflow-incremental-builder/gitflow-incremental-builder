@@ -41,6 +41,7 @@ public class MavenSessionMock {
         when(mavenSession.getCurrentProject()).thenReturn(topLevelProject);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
         when(mavenSession.getRequest()).thenReturn(request);
+        when(mavenSession.getAllProjects()).thenReturn(projects);
         when(mavenSession.getProjects()).thenReturn(projects);
         when(mavenSession.getTopLevelProject()).thenReturn(topLevelProject);
         ProjectDependencyGraph dependencyGraphMock = mock(ProjectDependencyGraph.class);
