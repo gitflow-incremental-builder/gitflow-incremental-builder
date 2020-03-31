@@ -242,6 +242,29 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     @Test
+    public void buildWithSingleLeafModule() throws Exception {
+        checkoutDevelop();
+
+        workAroundMissingParents();
+
+        final String output = executeBuild("-f", "parent/child3", prop(Property.disableBranchComparison, "true"));
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertFalse(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" testJarDependency"));
+        Assert.assertFalse(output.contains(" testJarDependent"));
+
+        Assert.assertTrue(output.contains("Building single project"));
+    }
+
+    @Test
     public void buildWithSingleSelectedModule_alsoMake() throws Exception {
         checkoutDevelop();
 
@@ -254,7 +277,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
         final String output = executeBuild("-pl", "child3", "-am", prop(Property.disableBranchComparison, "true"));
 
-        Assert.assertFalse(output.contains("Building child1"));
+        Assert.assertFalse(output.contains("Building child1")); // "Building" prefix is required because child1 will be listed as changed
         Assert.assertFalse(output.contains(" child2"));
         Assert.assertFalse(output.contains(" subchild1"));
         Assert.assertFalse(output.contains(" subchild42"));
@@ -318,14 +341,14 @@ public class MavenIntegrationTest extends BaseRepoTest {
     private String executeBuild(String... args) throws IOException, InterruptedException {
         final List<String> commandBase = Arrays.asList("mvn", "-e", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
-        if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file"))) {
+        if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file") || s.equals("-f"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
         } else {
             commandBaseWithFile = commandBase;
         }
         List<String> command = Stream.concat(commandBaseWithFile.stream(), Arrays.stream(args)).collect(Collectors.toList());
         String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder());
-        LOGGER.info("Output of {}():\n{}", testNameRule.getMethodName(), output);
+        LOGGER.info("Output of {}({}):\n{}", testNameRule.getMethodName(), String.join(" ", command), output);
         return output;
     }
 
