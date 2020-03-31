@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Before;
@@ -46,7 +47,6 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     /**
      * The first module in the chain, unchanged by default.
      */
-    @Mock(name = AID_MODULE_A)
     protected MavenProject moduleA;
 
     @Mock(lenient = true)
@@ -64,20 +64,28 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     @InjectMocks
     protected UnchangedProjectsRemover underTest;
 
-    protected final List<MavenProject> projects = new ArrayList<>(); 
     protected final Set<MavenProject> changedProjects = new LinkedHashSet<>();
-    protected final Properties projectProperties = new Properties();
+
+    /**
+     * Value for {@code mavenSessionMock.getProjects()}.
+     */
+    private final List<MavenProject> projects = new ArrayList<>();
+
+    // gibProperties to be applied to _every_ moduleMock
+    // note: at regular runtime (via Maven), each module will automatically contain the properties of its parent(s),
+    //       which has to be emulated here, even though this test does not (yet) have an explicit root project
+    //       see also: overrideProjects()
+    private final Properties gibProperties = new Properties();
+    private final List<MavenProject> allModuleMocks = new ArrayList<>();
 
     @Before
     public void before() throws GitAPIException, IOException {
-        when(moduleA.getProperties()).thenReturn(projectProperties);
-        when(moduleA.getArtifactId()).thenReturn(AID_MODULE_A);
+        moduleA = addModuleMock(AID_MODULE_A, false);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);
         when(mavenSessionMock.getTopLevelProject()).thenReturn(moduleA);
 
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
-        projects.add(moduleA);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get()).thenReturn(changedProjects);
@@ -93,20 +101,26 @@ public abstract class BaseUnchangedProjectsRemoverTest {
 
     protected MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged, final String packaging) {
         MavenProject newModuleMock = mock(MavenProject.class, withSettings().name(moduleArtifactId).lenient());
+        allModuleMocks.add(newModuleMock);
         when(newModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
         when(newModuleMock.getPackaging()).thenReturn(packaging);
         if (addToChanged) {
             changedProjects.add(newModuleMock);
         }
-        projects.add(newModuleMock);
+        projects.add(newModuleMock);    // add to projects that are seen by the session, which can be changed afterwards via overrideProjects()
 
         when(newModuleMock.getProperties()).thenReturn(new Properties());
+        newModuleMock.getProperties().putAll(gibProperties);
 
-        setUpstreamProjects(newModuleMock, moduleA);
-        // update downstream of module-A
-        Set<MavenProject> downstreamOfModuleA = new LinkedHashSet<>(projectDependencyGraphMock.getDownstreamProjects(moduleA, true));
-        downstreamOfModuleA.add(newModuleMock);
-        setDownstreamProjects(moduleA, downstreamOfModuleA.toArray(new MavenProject[0]));
+        when(newModuleMock.getModel()).thenReturn(new Model());
+
+        if (moduleA != null) {  // support the creation of module-A itself via this method
+            setUpstreamProjects(newModuleMock, moduleA);
+            // update downstream of module-A
+            Set<MavenProject> downstreamOfModuleA = new LinkedHashSet<>(projectDependencyGraphMock.getDownstreamProjects(moduleA, true));
+            downstreamOfModuleA.add(newModuleMock);
+            setDownstreamProjects(moduleA, downstreamOfModuleA.toArray(new MavenProject[0]));
+        }
 
         return newModuleMock;
     }
@@ -117,6 +131,25 @@ public abstract class BaseUnchangedProjectsRemoverTest {
 
     protected void setDownstreamProjects(MavenProject module, MavenProject... downstreamModules) {
         when(projectDependencyGraphMock.getDownstreamProjects(module, true)).thenReturn(Arrays.asList(downstreamModules));
+    }
+
+    protected void addGibProperty(Property property, String value) {
+        gibProperties.put(property.fullName(), value);
+        allModuleMocks.forEach(mod -> mod.getProperties().put(property.fullName(), value));
+    }
+
+    /**
+     * Overrides {@link MavenSession#getProjects()} with the given mocks which is only necessary if <i>not</i> all module mocks
+     * that have been created by {@link #addModuleMock(String, boolean, String)} shall end up in the session (e.g. for {@code -pl} cases etc.).
+     */
+    protected void overrideProjects(MavenProject... moduleMocks) {
+        projects.clear();
+        projects.addAll(Arrays.asList(moduleMocks));
+
+        // Maven shifts currentProject and topLevelProject to the first(!) project (as per Maven 3.6.3 with -pl and -f)
+        MavenProject firstProject = moduleMocks[0];
+        when(mavenSessionMock.getCurrentProject()).thenReturn(firstProject);
+        when(mavenSessionMock.getTopLevelProject()).thenReturn(firstProject);
     }
 
     protected void assertProjectPropertiesEqual(MavenProject project, Map<String, String> expected) {

@@ -16,6 +16,8 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
@@ -30,21 +32,24 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     @Test
     public void nothingChanged() throws GitAPIException, IOException {
-        addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
 
         underTest.act();
 
         assertEquals("Unexpected goal", Collections.singletonList("validate"), mavenSessionMock.getGoals());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
+
+        assertProjectPropertiesEqual(moduleA, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
     @Test
     public void nothingChanged_buildAllIfNoChanges() throws GitAPIException, IOException {
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_B, false);
 
-        projectProperties.put(Property.buildAllIfNoChanges.fullName(), "true");
-        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+        addGibProperty(Property.buildAllIfNoChanges, "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         underTest.act();
 
@@ -54,6 +59,41 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
         assertProjectPropertiesEqual(unchangedModuleMock, ImmutableMap.of("maven.test.skip", "true"));
+    }
+
+    // mvn -N ... or mvn -f ... for a multi-module-submodule
+    @Test
+    public void nothingChanged_singleModule_withSubmodules() throws GitAPIException, IOException {
+        // note: a more realistic setup would require a proper parent/root
+        moduleA.getModel().addModule("test");
+
+        underTest.act();
+
+        assertEquals("Unexpected goal", Collections.singletonList("validate"), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
+        verify(moduleA, Mockito.times(2)).getModel();   // +1 due to test setup
+
+        assertProjectPropertiesEqual(moduleA, Collections.emptyMap());
+    }
+
+    // mvn -f module-B (or unusal case of a non-multi-module project)
+    @Test
+    public void nothingChanged_singleModule_leaf() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+
+        // emulate -f module-B
+        overrideProjects(moduleB);
+
+        underTest.act();
+
+        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+        verify(moduleB).getModel();
+
+        assertProjectPropertiesEqual(moduleA, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
     @Test
@@ -85,7 +125,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         underTest.act();
 
@@ -101,7 +141,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         Plugin pluginMock = mock(Plugin.class);
         PluginExecution execMock = mock(PluginExecution.class);
@@ -123,7 +163,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
+        addGibProperty(Property.argsForUpstreamModules, "enforcer.skip=true argWithNoValue");
 
         underTest.act();
 
@@ -143,7 +183,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
+        addGibProperty(Property.buildUpstreamMode, "changed");
 
         underTest.act();
 
@@ -165,8 +205,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+        addGibProperty(Property.buildUpstreamMode, "changed");
+        addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
         underTest.act();
 
@@ -191,8 +231,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
         setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "changed");
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+        addGibProperty(Property.buildUpstreamMode, "changed");
+        addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
         underTest.act();
 
@@ -215,7 +255,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
+        addGibProperty(Property.buildUpstreamMode, "impacted");
 
         underTest.act();
 
@@ -237,8 +277,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setUpAndDownstreamsForBuildUpstreamModeTests(changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+        addGibProperty(Property.buildUpstreamMode, "impacted");
+        addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
         underTest.act();
 
@@ -263,8 +303,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
         setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
 
-        projectProperties.put(Property.buildUpstreamMode.fullName(), "impacted");
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+        addGibProperty(Property.buildUpstreamMode, "impacted");
+        addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
         underTest.act();
 
@@ -281,8 +321,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     public void singleChanged_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "enforcer.skip=true argWithNoValue");
-        projectProperties.put(Property.buildAll.fullName(), "true");
+        addGibProperty(Property.argsForUpstreamModules, "enforcer.skip=true argWithNoValue");
+        addGibProperty(Property.buildAll, "true");
 
         underTest.act();
 
@@ -315,7 +355,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
         setDownstreamProjects(changedModuleMock, dependentModuleMock);
 
-        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        addGibProperty(Property.buildDownstream, "false");
 
         underTest.act();
 
@@ -330,9 +370,9 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
         setDownstreamProjects(changedModuleMock, dependentModuleMock);
 
-        projectProperties.put(Property.buildDownstream.fullName(), "false");
-        projectProperties.put(Property.buildAll.fullName(), "true");
-        projectProperties.put(Property.argsForUpstreamModules.fullName(), "foo=bar");
+        addGibProperty(Property.buildDownstream, "false");
+        addGibProperty(Property.buildAll, "true");
+        addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
         underTest.act();
 
@@ -347,7 +387,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
-        projectProperties.put(Property.forceBuildModules.fullName(), moduleA.getArtifactId());
+        addGibProperty(Property.forceBuildModules, moduleA.getArtifactId());
 
         underTest.act();
 
@@ -359,8 +399,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
-        projectProperties.put(Property.forceBuildModules.fullName(),
-                moduleA.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
+        addGibProperty(Property.forceBuildModules, moduleA.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
 
         underTest.act();
 
@@ -373,7 +412,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_A + "-2", false);
 
-        projectProperties.put(Property.forceBuildModules.fullName(), AID_MODULE_A + ".*");
+        addGibProperty(Property.forceBuildModules, AID_MODULE_A + ".*");
 
         underTest.act();
 
@@ -386,7 +425,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("module-C", false);
 
-        projectProperties.put(Property.forceBuildModules.fullName(), AID_MODULE_A +  ".*,.*-C");
+        addGibProperty(Property.forceBuildModules, AID_MODULE_A +  ".*,.*-C");
 
         underTest.act();
 
@@ -401,7 +440,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
         underTest.act();
 
@@ -417,7 +456,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setDownstreamProjects(changedProjectMock, dependentWar, dependentJar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
         underTest.act();
 
@@ -433,7 +472,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setDownstreamProjects(changedProjectMock, dependentWar, dependentEar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war,ear");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war,ear");
 
         underTest.act();
 
@@ -448,8 +487,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
-        projectProperties.put(Property.buildAll.fullName(), "true");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
+        addGibProperty(Property.buildAll, "true");
 
         underTest.act();
 
@@ -464,8 +503,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
-        projectProperties.put(Property.forceBuildModules.fullName(), dependentWar.getArtifactId());
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
+        addGibProperty(Property.forceBuildModules, dependentWar.getArtifactId());
 
         underTest.act();
 
@@ -480,7 +519,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         // war module is changed, must be retained!
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
         underTest.act();
 
@@ -496,7 +535,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         // war module is changed, must be retained - even if depending on changedProjectMock!
         setDownstreamProjects(changedProjectMock, dependentWar);
 
-        projectProperties.put(Property.excludeDownstreamModulesPackagedAs.fullName(), "war");
+        addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
         underTest.act();
 
