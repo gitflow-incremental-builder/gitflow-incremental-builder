@@ -42,6 +42,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
+  - [mvn -pl](#mvn--pl)
+  - [mvn -f and others](#mvn--f-and-others)
 
 - [Authentication](#authentication)
   - [HTTP](#http)
@@ -473,6 +475,8 @@ This property has no effect in case `buildAll` is enabled and an exclusion might
 
 ## Explicitly selected projects
 
+### mvn -pl
+
 Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is used:
 
 - _Every_ such "preselected" project is _always_ built, including tests etc., **regardless of being changed or not!**
@@ -490,6 +494,16 @@ Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is use
     - _or_ [`buildAll`](#gibbuildall) is enabled
 
 Other properties/features are applied as usual to the resulting subset of modules/projects.
+
+### mvn -f and others
+
+Since 3.10.0, GIB will _always_ build a "leaf module" that is selected via `mvn -f ...` (or `--file ...`), **regardless of being changed or not!**
+
+A "leaf module" is a module without submodules.
+
+The same applies if the current directory is changed from the root directory of the multi-module-project to the leaf module subdirectory via `cd`.
+
+In contrast, a module _with_ submodules that is selected via `-f` or via `cd` is subject to the regular change detection rules (unless [`-pl`](#mvn--pl) is added).
 
 ## Authentication
 

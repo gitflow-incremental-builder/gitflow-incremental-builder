@@ -32,14 +32,15 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Before
     public void before() throws GitAPIException, IOException {
         super.before();
-        projectProperties.put(Property.skipTestsForUpstreamModules.fullName(), "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
     }
 
     // mvn -pl module-B
     @Test
     public void nothingChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
 
         underTest.act();
 
@@ -54,8 +55,7 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void nothingChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         underTest.act();
@@ -71,11 +71,13 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void nothingChanged_makeDownstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB, moduleC);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
@@ -93,15 +95,17 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void nothingChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
 
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB, moduleC);
+
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        addGibProperty(Property.buildDownstream, "false");
 
         underTest.act();
 
@@ -116,12 +120,12 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void nothingChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectSelections(moduleB);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
@@ -139,7 +143,8 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
 
         changedProjects.add(moduleA);
 
@@ -152,8 +157,7 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         changedProjects.add(moduleA);
@@ -170,13 +174,12 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeUpstream_buildUpstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         changedProjects.add(moduleA);
 
-        projectProperties.put(Property.buildUpstream.fullName(), "false");
+        addGibProperty(Property.buildUpstream, "false");
 
         underTest.act();
 
@@ -190,10 +193,10 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     public void moduleAChanged_makeUpstream_moduleCSelected() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
-        selectProjects(moduleC);
-        projects.addAll(0, Arrays.asList(moduleA, moduleB));  // add back module-A & B (which were wiped by selectProjects())
         setDownstreamProjects(moduleB, moduleC);
         setUpstreamProjects(moduleC, moduleA, moduleB);
+
+        setProjectSelections(moduleC);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
@@ -213,12 +216,12 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectSelections(moduleB);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
@@ -237,16 +240,16 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeBoth_buildUpstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
 
+        setProjectSelections(moduleB);
+
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        projectProperties.put(Property.buildUpstream.fullName(), "false");
+        addGibProperty(Property.buildUpstream, "false");
 
         changedProjects.add(moduleA);
 
@@ -262,16 +265,16 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeBoth_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
 
+        setProjectSelections(moduleB);
+
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        addGibProperty(Property.buildDownstream, "false");
 
         changedProjects.add(moduleA);
 
@@ -287,16 +290,17 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleAChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
 
+        setProjectSelections(moduleB);
+        overrideProjects(moduleA, moduleB);
+
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        projectProperties.put(Property.buildDownstream.fullName(), "false");
+        addGibProperty(Property.buildDownstream, "false");
 
         changedProjects.add(moduleA);
 
@@ -311,7 +315,8 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleBChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
-        selectProjects(moduleB);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
 
         underTest.act();
 
@@ -322,8 +327,7 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleBChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         underTest.act();
@@ -337,11 +341,10 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleBChanged_makeUpstream_buildAll() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.buildAll.fullName(), "true");
+        addGibProperty(Property.buildAll, "true");
 
         underTest.act();
 
@@ -355,11 +358,10 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleBChanged_makeUpstream_forceBuildA() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
+        setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        projectProperties.put(Property.forceBuildModules.fullName(), "module-A");
+        addGibProperty(Property.forceBuildModules, "module-A");
 
         underTest.act();
 
@@ -373,12 +375,12 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
     @Test
     public void moduleBChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
-        selectProjects(moduleB);
-        projects.add(0, moduleA);  // add back module-A (was wiped by selectProjects())
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjects(moduleB, moduleC);
         setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectSelections(moduleB);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
@@ -390,11 +392,9 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mimics "-pl :...,:..."
-    private void selectProjects(MavenProject... projectsToSelect) {
+    // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!
+    private void setProjectSelections(MavenProject... projectsToSelect) {
         List<String> selection = Arrays.stream(projectsToSelect).map(p -> ":" + p.getArtifactId()).collect(Collectors.toList());
         when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
-        projects.clear();
-        projects.addAll(Arrays.asList(projectsToSelect));
     }
 }

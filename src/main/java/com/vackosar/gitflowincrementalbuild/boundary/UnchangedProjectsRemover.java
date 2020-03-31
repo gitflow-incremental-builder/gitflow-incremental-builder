@@ -39,9 +39,17 @@ class UnchangedProjectsRemover {
     void act() throws GitAPIException, IOException {
         // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
         final Set<MavenProject> selected = ProjectSelectionUtil.gatherSelectedProjects(mavenSession);
-        if (!selected.isEmpty() && mavenSession.getProjects().equals(new ArrayList<>(selected))) {
+        if (onlySelectedModulesPresent(selected)) {
             printDelimiter();
-            logger.info("Building explicitly selected projects (without any adjustment).");
+            logger.info("Building explicitly selected projects (without any adjustment): {}",
+                    mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
+            return;
+        }
+        // do nothing if only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
+        // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
+        if (onlySingleLeafModulePresent()) {
+            printDelimiter();
+            logger.info("Building single project (without any adjustment): {}", mavenSession.getCurrentProject().getArtifactId());
             return;
         }
 
@@ -62,6 +70,15 @@ class UnchangedProjectsRemover {
                     .filter(proj -> !impacted.contains(proj))
                     .forEach(this::applyUpstreamModuleArgs);
         }
+    }
+
+    private boolean onlySelectedModulesPresent(Set<MavenProject> selected) {
+        return !selected.isEmpty() && mavenSession.getProjects().equals(new ArrayList<>(selected));
+    }
+
+    private boolean onlySingleLeafModulePresent() {
+        // note: explicit check for modules to cover -N case
+        return mavenSession.getProjects().size() == 1 && mavenSession.getCurrentProject().getModel().getModules().isEmpty();
     }
 
     private void handleNoChangesDetected(Set<MavenProject> selected) {
@@ -222,6 +239,9 @@ class UnchangedProjectsRemover {
 
         static Set<MavenProject> gatherSelectedProjects(MavenSession mavenSession) {
             List<String> selectors = mavenSession.getRequest().getSelectedProjects();
+            if (selectors.isEmpty()) {
+                return Collections.emptySet();
+            }
             File reactorDirectory = Optional.ofNullable(mavenSession.getRequest().getBaseDirectory()).map(File::new).orElse(null);
             return mavenSession.getProjects().stream()
                     .filter(proj -> selectors.stream().anyMatch(sel -> matchesSelector(proj, sel, reactorDirectory)))
