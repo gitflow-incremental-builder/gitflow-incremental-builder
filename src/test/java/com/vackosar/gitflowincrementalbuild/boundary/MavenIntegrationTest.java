@@ -8,6 +8,11 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 import org.apache.commons.lang3.Validate;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,7 +94,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
         final String output = executeBuild("-N");
         Assert.assertTrue(output.contains("gitflow-incremental-builder " + gibVersion + " starting..."));
     }
-    
+
     @Test
     public void worktreeFails() throws Exception {
         final String output = executeBuild("--file=wrkf2/parent/pom.xml");
@@ -144,9 +152,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     @Test
     public void buildNoChanged() throws Exception {
-        Git git = localRepoMock.getGit();
-        git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
-        git.checkout().setName("develop").call();
+        checkoutDevelop();
 
         final String output = executeBuild(prop(Property.baseBranch, "refs/heads/develop"));
 
@@ -212,17 +218,137 @@ public class MavenIntegrationTest extends BaseRepoTest {
         Assert.assertTrue(output.contains(" subchild41"));
     }
 
+    @Test
+    public void buildWithSingleSelectedModule() throws Exception {
+        checkoutDevelop();
+
+        workAroundMissingParents();
+
+        final String output = executeBuild("-pl", "child2", prop(Property.disableBranchComparison, "true"));
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertTrue(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertFalse(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertFalse(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" testJarDependency"));
+        Assert.assertFalse(output.contains(" testJarDependent"));
+
+        Assert.assertTrue(output.contains("Building explicitly selected projects"));
+    }
+
+    @Test
+    public void buildWithSingleLeafModule() throws Exception {
+        checkoutDevelop();
+
+        workAroundMissingParents();
+
+        final String output = executeBuild("-f", "parent/child3", prop(Property.disableBranchComparison, "true"));
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertFalse(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" testJarDependency"));
+        Assert.assertFalse(output.contains(" testJarDependent"));
+
+        Assert.assertTrue(output.contains("Building single project"));
+    }
+
+    @Test
+    public void buildWithSingleSelectedModule_alsoMake() throws Exception {
+        checkoutDevelop();
+
+        workAroundMissingParents();
+
+        // tests that child6 upstream of child3 is built
+        Files.write(repoPath.resolve("parent").resolve("child6").resolve("changed.xml"), new byte[0]);
+        // tests that child1 (that is _not_ in MavenSession.projects but in .allProjects) is _not_ resolved to parent (the root)
+        Files.write(repoPath.resolve("parent").resolve("child1").resolve("changed.xml"), new byte[0]);
+
+        final String output = executeBuild("-pl", "child3", "-am", prop(Property.disableBranchComparison, "true"));
+
+        Assert.assertFalse(output.contains("Building child1")); // "Building" prefix is required because child1 will be listed as changed
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" testJarDependency"));
+        Assert.assertFalse(output.contains(" testJarDependent"));
+    }
+
+    @Test
+    public void buildWithSingleSelectedModule_alsoMakeDependends() throws Exception {
+        checkoutDevelop();
+
+        workAroundMissingParents();
+
+        final String output = executeBuild("-pl", "child6", "-amd", prop(Property.disableBranchComparison, "true"));
+
+        Assert.assertFalse(output.contains(" child1"));
+        Assert.assertFalse(output.contains(" child2"));
+        Assert.assertFalse(output.contains(" subchild1"));
+        Assert.assertFalse(output.contains(" subchild42"));
+        Assert.assertFalse(output.contains(" subchild2"));
+        Assert.assertTrue(output.contains(" child3"));
+        Assert.assertFalse(output.contains(" child4"));
+        Assert.assertFalse(output.contains(" subchild41"));
+        Assert.assertTrue(output.contains(" child6"));
+        Assert.assertFalse(output.contains(" testJarDependency"));
+        Assert.assertFalse(output.contains(" testJarDependent"));
+    }
+
+    private void checkoutDevelop() throws GitAPIException, CheckoutConflictException, RefAlreadyExistsException,
+            RefNotFoundException, InvalidRefNameException {
+        Git git = localRepoMock.getGit();
+        git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
+        git.checkout().setName("develop").call();
+    }
+
+    /**
+     * GIB is not active for any of the submodules in the test git repo because they do not reference the root project as parent.
+     * This method works around this by registering GIB via {@code .mvn/extensions.xml}.
+     *
+     * @see <a href="https://maven.apache.org/examples/maven-3-lifecycle-extensions.html">Using Maven 3 lifecycle extension</a>
+     */
+    private void workAroundMissingParents() throws IOException {
+        String extensionXml =
+                "<extensions xmlns=\"http://maven.apache.org/EXTENSIONS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "  xsi:schemaLocation=\"http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd\">\n" +
+                "  <extension>\n" +
+                "    <groupId>com.vackosar.gitflowincrementalbuilder</groupId>\n" +
+                "    <artifactId>gitflow-incremental-builder</artifactId>\n" +
+                "    <version>" + gibVersion + "</version>\n" +
+                "  </extension>\n" +
+                "</extensions>";
+        Path extensionsPath = Files.createDirectory(repoPath.resolve(".mvn")).resolve("extensions.xml");
+        Files.write(extensionsPath, extensionXml.getBytes(StandardCharsets.UTF_8));
+    }
+
     private String executeBuild(String... args) throws IOException, InterruptedException {
         final List<String> commandBase = Arrays.asList("mvn", "-e", "package", localRepoArg, gibVersionArg);
         final List<String> commandBaseWithFile;
-        if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file"))) {
+        if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file") || s.equals("-f"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
         } else {
             commandBaseWithFile = commandBase;
         }
         List<String> command = Stream.concat(commandBaseWithFile.stream(), Arrays.stream(args)).collect(Collectors.toList());
         String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder());
-        LOGGER.info("Output of {}():\n{}", testNameRule.getMethodName(), output);
+        LOGGER.info("Output of {}({}):\n{}", testNameRule.getMethodName(), String.join(" ", command), output);
         return output;
     }
 
