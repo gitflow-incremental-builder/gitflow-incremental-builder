@@ -26,7 +26,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  *
  * @author famod
  */
-public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedProjectsRemoverTest {
+public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedProjectsRemoverTest {
 
     @Override
     @Before
@@ -49,6 +49,24 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
         verify(mavenSessionMock, never()).setProjects(anyList());
 
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+    }
+
+    // mvn -pl module-B,module-C
+    @Test
+    public void nothingChanged_twoSelected() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setProjectSelections(moduleB, moduleC);
+        overrideProjects(moduleB, moduleC);
+
+        underTest.act();
+
+        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
     // mvn -pl module-B -am
@@ -114,6 +132,40 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+    }
+
+    // mvn -pl module-B,module-D -amd
+    // A <- B <- C
+    // A <- D <- E
+    @Test
+    public void nothingChanged_makeDownstream_twoSelected() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        MavenProject moduleD = addModuleMock(AID_MODULE_D, false);
+        MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
+        setUpstreamProjects(moduleE, moduleD, moduleA);
+        setDownstreamProjects(moduleD, moduleE);
+        setDownstreamProjects(moduleA, moduleD, moduleE);
+
+        setProjectSelections(moduleB, moduleD);
+        overrideProjects(moduleB, moduleC, moduleD, moduleE);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
+
+        underTest.act();
+
+        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
+
+        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleD, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
     }
 
     // mvn -pl module-B -am -amd
@@ -390,6 +442,69 @@ public class UnchangedProjectsRemoverSelectedProjetcsTest extends BaseUnchangedP
 
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+    }
+
+    // mvn -pl module-C,module-E -am
+    // A <- B* <- C
+    // A <- D* <- E
+    @Test
+    public void twoSelected_differentUpstreams_bothChanged() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        MavenProject moduleD = addModuleMock(AID_MODULE_D, true);
+        MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
+        setUpstreamProjects(moduleE, moduleD, moduleA);
+        setDownstreamProjects(moduleD, moduleE);
+        setDownstreamProjects(moduleA, moduleD, moduleE);
+
+        setProjectSelections(moduleC, moduleE);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
+
+        assertProjectPropertiesEqual(moduleB, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+
+        assertProjectPropertiesEqual(moduleD, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
+    }
+
+    // mvn -pl module-C,module-E -am
+    // A <- B <- C
+    // A <- D* <- E
+    @Test
+    public void twoSelected_differentUpstreams_oneChanged() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        MavenProject moduleD = addModuleMock(AID_MODULE_D, true);
+        MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
+        setUpstreamProjects(moduleE, moduleD, moduleA);
+        setDownstreamProjects(moduleD, moduleE);
+        setDownstreamProjects(moduleA, moduleD, moduleE);
+
+        setProjectSelections(moduleC, moduleE);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleC, moduleD, moduleE));
+
+        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+
+        assertProjectPropertiesEqual(moduleD, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
     }
 
     // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!

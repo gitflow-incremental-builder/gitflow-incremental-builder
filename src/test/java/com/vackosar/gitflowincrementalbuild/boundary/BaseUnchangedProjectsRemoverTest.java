@@ -43,6 +43,8 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     protected static final String AID_MODULE_A = "module-A";
     protected static final String AID_MODULE_B = "module-B";
     protected static final String AID_MODULE_C = "module-C";
+    protected static final String AID_MODULE_D = "module-D";
+    protected static final String AID_MODULE_E = "module-E";
 
     /**
      * The first module in the chain, unchanged by default.
