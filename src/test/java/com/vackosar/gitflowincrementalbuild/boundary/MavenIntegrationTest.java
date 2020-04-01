@@ -104,7 +104,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void logChanges() throws Exception {
         final String output = executeBuild("-X", "-N");
-        Assert.assertTrue(output.contains("[DEBUG] Changed file: "));
+        Assert.assertTrue(output.contains("[WARNING] Ignoring changed file in non-reactor module: "));
     }
 
     @Test

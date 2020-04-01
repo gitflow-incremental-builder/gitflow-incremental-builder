@@ -59,19 +59,39 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @Test
     public void list() throws Exception {
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get("child2/subchild2"),
-                Paths.get("child3"),
-                Paths.get("child4"),
-                Paths.get("testJarDependent")
+                Paths.get("parent/child2/subchild2"),
+                Paths.get("parent/child3"),
+                Paths.get("parent/child4"),
+                Paths.get("parent/testJarDependent")
         ));
 
         final Set<Path> actual = underTest.get().stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
-                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve("parent")::relativize)
+                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
                 .collect(Collectors.toSet());
 
         Assert.assertEquals(expected, actual);
     }
 
+    @Test
+    public void list_ignoreChangedNonReactorModule() throws Exception {
+        // remove child3 (which contains changes) from the reactor/session
+        mavenSessionMock.getAllProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
+        mavenSessionMock.getProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
+
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                Paths.get("parent/child2/subchild2"),
+                Paths.get("parent/child4"),
+                Paths.get("parent/testJarDependent")
+        ));
+
+        final Set<Path> actual = underTest.get().stream()
+                .map(MavenProject::getBasedir)
+                    .map(File::toPath)
+                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
+                .collect(Collectors.toSet());
+
+        Assert.assertEquals(expected, actual);
+    }
 }
