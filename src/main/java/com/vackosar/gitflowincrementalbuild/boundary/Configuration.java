@@ -41,6 +41,7 @@ public class Configuration {
     public final boolean uncommited;
     public final boolean untracked;
     public final Predicate<String> excludePathRegex;
+    public final Predicate<String> includePathRegex;
 
     public final boolean buildAll;
     public final boolean buildAllIfNoChanges;
@@ -70,6 +71,7 @@ public class Configuration {
         uncommited = Boolean.valueOf(Property.uncommited.getValue(projectProperties));
         untracked = Boolean.valueOf(Property.untracked.getValue(projectProperties));
         excludePathRegex = compilePattern(Property.excludePathRegex, projectProperties).asPredicate();
+        includePathRegex = compilePattern(Property.includePathRegex, projectProperties).asPredicate();
 
         // build config
 
@@ -119,7 +121,7 @@ public class Configuration {
 
     /**
      * Returns whether or not the given make behaviour is active for the given session.
-     * 
+     *
      * @param expectedMakeBehavior one of {@link MavenExecutionRequest#REACTOR_MAKE_DOWNSTREAM} or {@link MavenExecutionRequest#REACTOR_MAKE_UPSTREAM}
      * @param session the session providing the request
      * @return whether the given behaviour (or {@link MavenExecutionRequest#REACTOR_MAKE_BOTH}) is active or not
@@ -228,7 +230,7 @@ public class Configuration {
 
         /**
          * Returns a {@link Configuration} instance which is constructed when first called. Subsequent calls will return the same instance.
-         * 
+         *
          * @return a {@link Configuration} instance
          */
         @Override

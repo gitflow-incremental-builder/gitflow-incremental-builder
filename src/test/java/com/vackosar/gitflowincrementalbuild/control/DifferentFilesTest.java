@@ -39,7 +39,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUncommitted() throws Exception {
+    public void listWithUncommitted() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "true");
 
@@ -47,7 +47,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUncommitted_disabled() throws Exception {
+    public void listWithUncommitted_disabled() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "false");
 
@@ -55,7 +55,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUncommitted_excluded() throws Exception {
+    public void listWithUncommitted_excluded() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "true");
         projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
@@ -64,7 +64,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUntracked() throws Exception {
+    public void listWithUntracked() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "true");
 
@@ -72,7 +72,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUntracked_disabled() throws Exception {
+    public void listWithUntracked_disabled() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "false");
 
@@ -80,7 +80,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    public void listIncludingUntracked_excluded() throws Exception {
+    public void listWithUntracked_excluded() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "true");
         projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
@@ -120,6 +120,28 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 Paths.get(repoPath + "/parent/child4/pom.xml"),
                 Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
         ));
+
+        Assert.assertEquals(expected, invokeUnderTest());
+    }
+
+    @Test
+    public void listIncluding() throws Exception {
+        projectProperties.setProperty(Property.includePathRegex.fullName(), ".*file2.*");
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
+                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22")
+                ));
+
+        Assert.assertEquals(expected, invokeUnderTest());
+    }
+
+    @Test
+    public void listIncludingAndExcluding() throws Exception {
+        projectProperties.setProperty(Property.includePathRegex.fullName(), ".*file2.*");
+        projectProperties.setProperty(Property.excludePathRegex.fullName(), ".*file22.*");
+        final Set<Path> expected = new HashSet<>(Arrays.asList(
+                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2")
+                ));
 
         Assert.assertEquals(expected, invokeUnderTest());
     }

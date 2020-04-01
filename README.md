@@ -31,6 +31,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
+  - [gib.includePathRegex](#gibincludepathregex)
   - [gib.buildAll](#gibbuildall)
   - [gib.buildAllIfNoChanges](#gibbuildallifnochanges)
   - [gib.buildDownstream](#gibbuilddownstream)
@@ -275,6 +276,7 @@ Maven pom properties configuration with default values is below:
     <gib.uncommited>true</gib.uncommited>                                                 <!-- or <gib.uc>... -->
     <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
     <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>                                   <!-- or <gib.epr>... -->
+    <gib.includePathRegex>.*</gib.includePathRegex>                                       <!-- or <gib.ipr>... -->
     <gib.buildAll>false</gib.buildAll>                                                    <!-- or <gib.ba>... -->
     <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                              <!-- or <gib.bainc>... -->
     <gib.buildDownstream>always</gib.buildDownstream>                                     <!-- or <gib.bd>... -->
@@ -364,6 +366,18 @@ The regular expression does _not_ need to describe the entire (absolute) path, b
 /tmp/repo/blacklisted/some-file.txt
 ```
 will be excluded when using `-Dgib.excludePathRegex=blacklisted` or `-Dgib.excludePathRegex=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
+
+This the opposite of [gib.includePathRegex](#gibincludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
+
+### gib.includePathRegex
+
+Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build.
+
+This the opposite of [gib.excludePathRegex](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
+
+See [gib.excludePathRegex](#gibexcludepathregex) for general path matching rules.
+
+Since: 3.10.0
 
 ### gib.buildAll
 
