@@ -24,6 +24,7 @@ public enum Property {
     uncommited("true", "uc", true),
     untracked("true", "ut", true),
     excludePathRegex(Constants.NEVER_MATCH_REGEX, "epr"),
+    includePathRegex(Constants.ALWAYS_MATCH_REGEX, "ipr"),
 
     buildAll("false", "ba", true),
     buildAllIfNoChanges("false", "bainc", true),
@@ -132,6 +133,7 @@ public enum Property {
     }
 
     private static class Constants {
+        private static final String ALWAYS_MATCH_REGEX = ".*";
         private static final String NEVER_MATCH_REGEX = "(?!x)x";
     }
 }

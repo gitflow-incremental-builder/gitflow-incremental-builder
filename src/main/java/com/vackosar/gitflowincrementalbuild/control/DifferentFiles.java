@@ -208,7 +208,7 @@ public class DifferentFiles {
             final Set<Path> paths = new HashSet<>();
             while (treeWalk.next()) {
                 Path path = Paths.get(treeWalk.getPathString()).normalize();
-                if (pathNotExcluded(path)) {
+                if (pathIncluded(path)) {
                     paths.add(gitDir.resolve(path));
                 }
             }
@@ -240,7 +240,7 @@ public class DifferentFiles {
             return changes.stream()
                     .map(Paths::get)
                     .map(Path::normalize)
-                    .filter(this::pathNotExcluded)
+                    .filter(this::pathIncluded)
                     .map(workTree::resolve)
                     .collect(Collectors.toSet());
         }
@@ -254,10 +254,11 @@ public class DifferentFiles {
             }
         }
 
-        private boolean pathNotExcluded(Path path) {
+        private boolean pathIncluded(Path path) {
             boolean excluded = configuration.excludePathRegex.test(path.toString());
-            logger.debug("excluded {}: {}", excluded, path);
-            return !excluded;
+            boolean included = !excluded && configuration.includePathRegex.test(path.toString());
+            logger.debug("included {}: {}", included, path);
+            return included;
         }
     }
 }
