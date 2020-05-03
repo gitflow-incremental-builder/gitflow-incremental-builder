@@ -509,6 +509,9 @@ Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is use
 
 Other properties/features are applied as usual to the resulting subset of modules/projects.
 
+Since 3.10.1, "deselected" projects (`mvn -pl !...`) that contain changes will _not_ be built, but their up- and downstream projects will be built
+(if not also deselected).
+
 ### mvn -f and others
 
 Since 3.10.0, GIB will _always_ build a "leaf module" that is selected via `mvn -f ...` (or `--file ...`), **regardless of being changed or not!**

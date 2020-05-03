@@ -84,7 +84,7 @@ class UnchangedProjectsRemover {
     private void handleNoChangesDetected(Set<MavenProject> selected) {
         Configuration cfg = configProvider.get();
         if (!selected.isEmpty()) {
-            // note: need to check make behaviour additionally because downstream projects will only be present for -pl when also -amd is set 
+            // note: need to check make behaviour additionally because downstream projects will only be present for -pl when also -amd is set
             if (cfg.buildDownstream && Configuration.isMakeBehaviourActive(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM, mavenSession)) {
                 logger.info("No changed artifacts detected: Building explicitly selected projects and their dependents.");
                 mavenSession.setProjects(selected.stream()
@@ -120,7 +120,9 @@ class UnchangedProjectsRemover {
 
     private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted) {
         Set<MavenProject> rebuild = calculateRebuildProjects(selected, changed, impacted);
-        if (!configProvider.get().forceBuildModules.isEmpty()) {
+        if (rebuild.isEmpty()) {
+            handleNoChangesDetected(selected);
+        } else if (!configProvider.get().forceBuildModules.isEmpty()) {
             Set<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
                     .filter(proj -> !rebuild.contains(proj))
                     .filter(proj -> matchesAny(proj.getArtifactId(), configProvider.get().forceBuildModules))
@@ -146,7 +148,9 @@ class UnchangedProjectsRemover {
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             switch (buildUpstreamMode) {
                 case NONE:
+                    // use impacted (without deselected)
                     return impacted.stream()
+                            .filter(mavenSession.getProjects()::contains)   // not deselected
                             .filter(selectedWithDownstream::contains)
                             .collect(Collectors.toCollection(LinkedHashSet::new));
                 case CHANGED:
@@ -165,7 +169,10 @@ class UnchangedProjectsRemover {
             Set<MavenProject> upstreamRequiringProjects;
             switch (buildUpstreamMode) {
                 case NONE:
-                    return impacted;    // just use impacted without any further processing
+                    // just use impacted (without deselected)
+                    return impacted.stream()
+                            .filter(mavenSession.getProjects()::contains)   // not deselected
+                            .collect(Collectors.toCollection(LinkedHashSet::new));
                 case CHANGED:
                     upstreamRequiringProjects = changed;
                     break;
@@ -212,7 +219,15 @@ class UnchangedProjectsRemover {
     private void logProjects(Set<MavenProject> projects, String title) {
         logger.info(title);
         logger.info("");
-        projects.stream().map(MavenProject::getArtifactId).forEach(logger::info);
+        projects.stream()
+                .map(proj -> {
+                    String entry = proj.getArtifactId();
+                    if (!mavenSession.getProjects().contains(proj)) {
+                        entry += " (but deselected)";
+                    }
+                    return entry;
+                })
+                .forEach(logger::info);
         logger.info("");
     }
 
