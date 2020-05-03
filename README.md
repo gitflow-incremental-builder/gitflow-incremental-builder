@@ -41,6 +41,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
+  - [gib.logImpactedTo](#giblogimpactedto)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
   - [mvn -pl](#mvn--pl)
@@ -288,6 +289,7 @@ Maven pom properties configuration with default values is below:
     <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>     <!-- or <gib.edmpa>... -->
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                               <!-- or <gib.fomgd>... -->
     <gib.failOnError>true</gib.failOnError>                                               <!-- or <gib.foe>... -->
+    <gib.logImpactedTo></gib.logImpactedTo>                                               <!-- or <gib.lit>... -->
 </properties>
 ```
 
@@ -486,6 +488,16 @@ In this scenario, by defining `-Dgib.excludeDownstreamModulesPackagedAs=jar,pom`
 deployment modules will be built.
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+
+### gib.logImpactedTo
+
+Defines an optional logfile which GIB shall write all "impacted" modules to. Each line represents the base directory of a changed module
+or a downstream module of a changed module.
+
+GIB overwrites the file if it already exists and will create an empty file in case no changes are detected
+or only [explicitly selected projects](#explicitly-selected-projects) are present.
+
+Since: 3.10.1
 
 ## Explicitly selected projects
 

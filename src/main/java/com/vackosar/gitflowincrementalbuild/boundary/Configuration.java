@@ -8,6 +8,8 @@ import org.apache.maven.execution.MavenSession;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,6 +56,7 @@ public class Configuration {
 
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
+    public final Optional<Path> logImpactedTo;
 
     private Configuration(MavenSession session) {
         Properties projectProperties = getProjectProperties(session);
@@ -96,6 +99,7 @@ public class Configuration {
 
         failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(projectProperties));
         failOnError = Boolean.valueOf(Property.failOnError.getValue(projectProperties));
+        logImpactedTo = Optional.ofNullable(Property.logImpactedTo.getValue(projectProperties)).map(Paths::get);
     }
 
     /**

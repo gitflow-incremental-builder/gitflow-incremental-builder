@@ -16,6 +16,10 @@ import javax.inject.Singleton;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +41,9 @@ class UnchangedProjectsRemover {
     @Inject private Configuration.Provider configProvider;
 
     void act() throws GitAPIException, IOException {
+        // ensure to write logfile for impaced (even if just empty)
+        configProvider.get().logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath));
+
         // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
         final Set<MavenProject> selected = ProjectSelectionUtil.gatherSelectedProjects(mavenSession);
         if (onlySelectedModulesPresent(selected)) {
@@ -63,12 +70,29 @@ class UnchangedProjectsRemover {
 
         final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed);
 
+        configProvider.get().logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath));
+
         if (!configProvider.get().buildAll) {
             modifyProjectList(selected, changed, impacted);
         } else {
             mavenSession.getProjects().stream()
                     .filter(proj -> !impacted.contains(proj))
                     .forEach(this::applyUpstreamModuleArgs);
+        }
+    }
+
+    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath) {
+        List<String> projectsToLog = impacted.isEmpty()
+                ? Collections.emptyList()
+                : mavenSession.getProjects().stream()   // write in proper order
+                        .filter(impacted::contains)
+                        .map(proj -> proj.getBasedir().getPath())
+                        .collect(Collectors.toList());
+        logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
+        try {
+            Files.write(logFilePath, projectsToLog, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write impacted projects to " + logFilePath + ": " + impacted, e);
         }
     }
 
@@ -115,7 +139,9 @@ class UnchangedProjectsRemover {
         if (cfg.buildAll || cfg.buildDownstream) {
             impacted = impacted.flatMap(this::streamProjectWithDownstreamProjects);
         }
-        return impacted.collect(Collectors.toCollection(LinkedHashSet::new));
+        return impacted
+                .filter(mavenSession.getProjects()::contains)   // not deselected
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted) {
@@ -148,9 +174,8 @@ class UnchangedProjectsRemover {
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             switch (buildUpstreamMode) {
                 case NONE:
-                    // use impacted (without deselected)
+                    // just use impacted that are selected and the downstreams of the selected
                     return impacted.stream()
-                            .filter(mavenSession.getProjects()::contains)   // not deselected
                             .filter(selectedWithDownstream::contains)
                             .collect(Collectors.toCollection(LinkedHashSet::new));
                 case CHANGED:
@@ -169,10 +194,8 @@ class UnchangedProjectsRemover {
             Set<MavenProject> upstreamRequiringProjects;
             switch (buildUpstreamMode) {
                 case NONE:
-                    // just use impacted (without deselected)
-                    return impacted.stream()
-                            .filter(mavenSession.getProjects()::contains)   // not deselected
-                            .collect(Collectors.toCollection(LinkedHashSet::new));
+                    // just use impacted
+                    return impacted;
                 case CHANGED:
                     upstreamRequiringProjects = changed;
                     break;

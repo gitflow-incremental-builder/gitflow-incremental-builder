@@ -34,7 +34,7 @@ public enum Property {
     skipTestsForUpstreamModules("false", "stfum", true),
     argsForUpstreamModules("", "afum"),
     forceBuildModules("", "fbm"),
-    excludeDownstreamModulesPackagedAs("", "edmpa"){
+    excludeDownstreamModulesPackagedAs("", "edmpa") {
         @Override
         public String deprecatedFullName() {
             return PREFIX + "excludeTransitiveModulesPackagedAs";
@@ -42,7 +42,8 @@ public enum Property {
     },
 
     failOnMissingGitDir("true", "fomgd", true),
-    failOnError("true", "foe", true);
+    failOnError("true", "foe", true),
+    logImpactedTo(null, "lit");
 
     public static final String PREFIX = "gib.";
 

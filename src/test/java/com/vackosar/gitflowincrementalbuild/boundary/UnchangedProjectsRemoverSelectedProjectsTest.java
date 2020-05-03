@@ -417,7 +417,6 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildDownstream, "false");
         addGibProperty(Property.buildAllIfNoChanges, "true");
-        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         changedProjects.add(moduleA);
 
@@ -540,7 +539,6 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         overrideProjects(moduleA, moduleC);
 
         addGibProperty(Property.buildDownstream, "false");
-        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         underTest.act();
 
@@ -563,7 +561,6 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildDownstream, "false");
         addGibProperty(Property.buildAllIfNoChanges, "true");
-        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         underTest.act();
 
@@ -586,7 +583,6 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         overrideProjects(moduleA, moduleC);
 
         addGibProperty(Property.buildUpstream, "true");
-        addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
         underTest.act();
 
@@ -609,7 +605,6 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         overrideProjects(moduleA, moduleC);
 
         addGibProperty(Property.buildUpstream, "true");
-        addGibProperty(Property.skipTestsForUpstreamModules, "true");
         addGibProperty(Property.buildDownstream, "false");
 
         underTest.act();
