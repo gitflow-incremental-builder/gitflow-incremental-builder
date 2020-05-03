@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks.
- * 
+ *
  * @author famod
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -57,7 +58,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     @Mock(lenient = true)
     protected MavenSession mavenSessionMock;
 
-    @Mock
+    @Mock(lenient = true)
     protected ProjectDependencyGraph projectDependencyGraphMock;
 
     @Mock
@@ -105,6 +106,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         MavenProject newModuleMock = mock(MavenProject.class, withSettings().name(moduleArtifactId).lenient());
         allModuleMocks.add(newModuleMock);
         when(newModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
+        when(newModuleMock.getBasedir()).thenReturn(new File(moduleArtifactId));
         when(newModuleMock.getPackaging()).thenReturn(packaging);
         if (addToChanged) {
             changedProjects.add(newModuleMock);
