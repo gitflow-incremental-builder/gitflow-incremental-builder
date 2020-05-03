@@ -35,7 +35,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
     }
 
-    // mvn -pl module-B
+    // mvn -pl :module-B
     @Test
     public void nothingChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -51,7 +51,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B,module-C
+    // mvn -pl :module-B,:module-C
     @Test
     public void nothingChanged_twoSelected() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -69,7 +69,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void nothingChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -85,7 +85,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -amd
+    // mvn -pl :module-B -amd
     @Test
     public void nothingChanged_makeDownstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -109,7 +109,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -amd
+    // mvn -pl :module-B -amd
     @Test
     public void nothingChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -134,7 +134,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B,module-D -amd
+    // mvn -pl :module-B,:module-D -amd
     // A <- B <- C
     // A <- D <- E
     @Test
@@ -168,7 +168,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void nothingChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -191,7 +191,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B
+    // mvn -pl :module-B
     @Test
     public void moduleAChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -205,7 +205,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         verify(mavenSessionMock, never()).setProjects(anyList());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleAChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -222,7 +222,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleAChanged_makeUpstream_buildUpstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -240,7 +240,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleAChanged_makeUpstream_moduleCSelected() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -264,7 +264,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void moduleAChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -288,7 +288,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void moduleAChanged_makeBoth_buildUpstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -313,7 +313,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void moduleAChanged_makeBoth_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -338,7 +338,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void moduleAChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
@@ -363,7 +363,73 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B
+    // mvn -pl !:module-A
+    @Test
+    public void moduleAChanged_deselectedA() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleA);
+        overrideProjects(moduleB, moduleC);
+
+        changedProjects.add(moduleA);
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+    }
+
+    // mvn -pl !:module-A
+    @Test
+    public void moduleAChanged_deselectedA_buildDownstreamDisabled() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleA);
+        overrideProjects(moduleB, moduleC);
+
+        addGibProperty(Property.buildDownstream, "false");
+
+        changedProjects.add(moduleA);
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+    }
+
+    // mvn -pl !:module-A
+    @Test
+    public void moduleAChanged_deselectedA_buildDownstreamDisabled_buildAllIfNoChanges() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleA);
+        overrideProjects(moduleB, moduleC);
+
+        addGibProperty(Property.buildDownstream, "false");
+        addGibProperty(Property.buildAllIfNoChanges, "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
+
+        changedProjects.add(moduleA);
+
+        underTest.act();
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(moduleB, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleC, ImmutableMap.of("maven.test.skip", "true"));
+    }
+
+    // mvn -pl :module-B
     @Test
     public void moduleBChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
@@ -375,7 +441,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         verify(mavenSessionMock, never()).setProjects(anyList());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleBChanged_makeUpstream() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
@@ -389,7 +455,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleBChanged_makeUpstream_buildAll() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
@@ -406,7 +472,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am
+    // mvn -pl :module-B -am
     @Test
     public void moduleBChanged_makeUpstream_forceBuildA() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
@@ -423,7 +489,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
     }
 
-    // mvn -pl module-B -am -amd
+    // mvn -pl :module-B -am -amd
     @Test
     public void moduleBChanged_makeBoth() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
@@ -444,7 +510,116 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
     }
 
-    // mvn -pl module-C,module-E -am
+    // mvn -pl !:module-B
+    @Test
+    public void moduleBChanged_deselectedB() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleB);
+        overrideProjects(moduleA, moduleC);
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleC));
+    }
+
+    // mvn -pl !:module-B
+    @Test
+    public void moduleBChanged_deselectedB_buildDownstreamDisabled() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleB);
+        overrideProjects(moduleA, moduleC);
+
+        addGibProperty(Property.buildDownstream, "false");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of());
+    }
+
+    // mvn -pl !:module-B
+    @Test
+    public void moduleBChanged_deselectedB_buildDownstreamDisabled_buildAllIfNoChanges() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleB);
+        overrideProjects(moduleA, moduleC);
+
+        addGibProperty(Property.buildDownstream, "false");
+        addGibProperty(Property.buildAllIfNoChanges, "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
+
+        underTest.act();
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleC, ImmutableMap.of("maven.test.skip", "true"));
+    }
+
+    // mvn -pl !:module-B
+    @Test
+    public void moduleBChanged_deselectedB_buildUpstream() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleB);
+        overrideProjects(moduleA, moduleC);
+
+        addGibProperty(Property.buildUpstream, "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleC));
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleC, ImmutableMap.of());
+    }
+
+    // mvn -pl !:module-B
+    @Test
+    public void moduleBChanged_deselectedB_buildUpstream_buildDownstreamDisabled() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setUpstreamProjects(moduleC, moduleB, moduleA);
+        setDownstreamProjects(moduleB, moduleC);
+        setDownstreamProjects(moduleA, moduleB, moduleC);
+
+        setProjectDeSelections(moduleB);
+        overrideProjects(moduleA, moduleC);
+
+        addGibProperty(Property.buildUpstream, "true");
+        addGibProperty(Property.skipTestsForUpstreamModules, "true");
+        addGibProperty(Property.buildDownstream, "false");
+
+        underTest.act();
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
+
+        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
+    }
+
+    // mvn -pl :module-C,:module-E -am
     // A <- B* <- C
     // A <- D* <- E
     @Test
@@ -476,7 +651,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
     }
 
-    // mvn -pl module-C,module-E -am
+    // mvn -pl :module-C,:module-E -am
     // A <- B <- C
     // A <- D* <- E
     @Test
@@ -510,6 +685,12 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!
     private void setProjectSelections(MavenProject... projectsToSelect) {
         List<String> selection = Arrays.stream(projectsToSelect).map(p -> ":" + p.getArtifactId()).collect(Collectors.toList());
+        when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
+    }
+
+    // See "-pl !:...,!:..."
+    private void setProjectDeSelections(MavenProject... projectsToDeSelect) {
+        List<String> selection = Arrays.stream(projectsToDeSelect).map(p -> "!:" + p.getArtifactId()).collect(Collectors.toList());
         when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
     }
 }
