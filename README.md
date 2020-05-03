@@ -323,11 +323,19 @@ The following properties are _not_ evaluated when `gib.disableBranchComparison` 
 
 ### gib.referenceBranch
 
-The branch to compare `baseBranch` to.
+The branch to compare `baseBranch` to. You can use the simple branch name to compare against a local branch, e.g. `develop`.
+
+If you want to compare to a _remote_ branch you need to use the prefix `refs/remotes/<remoteName>/`, e.g. `refs/remotes/origin/develop`.
+
+You can also use a tag name, e.g. `refs/tags/myTag` or just `myTag`.
 
 ### gib.fetchReferenceBranch
 
 Fetches the `referenceBranch` from the remote repository.
+
+You _must_ use the prefix `refs/remotes/<remoteName>/`, e.g. `refs/remotes/origin/develop`, so that GIB can determine the remote repo name.
+
+Fetching tags is not (yet) supported.
 
 See also: [Authentication](#authentication)
 
@@ -335,11 +343,16 @@ See also: [Authentication](#authentication)
 
 The branch that is compared to `referenceBranch`. Usually just the current `HEAD`.
 
+See also: [gib.referenceBranch](#gibreferencebranch)
+
 ### gib.fetchBaseBranch
 
 Fetches the `baseBranch` from the remote repository.
 
-See also: [Authentication](#authentication)
+See also:
+
+- [Authentication](#authentication)
+- [gib.fetchReferenceBranch](#gibfetchreferencebranch)
 
 ### gib.useJschAgentProxy
 
