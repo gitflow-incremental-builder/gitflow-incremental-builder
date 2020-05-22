@@ -47,6 +47,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Explicitly selected projects](#explicitly-selected-projects)
   - [mvn -pl](#mvn--pl)
   - [mvn -f and others](#mvn--f-and-others)
+  - [mvn -N](#mvn--N)
 
 - [Authentication](#authentication)
   - [HTTP](#http)
@@ -546,7 +547,13 @@ A "leaf module" is a module without submodules.
 
 The same applies if the current directory is changed from the root directory of the multi-module-project to the leaf module subdirectory via `cd`.
 
-In contrast, a module _with_ submodules that is selected via `-f` or via `cd` is subject to the regular change detection rules (unless [`-pl`](#mvn--pl) is added).
+In contrast, a module _with_ submodules that is selected via `-f` or via `cd` is subject to the regular change detection rules (unless [`-pl`](#mvn--pl) or [`-N`](#mvn--N) is added).
+
+### mvn -N
+
+Since 3.10.2, GIB will _always_ build a "node module" when non-recursive build is activated via `mvn -N` (or `--non-recursive`), **regardless of being changed or not!**
+
+A "node module" is a module _with_ submodules.
 
 ## Authentication
 

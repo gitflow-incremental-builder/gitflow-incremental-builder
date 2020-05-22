@@ -52,9 +52,11 @@ class UnchangedProjectsRemover {
                     mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
             return;
         }
-        // do nothing if only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
+        // do nothing if:
+        // - building non-recursively (-N)
+        // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
         // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
-        if (onlySingleLeafModulePresent()) {
+        if (!mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent()) {
             printDelimiter();
             logger.info("Building single project (without any adjustment): {}", mavenSession.getCurrentProject().getArtifactId());
             return;

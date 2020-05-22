@@ -88,6 +88,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);
         when(mavenSessionMock.getTopLevelProject()).thenReturn(moduleA);
 
+        when(mavenExecutionRequestMock.isRecursive()).thenReturn(true);
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
