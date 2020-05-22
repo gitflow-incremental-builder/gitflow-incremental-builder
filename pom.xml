@@ -66,7 +66,7 @@
         <version.junit>4.13</version.junit>
         <version.powermock-reflect>2.0.7</version.powermock-reflect>
         <version.mockito>3.3.3</version.mockito>
-        <version.jetty>9.4.28.v20200408</version.jetty>
+        <version.jetty>9.4.29.v20200521</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
