@@ -23,7 +23,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks.
- * 
+ *
  * @author famod
  */
 public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTest {
@@ -61,7 +61,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         assertProjectPropertiesEqual(unchangedModuleMock, ImmutableMap.of("maven.test.skip", "true"));
     }
 
-    // mvn -N ... or mvn -f ... for a multi-module-submodule
+    // mvn -f ... for a multi-module-submodule
     @Test
     public void nothingChanged_singleModule_withSubmodules() throws GitAPIException, IOException {
         // note: a more realistic setup would require a proper parent/root
@@ -73,6 +73,23 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
         verify(moduleA, Mockito.times(2)).getModel();   // +1 due to test setup
+
+        assertProjectPropertiesEqual(moduleA, Collections.emptyMap());
+    }
+
+    // mvn -N ... for a multi-module-submodule
+    @Test
+    public void nothingChanged_singleModule_withSubmodules_nonRecursive() throws GitAPIException, IOException {
+        // note: a more realistic setup would require a proper parent/root
+        moduleA.getModel().addModule("test");
+        when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
+
+        underTest.act();
+
+        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+        verify(moduleA).getModel();   // only once due to test setup
 
         assertProjectPropertiesEqual(moduleA, Collections.emptyMap());
     }

@@ -102,9 +102,9 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     @Test
-    public void logChanges() throws Exception {
-        final String output = executeBuild("-X", "-N");
-        Assert.assertTrue(output.contains("[WARNING] Ignoring changed file in non-reactor module: "));
+    public void nonRecursive() throws Exception {
+        final String output = executeBuild("-N");
+        Assert.assertTrue(output.contains("Building single project (without any adjustment): parent"));
     }
 
     @Test
