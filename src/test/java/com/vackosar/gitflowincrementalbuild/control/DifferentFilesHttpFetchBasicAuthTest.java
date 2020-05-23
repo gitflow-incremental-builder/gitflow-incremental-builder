@@ -7,8 +7,8 @@ import java.nio.file.Files;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest {
 
@@ -16,8 +16,8 @@ public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest
         super(HTTP_PROTOCOL_BASIC_AUTH);
     }
 
-    @Before
-    public void configureCredentialHelper() throws IOException {
+    @BeforeEach
+    void configureCredentialHelper() throws IOException {
         StoredConfig config = localRepoMock.getGit().getRepository().getConfig();
         config.setString("credential", null, "helper", "store");
         config.save();

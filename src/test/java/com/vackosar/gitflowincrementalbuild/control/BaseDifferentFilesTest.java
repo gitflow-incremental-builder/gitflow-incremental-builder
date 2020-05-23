@@ -1,6 +1,10 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -8,9 +12,9 @@ import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.util.FS;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
@@ -35,17 +39,17 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     }
 
     @Override
-    @Before
-    public void before() throws Exception {
+    @BeforeEach
+    protected void before(TestInfo testInfo) throws Exception {
         jGitUserHomeBackup = FS.DETECTED.userHome();
-        super.before();
-        userHome = temporaryFolder.newFolder("userHome").toPath();
+        super.before(testInfo);
+        userHome = Files.createDirectory(tempDir.resolve("userHome"));
         FS.DETECTED.setUserHome(userHome.toFile());
     }
 
     @Override
-    @After
-    public void after() throws Exception {
+    @AfterEach
+    protected void after() throws Exception {
         FS.DETECTED.setUserHome(jGitUserHomeBackup);
         super.after();
     }
@@ -61,7 +65,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     }
 
     protected void assertCommitExists(String message, Git git) throws Exception {
-        Assert.assertEquals(message, git.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        assertEquals(message, git.log().setMaxCount(1).call().iterator().next().getFullMessage());
     }
 
     protected Set<Path> invokeUnderTest() throws Exception {
@@ -80,7 +84,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
         Set<Path> result = underTest.get();
 
-        Assert.assertNotNull("Resulting set is unexpectedly null", result);
+        assertNotNull(result, "Resulting set is unexpectedly null");
         return result;
     }
 }

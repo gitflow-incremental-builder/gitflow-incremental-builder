@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class ProcessUtils {
         final int returnCode = process.waitFor();
         if (returnCode > 0) {
             LOGGER.error("stdOut/stdErr:\n{}", outBuilder.toString());
-            Assert.fail("Process failed with return code " + returnCode);
+            Assertions.fail("Process failed with return code " + returnCode);
         }
         return outBuilder.toString();
     }

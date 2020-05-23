@@ -1,7 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.Assume.assumeTrue;
-
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -15,17 +13,15 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
-
 import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.transport.SshSessionFactory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runners.model.Statement;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +31,6 @@ import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DifferentFilesSshFetchTest.class);
-    
-    @Rule
-    public TestRule runOnlyWhenRule = (base, description) -> new Statement() {
-        @Override
-        public void evaluate() throws Throwable {
-            Optional.ofNullable(description.getAnnotation(RunOnlyWhen.class)).map(RunOnlyWhen::value).ifPresent(
-                    condition -> assumeTrue(description.getMethodName() + "() is only supported when running " + condition, condition.present()));
-            base.evaluate();
-        }
-    };
 
     private Path sshDir;
     private URI repoUri;
@@ -53,10 +39,15 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
         super(TestServerType.SSH_PROTOCOL);
     }
 
+    // need to override before() so that setup is skipped if @RunOnlyWhen does not apply
     @Override
-    @Before
-    public void before() throws Exception {
-        super.before();
+    @BeforeEach
+    protected void before(final TestInfo testInfo) throws Exception {
+        // check @RunOnlyWhen
+        testInfo.getTestMethod().map(meth -> meth.getAnnotation(RunOnlyWhen.class)).map(RunOnlyWhen::value).ifPresent(
+                condition -> Assumptions.assumeTrue(condition.present(), testInfo.getDisplayName() + "() is only supported when running " + condition));
+
+        super.before(testInfo);
 
         sshDir = Files.createDirectory(userHome.resolve(".ssh"));
         repoUri = localRepoMock.getRemoteRepo().repoUri;
@@ -65,10 +56,9 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
         Files.write(sshDir.resolve("known_hosts"), Collections.singleton(knownHostEntry));
     }
 
-    @Override
-    public void after() throws Exception {
+    @AfterEach
+    void resetSshSessionFactory() throws Exception {
         SshSessionFactory.setInstance(null);    // force reload of known_host etc. (see also org.eclipse.jgit.transport.ssh.SshTestHarness)
-        super.after();
     }
 
     @Test
@@ -91,7 +81,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    @RunOnlyWhen(RunCondition.ON_TRAVIS_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on Travis-CI 
+    @RunOnlyWhen(RunCondition.ON_TRAVIS_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on Travis-CI
     public void fetchWithPassphraseEncryptedKey() throws Exception {
         projectProperties.put(Property.useJschAgentProxy.name(), "true");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
@@ -109,7 +99,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
         Path unencryptedPrivateKeyPath = writePrivateKey("id_rsa_unencrypted", TestServerType.SSH_PROTOCOL.getUserSecret()).toAbsolutePath();
         Path ppkPath = unencryptedPrivateKeyPath.resolveSibling("key.ppk").toAbsolutePath();
-        
+
         LOGGER.info("*** USER ACTION REQUIRED! *** Launching puttygen. Save ppk as (and close puttygen!): " + ppkPath);
         ProcessUtils.startAndWaitForProcess("puttygen", unencryptedPrivateKeyPath.toString());
         Files.delete(unencryptedPrivateKeyPath);

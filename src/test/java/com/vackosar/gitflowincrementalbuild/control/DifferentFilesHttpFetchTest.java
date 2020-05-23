@@ -2,7 +2,8 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 public class DifferentFilesHttpFetchTest extends BaseDifferentFilesTest {

@@ -1,7 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,19 +9,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vackosar.gitflowincrementalbuild.SystemPropertiesResetRule;
+import com.vackosar.gitflowincrementalbuild.SystemPropertiesResetExtension;
 
+@ExtendWith(SystemPropertiesResetExtension.class)
 public class PropertyTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyTest.class);
-
-    @Rule
-    public final SystemPropertiesResetRule sysPropResetRule = new SystemPropertiesResetRule();
 
     @Test
     public void exemplifyAll() {

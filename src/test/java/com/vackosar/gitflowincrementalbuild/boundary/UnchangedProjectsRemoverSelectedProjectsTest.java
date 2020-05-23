@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.control.Property;
@@ -28,10 +28,8 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  */
 public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedProjectsRemoverTest {
 
-    @Override
-    @Before
-    public void before() throws GitAPIException, IOException {
-        super.before();
+    @BeforeEach
+    void beforeThis() throws GitAPIException, IOException {
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
     }
 
@@ -44,7 +42,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -61,7 +59,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -78,7 +76,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
@@ -101,7 +99,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
@@ -127,7 +125,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
@@ -158,7 +156,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
 
@@ -183,7 +181,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act();
 
-        assertEquals("Unexpected goals", Collections.emptyList(), mavenSessionMock.getGoals());
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
