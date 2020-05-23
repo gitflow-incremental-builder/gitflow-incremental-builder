@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -23,11 +23,11 @@ import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
@@ -38,7 +38,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  *
  * @author famod
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public abstract class BaseUnchangedProjectsRemoverTest {
 
     protected static final String AID_MODULE_A = "module-A";
@@ -61,7 +61,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     @Mock(lenient = true)
     protected ProjectDependencyGraph projectDependencyGraphMock;
 
-    @Mock
+    @Mock(lenient = true)
     protected ChangedProjects changedProjectsMock;
 
     @InjectMocks
@@ -81,8 +81,8 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     private final Properties gibProperties = new Properties();
     private final List<MavenProject> allModuleMocks = new ArrayList<>();
 
-    @Before
-    public void before() throws GitAPIException, IOException {
+    @BeforeEach
+    void before() throws GitAPIException, IOException {
         moduleA = addModuleMock(AID_MODULE_A, false);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);
@@ -165,6 +165,6 @@ public abstract class BaseUnchangedProjectsRemoverTest {
                         e -> e.getValue().toString(),
                         (a, b) -> a,
                         TreeMap::new));
-        assertEquals("Unexpected project properties of " + project, new TreeMap<>(expected), actual);
+        assertEquals(new TreeMap<>(expected), actual, "Unexpected project properties of " + project);
     }
 }

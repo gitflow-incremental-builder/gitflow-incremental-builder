@@ -1,5 +1,9 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 
@@ -16,8 +20,8 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
@@ -31,11 +35,12 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         super(TestServerType.GIT_PROTOCOL);
     }
 
-    @Test(expected = SkipExecutionException.class)
+    @Test
     public void worktree() throws Exception {
-        Path workDir = temporaryFolder.getRoot().toPath().resolve("tmp/repo/wrkf2");
+        Path workDir = tempDir.resolve("tmp/repo/wrkf2");
 
-        invokeUnderTest(MavenSessionMock.get(workDir, projectProperties));
+        assertThatExceptionOfType(SkipExecutionException.class).isThrownBy(
+                () -> invokeUnderTest(MavenSessionMock.get(workDir, projectProperties)));
     }
 
     @Test
@@ -43,7 +48,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "true");
 
-        Assert.assertTrue(invokeUnderTest().contains(modifiedFilePath));
+        assertTrue(invokeUnderTest().contains(modifiedFilePath));
     }
 
     @Test
@@ -51,7 +56,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommited.fullName(), "false");
 
-        Assert.assertFalse(invokeUnderTest().contains(modifiedFilePath));
+        assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
 
     @Test
@@ -60,7 +65,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         projectProperties.setProperty(Property.uncommited.fullName(), "true");
         projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
 
-        Assert.assertFalse(invokeUnderTest().contains(modifiedFilePath));
+        assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
 
     @Test
@@ -68,7 +73,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "true");
 
-        Assert.assertTrue(invokeUnderTest().contains(newFilePath));
+        assertTrue(invokeUnderTest().contains(newFilePath));
     }
 
     @Test
@@ -76,7 +81,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.fullName(), "false");
 
-        Assert.assertFalse(invokeUnderTest().contains(newFilePath));
+        assertFalse(invokeUnderTest().contains(newFilePath));
     }
 
     @Test
@@ -85,7 +90,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         projectProperties.setProperty(Property.untracked.fullName(), "true");
         projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
 
-        Assert.assertFalse(invokeUnderTest().contains(newFilePath));
+        assertFalse(invokeUnderTest().contains(newFilePath));
     }
 
     @Test
@@ -109,7 +114,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
                 ));
 
-        Assert.assertEquals(expected, invokeUnderTest());
+        assertEquals(expected, invokeUnderTest());
     }
 
     @Test
@@ -121,7 +126,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
         ));
 
-        Assert.assertEquals(expected, invokeUnderTest());
+        assertEquals(expected, invokeUnderTest());
     }
 
     @Test
@@ -132,7 +137,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22")
                 ));
 
-        Assert.assertEquals(expected, invokeUnderTest());
+        assertEquals(expected, invokeUnderTest());
     }
 
     @Test
@@ -143,14 +148,14 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2")
                 ));
 
-        Assert.assertEquals(expected, invokeUnderTest());
+        assertEquals(expected, invokeUnderTest());
     }
 
     @Test
     public void listWithDisabledBranchComparison() throws Exception {
         projectProperties.setProperty(Property.disableBranchComparison.fullName(), "true");
 
-        Assert.assertEquals(Collections.emptySet(), invokeUnderTest());
+        assertEquals(Collections.emptySet(), invokeUnderTest());
     }
 
     @Test
@@ -164,7 +169,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
                 dir.resolve("../testJarDependent/src/resources/file5").normalize()
         ));
 
-        Assert.assertEquals(expected, invokeUnderTest());
+        assertEquals(expected, invokeUnderTest());
     }
 
     @Test
@@ -175,7 +180,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         projectProperties.setProperty(Property.baseBranch.fullName(), REFS_HEADS_FEATURE_2);
         projectProperties.setProperty(Property.compareToMergeBase.fullName(), "true");
 
-        Assert.assertTrue(invokeUnderTest().stream().anyMatch(repoPath.resolve("parent/feature2-only-file.txt")::equals));
+        assertTrue(invokeUnderTest().stream().anyMatch(repoPath.resolve("parent/feature2-only-file.txt")::equals));
 
         verify(loggerSpy).info(contains("59dc82fa887d9ca82a0d3d1790c6d767e738e71a"));
     }

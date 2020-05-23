@@ -1,7 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,11 +11,9 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
@@ -24,17 +23,14 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  */
 public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjectsRemoverTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path tempDir;
 
     private Path logFilePath;
 
-    @Override
-    @Before
-    public void before() throws GitAPIException, IOException {
-        super.before();
-
-        logFilePath = temporaryFolder.getRoot().toPath().resolve("impacted.log");
+    @BeforeEach
+    void beforeThis() throws GitAPIException, IOException {
+        logFilePath = tempDir.resolve("impacted.log");
         addGibProperty(Property.logImpactedTo, logFilePath.toAbsolutePath().toString());
     }
 
@@ -83,9 +79,10 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     private void assertLogFileContains(MavenProject... mavenProjects) throws IOException {
-        assertTrue(logFilePath + " is missing", Files.isReadable(logFilePath));
-        assertEquals("Unexpected content of " + logFilePath,
+        assertTrue(Files.isReadable(logFilePath), logFilePath + " is missing");
+        assertEquals(
                 Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getPath()).collect(Collectors.toList()),
-                Files.readAllLines(logFilePath));
+                Files.readAllLines(logFilePath),
+                "Unexpected content of " + logFilePath);
     }
 }

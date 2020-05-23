@@ -7,11 +7,10 @@ import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.execution.MavenSession;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,8 +27,8 @@ public abstract class BaseRepoTest {
     /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
     protected Path repoPath;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    protected Path tempDir;
 
     public BaseRepoTest() {
         this(false, null);
@@ -40,10 +39,10 @@ public abstract class BaseRepoTest {
         this.remoteRepoServerType = remoteRepoServerType;
     }
 
-    @Before
-    public void before() throws Exception {
+    @BeforeEach
+    protected void before(TestInfo testInfo) throws Exception {
         init();
-        File repoBaseFolder = temporaryFolder.getRoot();
+        File repoBaseFolder = tempDir.toFile();
 
         // place repo in a sym-linked folder if requested by the concrete test class
         if (useSymLinkedFolder) {
@@ -74,8 +73,8 @@ public abstract class BaseRepoTest {
         projectProperties.setProperty(Property.compareToMergeBase.fullName(), "false");
     }
 
-    @After
-    public void after() throws Exception {
+    @AfterEach
+    protected void after() throws Exception {
         if (localRepoMock != null) {
             localRepoMock.close();
         }

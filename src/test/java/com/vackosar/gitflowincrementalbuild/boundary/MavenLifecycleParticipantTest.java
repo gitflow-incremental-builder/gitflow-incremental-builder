@@ -9,20 +9,19 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
 import java.util.Properties;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,14 +32,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MavenLifecycleParticipantTest {
 
     private static final String TEST_IMPL_VERSION = "3.8.1";    // just an existing version, no need to be the latest one
 
     private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenLifecycleParticipant.class);
 
-    @Mock
+    @Mock(lenient = true)
     private MavenSession mavenSessionMock;
 
     @Mock
@@ -51,8 +50,8 @@ public class MavenLifecycleParticipantTest {
 
     private final Properties projectProperties = new Properties();
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         MavenProject mockTLProject = mock(MavenProject.class);
         when(mockTLProject.getProperties()).thenReturn(projectProperties);
         when(mavenSessionMock.getTopLevelProject()).thenReturn(mockTLProject);
@@ -118,10 +117,8 @@ public class MavenLifecycleParticipantTest {
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
         doThrow(runtimeException).when(unchangedProjectsRemoverMock).act();
 
-        MavenExecutionException expectedException = assertThrows(MavenExecutionException.class,
-                () -> underTest.afterProjectsRead(mavenSessionMock));
-
-        assertSame(runtimeException, expectedException.getCause());
+        assertThatExceptionOfType(MavenExecutionException.class).isThrownBy(() -> underTest.afterProjectsRead(mavenSessionMock))
+                .withCause(runtimeException);
     }
 
     @Test

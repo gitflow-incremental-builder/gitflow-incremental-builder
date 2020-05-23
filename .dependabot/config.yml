@@ -13,5 +13,3 @@ update_configs:
           dependency_name: "ch.qos.logback:logback-classic"
       - match:
           dependency_name: "javax.inject:javax.inject"
-      - match:
-          dependency_name: "junit:junit"
