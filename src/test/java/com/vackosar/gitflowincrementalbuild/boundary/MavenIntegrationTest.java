@@ -23,9 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,6 +81,9 @@ public class MavenIntegrationTest extends BaseRepoTest {
         if (initialInstallDone) {
             return;
         }
+        ProcessUtils.startAndWaitForProcess(
+                Arrays.asList("mvn", "install", localRepoArg, gibVersionArg, "--file=build-parent", prop(Property.enabled, "false")),
+                localRepoMock.getBaseCanonicalBaseFolder());
         ProcessUtils.startAndWaitForProcess(
                 Arrays.asList("mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false")),
                 localRepoMock.getBaseCanonicalBaseFolder());
@@ -218,8 +219,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     public void buildWithSingleSelectedModule() throws Exception {
         checkoutDevelop();
 
-        workAroundMissingParents();
-
         final String output = executeBuild("-pl", "child2", prop(Property.disableBranchComparison, "true"));
 
         assertThat(output).doesNotContain(" child1")
@@ -240,8 +239,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     public void buildWithSingleLeafModule() throws Exception {
         checkoutDevelop();
 
-        workAroundMissingParents();
-
         final String output = executeBuild("-f", "parent/child3", prop(Property.disableBranchComparison, "true"));
 
         assertThat(output).doesNotContain(" child1")
@@ -261,8 +258,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     @Test
     public void buildWithSingleSelectedModule_alsoMake() throws Exception {
         checkoutDevelop();
-
-        workAroundMissingParents();
 
         // tests that child6 upstream of child3 is built
         Files.write(repoPath.resolve("parent").resolve("child6").resolve("changed.xml"), new byte[0]);
@@ -288,8 +283,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
     public void buildWithSingleSelectedModule_alsoMakeDependends() throws Exception {
         checkoutDevelop();
 
-        workAroundMissingParents();
-
         final String output = executeBuild("-pl", "child6", "-amd", prop(Property.disableBranchComparison, "true"));
 
         assertThat(output).doesNotContain(" child1")
@@ -310,26 +303,6 @@ public class MavenIntegrationTest extends BaseRepoTest {
         Git git = localRepoMock.getGit();
         git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
         git.checkout().setName("develop").call();
-    }
-
-    /**
-     * GIB is not active for any of the submodules in the test git repo because they do not reference the root project as parent.
-     * This method works around this by registering GIB via {@code .mvn/extensions.xml}.
-     *
-     * @see <a href="https://maven.apache.org/examples/maven-3-lifecycle-extensions.html">Using Maven 3 lifecycle extension</a>
-     */
-    private void workAroundMissingParents() throws IOException {
-        String extensionXml =
-                "<extensions xmlns=\"http://maven.apache.org/EXTENSIONS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "  xsi:schemaLocation=\"http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd\">\n" +
-                "  <extension>\n" +
-                "    <groupId>com.vackosar.gitflowincrementalbuilder</groupId>\n" +
-                "    <artifactId>gitflow-incremental-builder</artifactId>\n" +
-                "    <version>" + gibVersion + "</version>\n" +
-                "  </extension>\n" +
-                "</extensions>";
-        Path extensionsPath = Files.createDirectory(repoPath.resolve(".mvn")).resolve("extensions.xml");
-        Files.write(extensionsPath, extensionXml.getBytes(StandardCharsets.UTF_8));
     }
 
     private String executeBuild(String... args) throws IOException, InterruptedException {
