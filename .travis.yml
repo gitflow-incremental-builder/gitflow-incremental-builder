@@ -15,13 +15,17 @@ dist: bionic
 # set up matrix for various Maven & JDK combinations
 # note: as of 08.09.2019, oraclejdk11 seems to yield the exact same JDK as openjdk11,
 #       which is why some matrix entries are commented out
-matrix:
+jobs:
   include:
   #######
   # Maven 3.6.3 with various JDKs
   - name: "Maven 3.6.3 & Open JDK 11"
     jdk: openjdk11
     env: MVN_VERSION="3.6.3" OPENJDK_VERSION=11 COVERAGE_REPORT=true
+    addons:
+      apt:
+        packages:
+          - lynx
   - name: "Maven 3.6.3 & Open JDK 13"
     jdk: openjdk13
     env: MVN_VERSION="3.6.3" OPENJDK_VERSION=13
@@ -71,8 +75,8 @@ matrix:
 
 before_install:
   # download codacy-coverage-reporter (with explicit version, see https://github.com/vackosar/gitflow-incremental-builder/pull/78#issuecomment-454950381)
-  - if [ "${COVERAGE_REPORT}" == "true" ]; then
-      wget --no-verbose -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/6.1.4/codacy-coverage-reporter-assembly-6.1.4.jar;
+  - if [ "${COVERAGE_REPORT}" == "true" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      wget --no-verbose -O ~/codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/download/6.2.1/codacy-coverage-reporter-assembly-6.2.1.jar;
     fi
 
 install:
@@ -88,6 +92,7 @@ install:
         echo "Switching to a (possibly) more recent JDK ${OPENJDK_VERSION} minor version ...";
         export JAVA_HOME=${JAVA_HOME_CANDIATE};
         export PATH="$JAVA_HOME/bin:$PATH";
+        java -version;
       fi
     fi
   # install custom Maven version:
@@ -104,10 +109,13 @@ script:
   # ssh-agent for DifferentFilesSshFetchTest.fetchWithPassphraseEncryptedKey()
   - eval $(ssh-agent)
   - mvn verify
+  - if [ "${COVERAGE_REPORT}" == "true" ]; then
+      lynx -width=120 -dump target/site/jacoco/index.html || true;
+    fi
 
 after_success:
-  # disable coverage report for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456
-  - if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${COVERAGE_REPORT}" == "true" ]; then
+  # codacy coverage report (but not for PRs, see: https://github.com/vackosar/gitflow-incremental-builder/issues/76#issuecomment-456219456)
+  - if [ "${COVERAGE_REPORT}" == "true" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
       java -jar ~/codacy-coverage-reporter-assembly.jar report -l Java -r target/site/jacoco/jacoco.xml;
     fi
 
