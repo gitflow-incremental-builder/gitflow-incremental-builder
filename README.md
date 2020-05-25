@@ -65,7 +65,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.10.1</version>
+            <version>3.10.2</version>
         </extension>
     </extensions>
     ...
