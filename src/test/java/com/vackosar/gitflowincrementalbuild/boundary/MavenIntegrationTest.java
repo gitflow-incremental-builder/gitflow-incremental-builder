@@ -23,8 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,12 +37,13 @@ import java.util.stream.Stream;
 /**
  * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
  * <p/>
- * This test is expected to be called via {@code maven-failsafe-plugin} and requires two system properties:
+ * This test is expected to be called via {@code maven-failsafe-plugin}, dependends on {@code settings-it.xml} and requires two system properties:
  * <ul>
- * <li>{@code gibIntegrationTestRepo} defining the path of the maven repo containing the {@code gitflow-incremental-builder} jarfile to
+ * <li>{@code settings.localRepository} defining the path to the regular local Maven repo (containing the all the basic dependencies and plugins)
  * test</li>
- * <li>{@code gibIntegrationTestVersion} defining the version of the {@code gitflow-incremental-builder} jarfile to test</li>
+ * <li>{@code project.version} defining the current project version</li>
  * </ul>
+ * Furthermore, {@code mvn} must be on the {@code PATH} environment variable and {@code JAVA_HOME} must also be set.
  */
 public class MavenIntegrationTest extends BaseRepoTest {
 
@@ -45,29 +51,41 @@ public class MavenIntegrationTest extends BaseRepoTest {
 
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
 
-    private static String localRepoArg;
+    private static List<String> defaultArgs;
     private static String gibVersion;
-    private static String gibVersionArg;
     private static boolean initialInstallDone;
 
     private String testDisplayName;
 
     @BeforeAll
-    static void evaluateSystemProperties() throws IOException, InterruptedException {
-        localRepoArg = "-Dmaven.repo.local="
-                + Validate.notEmpty(System.getProperty("gibIntegrationTestRepo"), "gibIntegrationTestRepo not set");
-        gibVersion = Validate.notEmpty(System.getProperty("gibIntegrationTestVersion"), "gibIntegrationTestVersion not set");
-        gibVersionArg = "-DgibVersion=" + gibVersion;
+    static void evaluateSystemProperties() throws IOException, InterruptedException, URISyntaxException {
+        gibVersion = Validate.notEmpty(System.getProperty("project.version"), "project.version not set");
+
+        defaultArgs = Collections.unmodifiableList(Arrays.asList(
+                "--settings=" + createPathToSettingsXml(),
+                "-DgibIntegrationTestRepoRemote=" + createUrlToRemoteRepo(),    // used in/required by settings-it.xml
+                "--batch-mode"));
 
         LOGGER.info("The first test method will execute an initial 'mvn install ...' on the test project to populate the test repo."
                 + " This might take a while.");
-        LOGGER.info("Arguments: {}, {}", gibVersionArg, localRepoArg);
+        LOGGER.info("Default arguments: {}", defaultArgs);
+    }
+
+    private static String createPathToSettingsXml() throws URISyntaxException {
+        URL settingsUrl = Validate.notNull(
+                Thread.currentThread().getContextClassLoader().getResource("settings-it.xml"), "settings-it.xml not found on classpath");
+        return Paths.get(settingsUrl.toURI()).toAbsolutePath().toString();
+    }
+
+    private static String createUrlToRemoteRepo() throws MalformedURLException {
+        String regularLocalRepo = Validate.notEmpty(System.getProperty("settings.localRepository"), "settings.localRepository not set");
+        return Paths.get(regularLocalRepo).toUri().toURL().toString();
     }
 
     /**
      * Installs all test artifacts/modules to avoid dependency problems when only building a subset incrementally.
      * <p/>
-     * This might download all required maven core and plugin dependencies into the test repo, but test setup in pom.xml tries to prevent that.
+     * This will download all required maven core and plugin dependencies into the test repo (from the regular local repo, not from the internet).
      * <p/>
      * This is performed only once for the entire class but cannot be moved to {@link BeforeAll} as {@link BaseRepoTest} (re-)creates the
      * test project for each test in {@link BeforeEach}.
@@ -81,12 +99,8 @@ public class MavenIntegrationTest extends BaseRepoTest {
         if (initialInstallDone) {
             return;
         }
-        ProcessUtils.startAndWaitForProcess(
-                Arrays.asList("mvn", "install", localRepoArg, gibVersionArg, "--file=build-parent", prop(Property.enabled, "false")),
-                localRepoMock.getBaseCanonicalBaseFolder());
-        ProcessUtils.startAndWaitForProcess(
-                Arrays.asList("mvn", "install", localRepoArg, gibVersionArg, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false")),
-                localRepoMock.getBaseCanonicalBaseFolder());
+        executeBuild(true, false, "--file=build-parent", prop(Property.enabled, "false"));
+        executeBuild(true, false, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false"));
         initialInstallDone = true;
     }
 
@@ -306,16 +320,24 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private String executeBuild(String... args) throws IOException, InterruptedException {
-        final List<String> commandBase = Arrays.asList("mvn", "-e", "package", localRepoArg, gibVersionArg);
+        return executeBuild(false, true, args);
+    }
+
+    private String executeBuild(boolean installInsteadOfPackage, boolean logOutput, String... args) throws IOException, InterruptedException {
+        final List<String> commandBase = Arrays.asList("mvn", "-e", installInsteadOfPackage ? "install" : "package");
         final List<String> commandBaseWithFile;
         if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file") || s.equals("-f"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
         } else {
             commandBaseWithFile = commandBase;
         }
-        List<String> command = Stream.concat(commandBaseWithFile.stream(), Arrays.stream(args)).collect(Collectors.toList());
+        // commandBaseWithFile + args + defaultArgs
+        List<String> command = Stream.concat(commandBaseWithFile.stream(), Stream.concat(Arrays.stream(args), defaultArgs.stream()))
+                .collect(Collectors.toList());
         String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder());
-        LOGGER.info("Output of {}({}):\n{}", testDisplayName, String.join(" ", command), output);
+        if (logOutput) {
+            LOGGER.info("Output of {}({}):\n{}", testDisplayName, String.join(" ", command), output);
+        }
         return output;
     }
 
