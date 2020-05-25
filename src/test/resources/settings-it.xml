@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!-- The idea for this approach comes from: maven.apache.org/plugins/maven-invoker-plugin/examples/fast-use.html
+     Note: invoker-plugin itself is _not_ in use due to: https://github.com/vackosar/gitflow-incremental-builder/issues/177#issuecomment-633305232 -->
+<settings>
+    <localRepository>${gibIntegrationTestRepoLocal}</localRepository>
+    <mirrors>
+        <mirror>
+            <id>local.central</id>
+            <url>${gibIntegrationTestRepoRemote}</url>  <!-- must be URL, therefore _not_ filtered by Maven, must be passed in via -D by test -->
+            <mirrorOf>*,!local.central</mirrorOf>
+        </mirror>
+    </mirrors>
+    <profiles>
+        <profile>
+            <id>integration-test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gibVersion>${project.version}</gibVersion>
+                <!-- use same plugin versions for building the test projects as in the main Maven build -->
+                <version.maven-clean-plugin>${version.maven-clean-plugin}</version.maven-clean-plugin>
+                <version.maven-resources-plugin>${version.maven-resources-plugin}</version.maven-resources-plugin>
+                <version.maven-compiler-plugin>${version.maven-compiler-plugin}</version.maven-compiler-plugin>
+                <version.maven-surefire-plugin>${version.maven-surefire-plugin}</version.maven-surefire-plugin>
+                <version.maven-jar-plugin>${version.maven-jar-plugin}</version.maven-jar-plugin>
+                <version.maven-install-plugin>${version.maven-install-plugin}</version.maven-install-plugin>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>local.central</id>
+                    <url>${gibIntegrationTestRepoRemote}</url>  <!-- must be URL, therefore _not_ filtered by Maven, must be passed in via -D by test -->
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>local.central</id>
+                    <url>${gibIntegrationTestRepoRemote}</url>  <!-- must be URL, therefore _not_ filtered by Maven, must be passed in via -D by test -->
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+</settings>

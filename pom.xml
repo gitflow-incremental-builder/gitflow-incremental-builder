@@ -83,8 +83,6 @@
         <version.maven-failsafe-plugin>3.0.0-M4</version.maven-failsafe-plugin>
         <version.maven-site-plugin>3.9.0</version.maven-site-plugin>
         <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
-        <version.maven-antrun-plugin>3.0.0</version.maven-antrun-plugin>
-        <version.ant>1.10.8</version.ant>
         <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
@@ -94,7 +92,7 @@
         <version.spotbugs-maven-plugin>4.0.0</version.spotbugs-maven-plugin>
         <version.spotbugs>4.0.3</version.spotbugs>
 
-        <gibIntegrationTestRepo>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepo>
+        <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
 
         <!-- Properties to skip UnitTests (UTs) via surefire-plugin and/or IntegrationTests (UTs) via failsafe-plugin
              See also: https://stackoverflow.com/a/37880379 -->
@@ -226,6 +224,12 @@
     </dependencies>
     <build>
         <defaultGoal>clean install</defaultGoal>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -252,6 +256,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${version.maven-resources-plugin}</version>
+                    <configuration>
+                        <nonFilteredFileExtensions>
+                            <nonFilteredFileExtension>zip</nonFilteredFileExtension>
+                        </nonFilteredFileExtensions>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -317,8 +326,8 @@
                             <include>**/*IntegrationTest.java</include>
                         </includes>
                         <systemPropertyVariables>
-                            <gibIntegrationTestRepo>${gibIntegrationTestRepo}</gibIntegrationTestRepo>
-                            <gibIntegrationTestVersion>${project.version}</gibIntegrationTestVersion>
+                            <settings.localRepository>${settings.localRepository}</settings.localRepository>
+                            <project.version>${project.version}</project.version>
                             <logback.FILE.name>test-integration</logback.FILE.name>
                         </systemPropertyVariables>
                     </configuration>
@@ -327,18 +336,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
                     <version>${version.maven-install-plugin}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>${version.maven-antrun-plugin}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.ant</groupId>
-                            <artifactId>ant</artifactId>
-                            <version>${version.ant}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -505,39 +502,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- avoid to re-download everything into the integration test repo by pre-propulating it from regular local repo -->
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>pre-it-init-repo</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipITs}</skip>
-                            <target xmlns:if="ant:if" xmlns:unless="ant:unless">
-                                <mkdir dir="${gibIntegrationTestRepo}" />
-                                <condition property="onWindows">
-                                    <os family="windows" />
-                                </condition>
-                                <!-- no easy way to hard-link on Windows, so copy instead of link but only the most important deps -->
-                                <copy if:set="onWindows" todir="${gibIntegrationTestRepo}">
-                                    <fileset dir="${settings.localRepository}" includes="org/apache/maven/**,org/codehaus/plexus/**,org/eclipse/jgit/**,org/sonatype/**" />
-                                </copy>
-                                <!-- on non-Windows: assume that rsync is present and just speedily hard-link the entire local repo to the it repo -->
-                                <exec unless:set="onWindows" executable="rsync" failifexecutionfails="false">
-                                    <arg value="-a" />
-                                    <arg value="--link-dest=${settings.localRepository}" />
-                                    <arg value="${settings.localRepository}/" />
-                                    <arg value="${gibIntegrationTestRepo}" />
-                                </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
                 <executions>
@@ -550,7 +514,7 @@
                         <configuration>
                             <!-- no "skip" available -->
                             <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                            <localRepositoryPath>${gibIntegrationTestRepo}</localRepositoryPath>
+                            <localRepositoryPath>${gibIntegrationTestRepoLocal}</localRepositoryPath>
                             <pomFile>${project.basedir}/pom.xml</pomFile>
                         </configuration>
                     </execution>
@@ -609,33 +573,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!-- avoid to clean the integration test repo in target, unless executed with -DcleanAll -->
-        <profile>
-            <id>dont-clean-it-repo</id>
-            <activation>
-                <property>
-                    <name>!cleanAll</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <configuration>
-                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                            <filesets>
-                                <fileset>
-                                    <directory>${project.build.directory}</directory>
-                                    <excludes>
-                                        <exclude>it/repo/**</exclude>
-                                    </excludes>
-                                </fileset>
-                            </filesets>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
