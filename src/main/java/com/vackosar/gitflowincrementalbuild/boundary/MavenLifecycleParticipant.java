@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
@@ -11,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import java.io.IOException;
 
 @Singleton
 @Named
@@ -53,8 +56,13 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             return;
         }
 
-        logger.info("gitflow-incremental-builder {} starting...", implVersion);
         try {
+            if (!isEnabledForBranch(session)) {
+                logger.info("gitflow-incremental-builder is disabled for this branch.");
+                return;
+            }
+
+            logger.info("gitflow-incremental-builder {} starting...", implVersion);
             unchangedProjectsRemover.act();
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
@@ -66,6 +74,22 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             }
         }
         logger.info("gitflow-incremental-builder exiting...");
+    }
+
+    private boolean isEnabledForBranch(MavenSession session) throws IOException {
+        if (configProvider.get().enabledBranchRegex == null) {
+            return true;
+        }
+        
+        try (GitFactory gitFactory = createGitFactory(session, configProvider.get())) {
+            String branchName = gitFactory.getBranchName();
+            return configProvider.get().enabledBranchRegex.test(branchName);
+        }
+    }
+
+    // only for testing!
+    GitFactory createGitFactory(MavenSession mavenSession, Configuration configuration) throws IOException {
+        return GitFactory.newInstance(mavenSession, configuration);
     }
 
     private void logHelp() {
