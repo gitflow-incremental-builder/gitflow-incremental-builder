@@ -89,7 +89,7 @@
         <version.versions-maven-plugin>2.7</version.versions-maven-plugin>
         <version.maven-release-plugin>3.0.0-M1</version.maven-release-plugin>
         <version.animal-sniffer-maven-plugin>1.18</version.animal-sniffer-maven-plugin>
-        <version.spotbugs-maven-plugin>4.0.0</version.spotbugs-maven-plugin>
+        <version.spotbugs-maven-plugin>4.0.4</version.spotbugs-maven-plugin>
         <version.spotbugs>4.0.5</version.spotbugs>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
