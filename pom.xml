@@ -117,6 +117,18 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.ssh.jsch</artifactId>
+            <version>${version.jgit}</version>
+            <exclusions>
+                <!-- we use a version that matches the one that is provided by maven (and has to be compatible with jgit) -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch.agentproxy.connector-factory</artifactId>
             <version>${version.jsch.agentproxy}</version>
