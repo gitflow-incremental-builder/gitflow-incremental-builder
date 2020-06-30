@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public enum Property {
     help("false", "h", true),
     enabled("true", "e", true),
-    enabledBranchRegex(Constants.ALWAYS_MATCH_REGEX, "ebr"),
+    disableIfBranchRegex(Constants.NEVER_MATCH_REGEX, "dibr"),
 
     disableBranchComparison("false", "dbc", true),
     referenceBranch("refs/remotes/origin/develop", "rb"),

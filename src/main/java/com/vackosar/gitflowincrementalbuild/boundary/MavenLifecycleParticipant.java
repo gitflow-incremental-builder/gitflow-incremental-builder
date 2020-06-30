@@ -66,7 +66,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
 
         try {
-            if (!isEnabledForBranch(session)) {
+            if (isDisabledForBranch(session)) {
                 logger.info("gitflow-incremental-builder is disabled for this branch.");
                 return;
             }
@@ -85,14 +85,15 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         logger.info("gitflow-incremental-builder exiting...");
     }
 
-    private boolean isEnabledForBranch(MavenSession session) throws IOException {
-        if (configProvider.get().enabledBranchRegex == null) {
-            return true;
+    private boolean isDisabledForBranch(MavenSession session) throws IOException {
+        Configuration configuration = configProvider.get();
+        if (!configuration.disableIfBranchRegex.isPresent()) {
+            return false;
         }
         
-        Git git = GitFactory.getOrCreateThreadLocalGit(session, configProvider.get());
+        Git git = GitFactory.getOrCreateThreadLocalGit(session, configuration);
         String branchName = git.getRepository().getBranch();
-        return configProvider.get().enabledBranchRegex.test(branchName);
+        return configuration.disableIfBranchRegex.get().test(branchName);
     }
 
     private void logHelp() {
