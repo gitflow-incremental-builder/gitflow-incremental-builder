@@ -6,6 +6,7 @@ import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
+import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+        try {
+            applyPlugin(session);
+        } finally {
+            GitFactory.destroy();
+        }
+    }
+
+    private void applyPlugin(MavenSession session) throws MavenExecutionException {
 
         if (Configuration.isHelpRequested(session)) {
             logHelp();
@@ -81,15 +90,9 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             return true;
         }
         
-        try (GitFactory gitFactory = createGitFactory(session, configProvider.get())) {
-            String branchName = gitFactory.getBranchName();
-            return configProvider.get().enabledBranchRegex.test(branchName);
-        }
-    }
-
-    // only for testing!
-    GitFactory createGitFactory(MavenSession mavenSession, Configuration configuration) throws IOException {
-        return GitFactory.newInstance(mavenSession, configuration);
+        Git git = GitFactory.getOrCreateThreadLocalGit(session, configProvider.get());
+        String branchName = git.getRepository().getBranch();
+        return configProvider.get().enabledBranchRegex.test(branchName);
     }
 
     private void logHelp() {

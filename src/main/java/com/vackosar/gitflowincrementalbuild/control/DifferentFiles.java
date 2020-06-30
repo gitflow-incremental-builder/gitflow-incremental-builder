@@ -55,8 +55,8 @@ public class DifferentFiles {
 
         Configuration configuration = configProvider.get();
         Worker worker = null;
-        try (GitFactory gitFactory = GitFactory.newInstance(mavenSession, configuration)) {
-            Git git = gitFactory.get();
+        try {
+            Git git = GitFactory.getOrCreateThreadLocalGit(mavenSession, configuration);
             worker = new Worker(git, configuration);
 
             worker.fetch();

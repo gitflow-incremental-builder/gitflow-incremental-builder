@@ -9,6 +9,9 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +26,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,7 +33,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -65,6 +66,11 @@ public class MavenLifecycleParticipantTest {
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(mock(ProjectDependencyGraph.class));
 
         Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
+    }
+    
+    @AfterEach
+    void after() {
+        GitFactory.destroy();
     }
 
     @Test
@@ -181,12 +187,13 @@ public class MavenLifecycleParticipantTest {
         verifyNoInteractions(unchangedProjectsRemoverMock);
     }
 
-    private void mockCurrentBranch(String toBeReturned) throws IOException {
-        GitFactory gitFactory = mock(GitFactory.class);
-        doReturn(toBeReturned).when(gitFactory).getBranchName();
-
-        underTest = spy(underTest);
-        doReturn(gitFactory).when(underTest).createGitFactory(any(), any());
+    private void mockCurrentBranch(String branchName) throws IOException {
+        Git git = mock(Git.class);
+        Repository repository = mock(Repository.class);
+        doReturn(repository).when(git).getRepository();
+        doReturn(branchName).when(repository).getBranch();
+        
+        GitFactory.bind(git);
     }
 
     private void verifyHelpLogged(boolean logged) {

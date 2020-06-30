@@ -1,16 +1,17 @@
 package com.vackosar.gitflowincrementalbuild;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
-
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.execution.MavenSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,6 +76,7 @@ public abstract class BaseRepoTest {
 
     @AfterEach
     protected void after() throws Exception {
+        GitFactory.destroy();
         if (localRepoMock != null) {
             localRepoMock.close();
         }

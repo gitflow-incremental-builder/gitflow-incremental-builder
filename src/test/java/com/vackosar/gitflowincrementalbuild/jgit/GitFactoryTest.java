@@ -6,26 +6,28 @@ import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class GitFactoryTest {
 
     private MavenSession mavenSessionMock = mock(MavenSession.class);
     private Configuration configuration = mock(Configuration.class);
-    private GitFactory underTest;
 
-    public void initSimple() throws IOException {
+    private void initSimple() throws IOException {
         MavenProject mavenProject = new MavenProject();
         File pomXmlInCwd = new File("pom.xml").getCanonicalFile();
         File pomXmlInParent = new File("..", "pom.xml").getCanonicalFile();
@@ -34,24 +36,32 @@ public class GitFactoryTest {
             mavenProject.setFile(pomXmlInCwd);
         }
         doReturn(mavenProject).when(mavenSessionMock).getCurrentProject();
-
-        underTest = GitFactory.newInstance(mavenSessionMock, configuration);
-
-        MockitoAnnotations.initMocks(this);
     }
 
+    @BeforeEach
     @AfterEach
     public void tearDown() {
-        if (underTest != null) {
-            underTest.close();
-        }
+        GitFactory.destroy();
     }
 
     @Test
     public void test_simple() throws IOException {
         initSimple();
-        assertNotNull(underTest.get());
-        assertThat(underTest.getBranchName()).isNotEmpty();
+        assertNotNull(GitFactory.getOrCreateThreadLocalGit(mavenSessionMock, configuration));
+        
+        verify(mavenSessionMock).getCurrentProject();
+    }
+    
+    @Test
+    public void test_bind() throws IOException {
+        Git git = mock(Git.class);
+        Repository repository = mock(Repository.class);
+        doReturn(repository).when(git).getRepository();
+        
+        GitFactory.bind(git);
+        assertNotNull(GitFactory.getOrCreateThreadLocalGit(mavenSessionMock, configuration));
+        
+        verifyNoInteractions(mavenSessionMock, configuration);
     }
 
     @Test
@@ -63,6 +73,6 @@ public class GitFactoryTest {
         mavenProject.setFile(pom);
         doReturn(mavenProject).when(mavenSessionMock).getCurrentProject();
 
-        assertThrows(SkipExecutionException.class, () -> GitFactory.newInstance(mavenSessionMock, configuration));
+        assertThrows(SkipExecutionException.class, () -> GitFactory.getOrCreateThreadLocalGit(mavenSessionMock, configuration));
     }
 }

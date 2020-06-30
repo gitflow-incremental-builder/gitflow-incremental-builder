@@ -14,35 +14,35 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
-public class GitFactory implements AutoCloseable {
+public class GitFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(GitFactory.class);
 
-    public static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
+    private static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
-    private Git git;
-
-    public static GitFactory newInstance(MavenSession mavenSession, Configuration configuration) throws IOException {
+    private static final ThreadLocal<Git> threadLocal = new ThreadLocal<>();
+    
+    public static Git getOrCreateThreadLocalGit(MavenSession mavenSession, Configuration configuration) throws IOException {
+        if (threadLocal.get() != null) {
+            return threadLocal.get();
+        }
         Git git = setupGit(mavenSession, configuration);
-        return new GitFactory(git);
-    }
-
-    GitFactory(Git git) {
-        this.git = git;
-    }
-
-    public Git get() {
+        threadLocal.set(git);
         return git;
     }
-
-    public String getBranchName() throws IOException {
-        return git.getRepository().getBranch();
+    
+    public static void bind(Git git) {
+        destroy();
+        threadLocal.set(git);
     }
 
-    @Override
-    public void close() {
-        git.close();
-        git.getRepository().close();
+    public static void destroy() {
+        Git git = threadLocal.get();
+        threadLocal.remove();
+        if (git != null) {
+            git.close();
+            git.getRepository().close();
+        }
     }
 
     private static Git setupGit(MavenSession mavenSession, Configuration configuration) throws IOException {
@@ -74,4 +74,7 @@ public class GitFactory implements AutoCloseable {
                 .orElse(false);
     }
 
+    private GitFactory() {
+        throw new AssertionError();
+    }
 }
