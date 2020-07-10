@@ -220,9 +220,10 @@ public class DifferentFiles {
         }
 
         private boolean pathIncluded(Path path) {
-            boolean excluded = configuration.excludePathRegex.test(path.toString());
-            boolean included = !excluded && configuration.includePathRegex.test(path.toString());
-            logger.debug("included {}: {}", included, path);
+            final String pathString = path.toString();
+            boolean excluded = configuration.excludePathRegex.map(pred -> pred.test(pathString)).orElse(false);
+            boolean included = !excluded && configuration.includePathRegex.map(pred -> pred.test(pathString)).orElse(true);
+            logger.debug("included {}: {}", included, pathString);
             return included;
         }
     }

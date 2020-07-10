@@ -271,7 +271,7 @@ Maven pom properties configuration with default values is below:
 <properties>
     <gib.help>false</gib.help>                                                            <!-- or <gib.h>... -->
     <gib.enabled>true</gib.enabled>                                                       <!-- or <gib.e>... -->
-    <gib.disabledIfBranchRegex>.*</gib.disabledIfBranchRegex>                             <!-- or <gib.dibr>... -->
+    <gib.disableIfBranchRegex></gib.disableIfBranchRegex>                                 <!-- or <gib.dibr>... -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                      <!-- or <gib.dbc>... -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>                <!-- or <gib.rb>... -->
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                            <!-- or <gib.frb>... -->
@@ -281,8 +281,8 @@ Maven pom properties configuration with default values is below:
     <gib.compareToMergeBase>true</gib.compareToMergeBase>                                 <!-- or <gib.ctmb>... -->
     <gib.uncommited>true</gib.uncommited>                                                 <!-- or <gib.uc>... -->
     <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
-    <gib.excludePathRegex>(?!x)x</gib.excludePathRegex>                                   <!-- or <gib.epr>... -->
-    <gib.includePathRegex>.*</gib.includePathRegex>                                       <!-- or <gib.ipr>... -->
+    <gib.excludePathRegex></gib.excludePathRegex>                                         <!-- or <gib.epr>... -->
+    <gib.includePathRegex></gib.includePathRegex>                                         <!-- or <gib.ipr>... -->
     <gib.buildAll>false</gib.buildAll>                                                    <!-- or <gib.ba>... -->
     <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                              <!-- or <gib.bainc>... -->
     <gib.buildDownstream>always</gib.buildDownstream>                                     <!-- or <gib.bd>... -->
@@ -320,7 +320,9 @@ Can be used to disable this extension temporarily or permanently (e.g. to avoid 
 
 ### gib.disabledIfBranchRegex
 
-Can be used to disable this extension only on certain branches (e.g. `master|develop`)
+Can be used to disable this extension on certain branches (e.g. `master|develop`). By default, GIB runs on all branches.
+
+Since: 3.11.0
 
 ### gib.disableBranchComparison
 
@@ -383,7 +385,7 @@ Detects files that are not yet tracked by git (see `git status` manual). This do
 
 ### gib.excludePathRegex
 
-Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build.
+Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build. By default, nothing is excluded.
 
 The regular expression does _not_ need to describe the entire (absolute) path, but only the relevant part _inside_ the git repository context. Example:
 ```
@@ -395,7 +397,7 @@ This the opposite of [gib.includePathRegex](#gibincludepathregex) which can be c
 
 ### gib.includePathRegex
 
-Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build.
+Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build. By default, everything is included.
 
 This the opposite of [gib.excludePathRegex](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
 

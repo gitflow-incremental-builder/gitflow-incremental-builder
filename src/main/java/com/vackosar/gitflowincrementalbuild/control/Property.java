@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public enum Property {
     help("false", "h", true),
     enabled("true", "e", true),
-    disableIfBranchRegex(Constants.NEVER_MATCH_REGEX, "dibr"),
+    disableIfBranchRegex(null, "dibr"),
 
     disableBranchComparison("false", "dbc", true),
     referenceBranch("refs/remotes/origin/develop", "rb"),
@@ -24,8 +24,8 @@ public enum Property {
     compareToMergeBase("true", "ctmb", true),
     uncommited("true", "uc", true),
     untracked("true", "ut", true),
-    excludePathRegex(Constants.NEVER_MATCH_REGEX, "epr"),
-    includePathRegex(Constants.ALWAYS_MATCH_REGEX, "ipr"),
+    excludePathRegex(null, "epr"),
+    includePathRegex(null, "ipr"),
 
     buildAll("false", "ba", true),
     buildAllIfNoChanges("false", "bainc", true),
@@ -132,10 +132,5 @@ public enum Property {
         }
         builder.append("</properties>\n");
         return builder.toString();
-    }
-
-    public static interface Constants {
-        public static final String ALWAYS_MATCH_REGEX = ".*";
-        public static final String NEVER_MATCH_REGEX = "(?!x)x";
     }
 }
