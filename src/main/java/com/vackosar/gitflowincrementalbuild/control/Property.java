@@ -1,5 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -7,12 +10,10 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public enum Property {
     help("false", "h", true),
     enabled("true", "e", true),
+    disableIfBranchRegex(Constants.NEVER_MATCH_REGEX, "dibr"),
 
     disableBranchComparison("false", "dbc", true),
     referenceBranch("refs/remotes/origin/develop", "rb"),
@@ -133,8 +134,8 @@ public enum Property {
         return builder.toString();
     }
 
-    private static class Constants {
-        private static final String ALWAYS_MATCH_REGEX = ".*";
-        private static final String NEVER_MATCH_REGEX = "(?!x)x";
+    public static interface Constants {
+        public static final String ALWAYS_MATCH_REGEX = ".*";
+        public static final String NEVER_MATCH_REGEX = "(?!x)x";
     }
 }

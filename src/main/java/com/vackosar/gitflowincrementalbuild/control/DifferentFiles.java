@@ -2,9 +2,8 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
-import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
-
 import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
@@ -14,7 +13,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -26,15 +24,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,9 +54,9 @@ public class DifferentFiles {
         Set<Path> paths = new HashSet<>();
 
         Configuration configuration = configProvider.get();
-        Git git = setupGit(configuration);
         Worker worker = null;
         try {
+            Git git = GitFactory.getOrCreateThreadLocalGit(mavenSession, configuration);
             worker = new Worker(git, configuration);
 
             worker.fetch();
@@ -76,8 +71,6 @@ public class DifferentFiles {
             if (worker != null) {
                 worker.credentialsProvider.resetAll();
             }
-            git.getRepository().close();
-            git.close();
         }
         return paths;
     }
@@ -90,34 +83,6 @@ public class DifferentFiles {
      */
     void putAdditionalNativeGitEnvironment(String key, String value) {
         additionalNativeGitEnvironment.put(key, value);
-    }
-
-    private Git setupGit(Configuration configuration) throws IOException {
-        final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
-        builder.findGitDir(pomDir);
-        if (builder.getGitDir() == null) {
-            String gitDirNotFoundMessage = "Git repository root directory not found ascending from current working directory:'" + pomDir + "'.";
-            logger.warn(gitDirNotFoundMessage + " Next step is determined by failOnMissingGitDir property.");
-            if (configuration.failOnMissingGitDir) {
-                throw new IllegalArgumentException(gitDirNotFoundMessage);
-            } else {
-                throw new SkipExecutionException(gitDirNotFoundMessage);
-            }
-        }
-        if (isWorktree(builder)) {
-            throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());
-        }
-        return Git.wrap(builder.build());
-    }
-
-    private boolean isWorktree(FileRepositoryBuilder builder) {
-        return Optional.ofNullable(builder.getGitDir().toPath().getParent())
-                .filter(parent -> parent.getFileName().toString().equals("worktrees"))
-                .map(Path::getParent)
-                .filter(Objects::nonNull)
-                .map(parentParent -> parentParent.getFileName().toString().equals(".git"))
-                .orElse(false);
     }
 
     private class Worker {

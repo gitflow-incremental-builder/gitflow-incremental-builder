@@ -24,6 +24,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Configuration](#configuration)
   - [gib.help](#gibhelp)
   - [gib.enabled](#gibenabled)
+  - [gib.disabledIfBranchRegex](#gibdisabledIfBranchRegex)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.referenceBranch](#gibreferencebranch)
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
@@ -270,6 +271,7 @@ Maven pom properties configuration with default values is below:
 <properties>
     <gib.help>false</gib.help>                                                            <!-- or <gib.h>... -->
     <gib.enabled>true</gib.enabled>                                                       <!-- or <gib.e>... -->
+    <gib.disabledIfBranchRegex>.*</gib.disabledIfBranchRegex>                             <!-- or <gib.dibr>... -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                      <!-- or <gib.dbc>... -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>                <!-- or <gib.rb>... -->
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                            <!-- or <gib.frb>... -->
@@ -315,6 +317,10 @@ Since: 3.9.0
 ### gib.enabled
 
 Can be used to disable this extension temporarily or permanently (e.g. to avoid clashes with IDE building strategy).
+
+### gib.disabledIfBranchRegex
+
+Can be used to disable this extension only on certain branches (e.g. `master|develop`)
 
 ### gib.disableBranchComparison
 

@@ -1,13 +1,10 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Set;
-
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -18,10 +15,13 @@ import org.junit.jupiter.api.TestInfo;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
-import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
-import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
@@ -50,6 +50,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     @Override
     @AfterEach
     protected void after() throws Exception {
+        GitFactory.destroy();
         FS.DETECTED.setUserHome(jGitUserHomeBackup);
         super.after();
     }

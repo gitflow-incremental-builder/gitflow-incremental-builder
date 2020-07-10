@@ -2,13 +2,16 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
-
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,12 +22,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -61,6 +66,11 @@ public class MavenLifecycleParticipantTest {
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(mock(ProjectDependencyGraph.class));
 
         Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
+    }
+    
+    @AfterEach
+    void after() {
+        GitFactory.destroy();
     }
 
     @Test
@@ -152,6 +162,38 @@ public class MavenLifecycleParticipantTest {
 
         verify(loggerSpy).warn(contains("ProjectDependencyGraph"));
         verifyNoInteractions(unchangedProjectsRemoverMock);
+    }
+
+    @Test
+    public void enabledForBranch() throws Throwable {
+        projectProperties.setProperty(Property.disableIfBranchRegex.fullName(), "master|develop|(release/.+)|(hotfix/.+)");
+
+        mockCurrentBranch("feature/cool-stuff");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(unchangedProjectsRemoverMock).act();
+    }
+
+    @Test
+    public void disabledForBranch() throws Throwable {
+        projectProperties.setProperty(Property.disableIfBranchRegex.fullName(), "master|develop|(release/.+)|(hotfix/.+)");
+
+        mockCurrentBranch("develop");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(loggerSpy).info("gitflow-incremental-builder is disabled for this branch.");
+        verifyNoInteractions(unchangedProjectsRemoverMock);
+    }
+
+    private void mockCurrentBranch(String branchName) throws IOException {
+        Git git = mock(Git.class);
+        Repository repository = mock(Repository.class);
+        doReturn(repository).when(git).getRepository();
+        doReturn(branchName).when(repository).getBranch();
+        
+        GitFactory.bind(git);
     }
 
     private void verifyHelpLogged(boolean logged) {

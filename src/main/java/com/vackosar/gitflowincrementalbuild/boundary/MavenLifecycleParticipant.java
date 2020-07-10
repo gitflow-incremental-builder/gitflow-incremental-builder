@@ -1,16 +1,20 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
+import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import java.io.IOException;
 
 @Singleton
 @Named
@@ -35,6 +39,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+        try {
+            applyPlugin(session);
+        } finally {
+            GitFactory.destroy();
+        }
+    }
+
+    private void applyPlugin(MavenSession session) throws MavenExecutionException {
 
         if (Configuration.isHelpRequested(session)) {
             logHelp();
@@ -53,8 +65,13 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             return;
         }
 
-        logger.info("gitflow-incremental-builder {} starting...", implVersion);
         try {
+            if (isDisabledForBranch(session)) {
+                logger.info("gitflow-incremental-builder is disabled for this branch.");
+                return;
+            }
+
+            logger.info("gitflow-incremental-builder {} starting...", implVersion);
             unchangedProjectsRemover.act();
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
@@ -66,6 +83,17 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             }
         }
         logger.info("gitflow-incremental-builder exiting...");
+    }
+
+    private boolean isDisabledForBranch(MavenSession session) throws IOException {
+        Configuration configuration = configProvider.get();
+        if (!configuration.disableIfBranchRegex.isPresent()) {
+            return false;
+        }
+        
+        Git git = GitFactory.getOrCreateThreadLocalGit(session, configuration);
+        String branchName = git.getRepository().getBranch();
+        return configuration.disableIfBranchRegex.get().test(branchName);
     }
 
     private void logHelp() {

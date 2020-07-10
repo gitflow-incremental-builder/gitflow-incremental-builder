@@ -1,12 +1,12 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
-
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,11 +27,12 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 public class Configuration {
+
+    public final Optional<Predicate<String>> disableIfBranchRegex;
 
     public final boolean disableBranchComparison;
     public final String referenceBranch;
@@ -61,6 +62,13 @@ public class Configuration {
     private Configuration(MavenSession session) {
         Properties projectProperties = getProjectProperties(session);
         checkProperties(projectProperties);
+
+        if (Property.Constants.NEVER_MATCH_REGEX.equals(Property.disableIfBranchRegex.getValue(projectProperties))) {
+            disableIfBranchRegex = Optional.empty();
+        } else {
+            Pattern regex = compilePattern(Property.disableIfBranchRegex, projectProperties);
+            disableIfBranchRegex = Optional.of(regex.asPredicate());
+        }
 
         // change detection config
 
