@@ -24,7 +24,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Configuration](#configuration)
   - [gib.help](#gibhelp)
   - [gib.enabled](#gibenabled)
-  - [gib.disabledIfBranchRegex](#gibdisabledIfBranchRegex)
+  - [gib.disableIfBranchRegex](#gibdisableifbranchregex)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.referenceBranch](#gibreferencebranch)
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
@@ -86,7 +86,7 @@ See [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272) and [issue 9
 ## Example
 
 Maven project `parent` has two submodules `child1` and `child2`:
-```
+```sh
 $ ls *
 pom.xml
 
@@ -318,7 +318,7 @@ Since: 3.9.0
 
 Can be used to disable this extension temporarily or permanently (e.g. to avoid clashes with IDE building strategy).
 
-### gib.disabledIfBranchRegex
+### gib.disableIfBranchRegex
 
 Can be used to disable this extension on certain branches (e.g. `master|develop`). By default, GIB runs on all branches.
 
