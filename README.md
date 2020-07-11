@@ -97,7 +97,7 @@ child2:
 pom.xml  src
 ```
 `parent` has gitflow-incremental-builder configured:
-```
+```sh
 $ cat pom.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -132,17 +132,17 @@ $ cat pom.xml
 </project>
 ```
 Currently checked out branch is `feature`. There is also a branch `develop`:
-```
+```sh
 $ git branch
   develop
 * feature
 ```
 Branches are the same now:
-```
+```sh
 $ git diff develop
 ```
 Thus incremental does not build and test anything (see [gib.buildAllIfNoChanges](#gibbuildallifnochanges) for an alternate mode):
-```
+```sh
 $ mvn test
 [INFO] Scanning for projects...
 [INFO] gitflow-incremental-builder starting...
@@ -189,7 +189,7 @@ $ mvn test
 [INFO] ------------------------------------------------------------------------
 ```
 Now a file is written and added to git control making branches different:
-```
+```sh
 $ echo "text" > child1/src/main/java/file1.txt
 $ git add child1/src/main/java/file1.txt
 $ git diff develop
@@ -205,7 +205,7 @@ The file will have its original line endings in your working directory.
 ```
 
 Thus incremental build builds and tests only child1:
-```
+```sh
 $ mvn test
 [INFO] Scanning for projects...
 [INFO] gitflow-incremental-builder starting...
