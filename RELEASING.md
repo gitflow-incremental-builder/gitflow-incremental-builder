@@ -12,23 +12,25 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
   - [GnuPG download](https://www.gnupg.org/download/])
 
   - Key is published
+
   - `settings.xml` contains something like:
-    ```xml
-	<profiles>
-      <profile>
-        <id>ossrh</id>
-        <properties>
-          <gpg.executable>C:\Program Files (x86)\GnuPG\bin\gpg.exe</gpg.executable>
-  	      <gpg.keyname>your-key-fingerprint</gpg.keyname>
-        </properties>
-      </profile>
-    </profiles>
-    ```
+      ```xml
+      <profiles>
+        <profile>
+          <id>ossrh</id>
+          <properties>
+            <gpg.executable>C:\Program Files (x86)\GnuPG\bin\gpg.exe</gpg.executable>
+            <gpg.keyname>your-key-fingerprint</gpg.keyname>
+          </properties>
+        </profile>
+      </profiles>
+      ```
 
 - **OSSRH** access
   - [OSSRH guide](https://central.sonatype.org/pages/ossrh-guide.html])
 
   - permissions have been granted (may require a ticket by the GIB owner or another collaborator)
+  
   - `settings.xml` contains something like:
     ```xml
 	<servers>
