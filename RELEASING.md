@@ -32,15 +32,15 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
   - permissions have been granted (may require a ticket by the GIB owner or another collaborator)
   
   - `settings.xml` contains something like:
-    ```xml
-	<servers>
-      <server>
-        <id>ossrh</id>
-        <username>your-OSSRH-Jira-username</username>
-        <password>your-OSSRH-Jira-password</password>
-      </server>
-    </servers>
-    ```
+      ```xml
+      <servers>
+        <server>
+          <id>ossrh</id>
+          <username>your-OSSRH-Jira-username</username>
+          <password>your-OSSRH-Jira-password</password>
+        </server>
+      </servers>
+      ```
 
 ## Perform a release
 
