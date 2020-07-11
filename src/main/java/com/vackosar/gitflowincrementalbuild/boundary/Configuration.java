@@ -43,8 +43,8 @@ public class Configuration {
     public final boolean compareToMergeBase;
     public final boolean uncommited;
     public final boolean untracked;
-    public final Predicate<String> excludePathRegex;
-    public final Predicate<String> includePathRegex;
+    public final Optional<Predicate<String>> excludePathRegex;
+    public final Optional<Predicate<String>> includePathRegex;
 
     public final boolean buildAll;
     public final boolean buildAllIfNoChanges;
@@ -63,12 +63,7 @@ public class Configuration {
         Properties projectProperties = getProjectProperties(session);
         checkProperties(projectProperties);
 
-        if (Property.Constants.NEVER_MATCH_REGEX.equals(Property.disableIfBranchRegex.getValue(projectProperties))) {
-            disableIfBranchRegex = Optional.empty();
-        } else {
-            Pattern regex = compilePattern(Property.disableIfBranchRegex, projectProperties);
-            disableIfBranchRegex = Optional.of(regex.asPredicate());
-        }
+        disableIfBranchRegex = compileOptionalPatternPredicate(Property.disableIfBranchRegex, projectProperties);
 
         // change detection config
 
@@ -81,8 +76,8 @@ public class Configuration {
         compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(projectProperties));
         uncommited = Boolean.valueOf(Property.uncommited.getValue(projectProperties));
         untracked = Boolean.valueOf(Property.untracked.getValue(projectProperties));
-        excludePathRegex = compilePattern(Property.excludePathRegex, projectProperties).asPredicate();
-        includePathRegex = compilePattern(Property.includePathRegex, projectProperties).asPredicate();
+        excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, projectProperties);
+        includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, projectProperties);
 
         // build config
 
@@ -217,8 +212,10 @@ public class Configuration {
         }
     }
 
-    private static Pattern compilePattern(Property property, Properties projectProperties) {
-        return compilePattern(property.getValue(projectProperties), property);
+    private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties projectProperties) {
+        return Optional.ofNullable(property.getValue(projectProperties))
+                .map(patternString -> compilePattern(patternString, property))
+                .map(Pattern::asPredicate);
     }
 
     public static enum BuildUpstreamMode {

@@ -3,7 +3,7 @@ package com.vackosar.gitflowincrementalbuild.control;
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
@@ -50,7 +50,6 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     @Override
     @AfterEach
     protected void after() throws Exception {
-        GitFactory.destroy();
         FS.DETECTED.setUserHome(jGitUserHomeBackup);
         super.after();
     }
@@ -77,13 +76,20 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
 
         DifferentFiles underTest = new DifferentFiles();
-        Whitebox.setInternalState(underTest, mavenSessionMock, new Configuration.Provider(mavenSessionMock), loggerSpy);
+        Configuration.Provider configProvider = new Configuration.Provider(mavenSessionMock);
+        GitProvider gitProvider = new GitProvider(mavenSessionMock, configProvider.get());
+        Whitebox.setInternalState(underTest, configProvider, gitProvider, loggerSpy);
 
         // isolate a possible native git invocation from the settings of the system the test is runing on
         underTest.putAdditionalNativeGitEnvironment("GIT_CONFIG_NOSYSTEM", "1");
         underTest.putAdditionalNativeGitEnvironment("HOME", userHome.toAbsolutePath().toString());
 
-        Set<Path> result = underTest.get();
+        Set<Path> result;
+        try {
+            result = underTest.get();
+        } finally {
+            gitProvider.close();
+        }
 
         assertNotNull(result, "Resulting set is unexpectedly null");
         return result;

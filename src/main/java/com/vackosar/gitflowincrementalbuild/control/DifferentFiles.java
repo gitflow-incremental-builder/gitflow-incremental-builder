@@ -2,9 +2,8 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
-import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -45,8 +44,8 @@ public class DifferentFiles {
 
     private Logger logger = LoggerFactory.getLogger(DifferentFiles.class);
 
-    @Inject private MavenSession mavenSession;
     @Inject private Configuration.Provider configProvider;
+    @Inject private GitProvider gitProvider;
 
     private final Map<String, String> additionalNativeGitEnvironment = new HashMap<>();
 
@@ -56,8 +55,7 @@ public class DifferentFiles {
         Configuration configuration = configProvider.get();
         Worker worker = null;
         try {
-            Git git = GitFactory.getOrCreateThreadLocalGit(mavenSession, configuration);
-            worker = new Worker(git, configuration);
+            worker = new Worker(gitProvider.get(), configuration);
 
             worker.fetch();
             worker.checkout();
@@ -220,9 +218,10 @@ public class DifferentFiles {
         }
 
         private boolean pathIncluded(Path path) {
-            boolean excluded = configuration.excludePathRegex.test(path.toString());
-            boolean included = !excluded && configuration.includePathRegex.test(path.toString());
-            logger.debug("included {}: {}", included, path);
+            final String pathString = path.toString();
+            boolean excluded = configuration.excludePathRegex.map(pred -> pred.test(pathString)).orElse(false);
+            boolean included = !excluded && configuration.includePathRegex.map(pred -> pred.test(pathString)).orElse(true);
+            logger.debug("included {}: {}", included, pathString);
             return included;
         }
     }

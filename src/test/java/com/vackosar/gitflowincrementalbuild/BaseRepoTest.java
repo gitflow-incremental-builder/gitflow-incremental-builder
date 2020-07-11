@@ -1,7 +1,6 @@
 package com.vackosar.gitflowincrementalbuild;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
 import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
@@ -76,7 +75,6 @@ public abstract class BaseRepoTest {
 
     @AfterEach
     protected void after() throws Exception {
-        GitFactory.destroy();
         if (localRepoMock != null) {
             localRepoMock.close();
         }
