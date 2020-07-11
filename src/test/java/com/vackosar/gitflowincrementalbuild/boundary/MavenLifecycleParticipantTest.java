@@ -2,7 +2,7 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.LoggerSpyUtil;
 import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -11,7 +11,6 @@ import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,6 +48,9 @@ public class MavenLifecycleParticipantTest {
     @Mock
     private UnchangedProjectsRemover unchangedProjectsRemoverMock;
 
+    @Mock
+    private GitProvider gitProviderMock;
+
     @InjectMocks
     private MavenLifecycleParticipant underTest = new MavenLifecycleParticipant(TEST_IMPL_VERSION);
 
@@ -66,11 +67,6 @@ public class MavenLifecycleParticipantTest {
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(mock(ProjectDependencyGraph.class));
 
         Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
-    }
-    
-    @AfterEach
-    void after() {
-        GitFactory.destroy();
     }
 
     @Test
@@ -190,10 +186,9 @@ public class MavenLifecycleParticipantTest {
     private void mockCurrentBranch(String branchName) throws IOException {
         Git git = mock(Git.class);
         Repository repository = mock(Repository.class);
-        doReturn(repository).when(git).getRepository();
-        doReturn(branchName).when(repository).getBranch();
-        
-        GitFactory.bind(git);
+        when(git.getRepository()).thenReturn(repository);
+        when(repository.getBranch()).thenReturn(branchName);
+        when(gitProviderMock.get()).thenReturn(git);
     }
 
     private void verifyHelpLogged(boolean logged) {

@@ -1,12 +1,11 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +14,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 @Singleton
 @Named
@@ -25,6 +25,8 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Inject private UnchangedProjectsRemover unchangedProjectsRemover;
 
     @Inject private Configuration.Provider configProvider;
+
+    @Inject private GitProvider gitProvider;
 
     private final String implVersion;
 
@@ -39,14 +41,6 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
-        try {
-            applyPlugin(session);
-        } finally {
-            GitFactory.destroy();
-        }
-    }
-
-    private void applyPlugin(MavenSession session) throws MavenExecutionException {
 
         if (Configuration.isHelpRequested(session)) {
             logHelp();
@@ -66,7 +60,16 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
 
         try {
-            if (isDisabledForBranch(session)) {
+            perform();
+        } finally {
+            gitProvider.close();
+        }
+    }
+
+    private void perform() throws MavenExecutionException {
+
+        try {
+            if (isDisabledForBranch()) {
                 logger.info("gitflow-incremental-builder is disabled for this branch.");
                 return;
             }
@@ -85,15 +88,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         logger.info("gitflow-incremental-builder exiting...");
     }
 
-    private boolean isDisabledForBranch(MavenSession session) throws IOException {
-        Configuration configuration = configProvider.get();
-        if (!configuration.disableIfBranchRegex.isPresent()) {
-            return false;
-        }
-        
-        Git git = GitFactory.getOrCreateThreadLocalGit(session, configuration);
-        String branchName = git.getRepository().getBranch();
-        return configuration.disableIfBranchRegex.get().test(branchName);
+    private boolean isDisabledForBranch() {
+        return configProvider.get().disableIfBranchRegex.map(predicate -> {
+            try {
+                return predicate.test(gitProvider.get().getRepository().getBranch());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).orElse(false);
     }
 
     private void logHelp() {

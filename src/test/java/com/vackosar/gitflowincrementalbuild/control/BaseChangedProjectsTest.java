@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,16 +47,26 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
     protected ChangedProjects underTest;
 
     private MavenSession mavenSessionMock;
+    private GitProvider gitProvider;
 
     public BaseChangedProjectsTest(boolean useSymLinkedFolder) {
         super(useSymLinkedFolder, /* remoteRepoServerType */ null);
     }
 
     @BeforeEach
-    void injectMavenSessionMock() throws Exception {
+    void injectMavenSessionMockAndGitProvider() throws Exception {
         mavenSessionMock = getMavenSessionMock();
-        Whitebox.setInternalState(differentFilesSpy, mavenSessionMock, new Configuration.Provider(mavenSessionMock));
+        Configuration.Provider configProvider = new Configuration.Provider(mavenSessionMock);
+        gitProvider = new GitProvider(mavenSessionMock, configProvider.get());
+        Whitebox.setInternalState(differentFilesSpy, configProvider, gitProvider);
         Whitebox.setInternalState(underTest, mavenSessionMock);
+    }
+
+    @AfterEach
+    void closeGitProvider() {
+        if (gitProvider != null) {
+            gitProvider.close();
+        }
     }
 
     @Test
