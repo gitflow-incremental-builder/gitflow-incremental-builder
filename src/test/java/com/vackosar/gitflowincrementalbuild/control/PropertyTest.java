@@ -40,21 +40,21 @@ public class PropertyTest {
 
     @Test
     public void getValue_unset() {
-        assertEquals("true", Property.enabled.getValue(new Properties()));
+        assertEquals("true", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     // fullName
 
     @Test
     public void getValue_fullName_properties() {
-        assertEquals("false", Property.enabled.getValue(propertiesWith(Property.enabled.fullName(), "false")));
+        assertEquals("false", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
     }
 
     @Test
     public void getValue_fullName_systemProperties() {
         System.setProperty(Property.enabled.fullName(), "false");
 
-        assertEquals("false", Property.enabled.getValue(new Properties()));
+        assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     @Test
@@ -62,49 +62,49 @@ public class PropertyTest {
         // need to use a property that is false per default
         System.setProperty(Property.buildAll.fullName(), "");
 
-        assertEquals("true", Property.buildAll.getValue(new Properties()));
+        assertEquals("true", Property.buildAll.getValue(new Properties(), new Properties()));
     }
 
     @Test
     public void getValue_fullName_systemProperties_emptyValueNotMapped() {
         System.setProperty(Property.referenceBranch.fullName(), "");
 
-        assertEquals("", Property.referenceBranch.getValue(new Properties()));
+        assertEquals("", Property.referenceBranch.getValue(new Properties(), new Properties()));
     }
 
     @Test
     public void getValue_fullName_systemProperties_override() {
         System.setProperty(Property.enabled.fullName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(propertiesWith(Property.enabled.fullName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
     }
 
     @Test
     public void getValue_fullName_systemProperties_override_shortName() {
         System.setProperty(Property.enabled.shortName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(propertiesWith(Property.enabled.fullName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
     }
 
     // shortName
 
     @Test
     public void getValue_shortName_properties() {
-        assertEquals("false", Property.enabled.getValue(propertiesWith(Property.enabled.shortName(), "false")));
+        assertEquals("false", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
     }
 
     @Test
     public void getValue_shortName_systemProperties() {
         System.setProperty(Property.enabled.shortName(), "false");
 
-        assertEquals("false", Property.enabled.getValue(new Properties()));
+        assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     @Test
     public void getValue_shortName_systemProperties_override() {
         System.setProperty(Property.enabled.shortName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(propertiesWith(Property.enabled.shortName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class PropertyTest {
         System.setProperty(Property.enabled.fullName(), "false");
         System.setProperty(Property.enabled.shortName(), "true");
 
-        assertEquals("false", Property.enabled.getValue(new Properties()));
+        assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     private static Properties propertiesWith(String propertyKey, String value) {

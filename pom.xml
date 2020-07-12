@@ -659,7 +659,7 @@
                         <executions>
                             <execution>
                                 <id>check-java-version-compatibility</id>
-                                <phase>test</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                    <goal>check</goal>
                                 </goals>

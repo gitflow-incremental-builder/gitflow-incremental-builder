@@ -11,8 +11,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
-
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -20,7 +18,9 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,13 +47,15 @@ public class ConfigurationTest {
     @Mock(lenient = true)
     private MavenSession mavenSessionMock;
 
+    @Mock(lenient = true)
+    private MavenProject mockTLProject;
+
     private final Properties projectProperties = new Properties();
 
     @BeforeEach
     void before() {
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
 
-        MavenProject mockTLProject = mock(MavenProject.class, withSettings().lenient());
         when(mockTLProject.getProperties()).thenReturn(projectProperties);
         when(mavenSessionMock.getTopLevelProject()).thenReturn(mockTLProject);
     }
@@ -357,5 +359,34 @@ public class ConfigurationTest {
 
         assertFalse(configuration.buildDownstream);
     }
-}
 
+    @Test
+    public void plugin_baseBranch() {
+        mockPluginConfig(Property.baseBranch.fullName(), "foo");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals("foo", configuration.baseBranch);
+    }
+
+    @Test
+    public void plugin_baseBranch_projectProperties() {
+        mockPluginConfig(Property.baseBranch.fullName(), "foo");
+        projectProperties.put(Property.baseBranch.fullName(), "bar");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals("foo", configuration.baseBranch);
+    }
+
+    private void mockPluginConfig(String propertyName, String value) {
+        Xpp3Dom childConfigMock = mock(Xpp3Dom.class);
+        when(childConfigMock.getName()).thenReturn(propertyName);
+        when(childConfigMock.getValue()).thenReturn(value);
+        Xpp3Dom configMock = mock(Xpp3Dom.class);
+        when(configMock.getChildren()).thenReturn(new Xpp3Dom[]{ childConfigMock });
+        Plugin pluginMock = mock(Plugin.class);
+        when(pluginMock.getConfiguration()).thenReturn(configMock);
+        when(mockTLProject.getPlugin(Configuration.PLUGIN_KEY)).thenReturn(pluginMock);
+    }
+}

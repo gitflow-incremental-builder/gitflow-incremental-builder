@@ -124,17 +124,17 @@ public enum Property {
     /**
      * This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead.
      */
-    @Parameter(defaultValue = "false", alias = "afum")
+    @Parameter(defaultValue = "", alias = "afum")
     argsForUpstreamModules("", "afum"),
     /**
      * Defines artifact ids of modules to build forcibly.
      */
-    @Parameter(defaultValue = "false", alias = "fbm")
+    @Parameter(defaultValue = "", alias = "fbm")
     forceBuildModules("", "fbm"),
     /**
      * Defines the packaging (e.g. jar) of modules that depend on changed modules but shall not be built.
      */
-    @Parameter(defaultValue = "false", alias = "edmpa")
+    @Parameter(defaultValue = "", alias = "edmpa")
     excludeDownstreamModulesPackagedAs("", "edmpa") {
         @Override
         public String deprecatedFullName() {
@@ -210,8 +210,8 @@ public enum Property {
         return allNames;
     }
 
-    public String getValue(Properties projectProperties) {
-        String value = Stream.of(System.getProperties(), projectProperties)
+    public String getValue(Properties pluginProperties, Properties projectProperties) {
+        String value = Stream.of(System.getProperties(), pluginProperties, projectProperties)
                 .flatMap(props -> allNames.stream()
                         .map(name -> getValue(name, props)))
                 .filter(Objects::nonNull)
@@ -222,8 +222,8 @@ public enum Property {
         return value;
     }
 
-    public Optional<String> getValueOpt(Properties projectProperties) {
-        final String value = getValue(projectProperties);
+    public Optional<String> getValueOpt(Properties pluginProperties, Properties projectProperties) {
+        final String value = getValue(pluginProperties, projectProperties);
         return value.isEmpty() ? Optional.empty() : Optional.of(value);
     }
 
