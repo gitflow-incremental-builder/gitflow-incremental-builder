@@ -42,11 +42,11 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
 
-        if (Configuration.isHelpRequested(session)) {
+        if (configProvider.get().help) {
             logHelp();
         }
 
-        if (!Configuration.isEnabled(session)) {
+        if (!configProvider.get().enabled) {
             logger.info("gitflow-incremental-builder is disabled.");
             return;
         }
@@ -55,7 +55,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         if (session.getProjectDependencyGraph() == null) {
             logger.warn("Execution of gitflow-incremental-builder is not supported in this environment: "
                     + "Current MavenSession does not provide a ProjectDependencyGraph. "
-                    + "Consider disabling gitflow-incremental-builder via property: " + Property.enabled.fullOrShortName());
+                    + "Consider disabling gitflow-incremental-builder via property '" + Property.enabled.name() + "'.");
             return;
         }
 

@@ -1,8 +1,12 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginContext;
+
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -32,6 +35,10 @@ import static java.util.stream.Collectors.toList;
 
 public class Configuration {
 
+    static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
+
+    public final boolean help;
+    public final boolean enabled;
     public final Optional<Predicate<String>> disableIfBranchRegex;
 
     public final boolean disableBranchComparison;
@@ -61,69 +68,93 @@ public class Configuration {
 
     private Configuration(MavenSession session) {
         Properties projectProperties = getProjectProperties(session);
-        checkProperties(projectProperties);
+        Properties pluginProperties = getPluginProperties(session);
 
-        disableIfBranchRegex = compileOptionalPatternPredicate(Property.disableIfBranchRegex, projectProperties);
+        help = Boolean.parseBoolean(Property.help.getValue(pluginProperties, projectProperties));
+        enabled = Boolean.parseBoolean(Property.enabled.getValue(pluginProperties, projectProperties));
+        if (!enabled) { // abort parsing any other config properties if not enabled at all
+            disableIfBranchRegex = null;
+
+            // change detection config
+
+            disableBranchComparison = false;
+            referenceBranch = null;
+            fetchReferenceBranch = false;
+            baseBranch = null;
+            fetchBaseBranch = false;
+            useJschAgentProxy = false;
+            compareToMergeBase = false;
+            uncommited = false;
+            untracked = false;
+            excludePathRegex = null;
+            includePathRegex = null;
+
+            // build config
+
+            buildAll = false;
+            buildAllIfNoChanges = false;
+            buildDownstream = false;
+            buildUpstreamMode = null;
+            skipTestsForUpstreamModules = false;
+
+            argsForUpstreamModules = null;
+
+            forceBuildModules = null;
+
+            excludeDownstreamModulesPackagedAs = null;
+
+            // error handling config
+
+            failOnMissingGitDir = false;
+            failOnError = false;
+            logImpactedTo = null;
+
+            return;
+        }
+
+        Property.checkProperties(pluginProperties, projectProperties);
+
+        disableIfBranchRegex = compileOptionalPatternPredicate(Property.disableIfBranchRegex, pluginProperties, projectProperties);
 
         // change detection config
 
-        disableBranchComparison = Boolean.valueOf(Property.disableBranchComparison.getValue(projectProperties));
-        referenceBranch = Property.referenceBranch.getValue(projectProperties);
-        fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue(projectProperties));
-        baseBranch = Property.baseBranch.getValue(projectProperties);
-        fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(projectProperties));
-        useJschAgentProxy = Boolean.valueOf(Property.useJschAgentProxy.getValue(projectProperties));
-        compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(projectProperties));
-        uncommited = Boolean.valueOf(Property.uncommited.getValue(projectProperties));
-        untracked = Boolean.valueOf(Property.untracked.getValue(projectProperties));
-        excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, projectProperties);
-        includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, projectProperties);
+        disableBranchComparison = Boolean.valueOf(Property.disableBranchComparison.getValue(pluginProperties, projectProperties));
+        referenceBranch = Property.referenceBranch.getValue(pluginProperties, projectProperties);
+        fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue(pluginProperties, projectProperties));
+        baseBranch = Property.baseBranch.getValue(pluginProperties, projectProperties);
+        fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(pluginProperties, projectProperties));
+        useJschAgentProxy = Boolean.valueOf(Property.useJschAgentProxy.getValue(pluginProperties, projectProperties));
+        compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
+        uncommited = Boolean.valueOf(Property.uncommited.getValue(pluginProperties, projectProperties));
+        untracked = Boolean.valueOf(Property.untracked.getValue(pluginProperties, projectProperties));
+        excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, pluginProperties, projectProperties);
+        includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, pluginProperties, projectProperties);
 
         // build config
 
-        buildAll = Boolean.valueOf(Property.buildAll.getValue(projectProperties));
-        buildAllIfNoChanges = Boolean.valueOf(Property.buildAllIfNoChanges.getValue(projectProperties));
-        buildDownstream = isBuildStreamActive(Property.buildDownstream, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
-        buildUpstreamMode = parseBuildUpstreamMode(session, projectProperties);
-        skipTestsForUpstreamModules = Boolean.valueOf(Property.skipTestsForUpstreamModules.getValue(projectProperties));
+        buildAll = Boolean.valueOf(Property.buildAll.getValue(pluginProperties, projectProperties));
+        buildAllIfNoChanges = Boolean.valueOf(Property.buildAllIfNoChanges.getValue(pluginProperties, projectProperties));
+        buildDownstream = isBuildStreamActive(
+                Property.buildDownstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
+        buildUpstreamMode = parseBuildUpstreamMode(session, pluginProperties, projectProperties);
+        skipTestsForUpstreamModules = Boolean.valueOf(Property.skipTestsForUpstreamModules.getValue(pluginProperties, projectProperties));
 
-        argsForUpstreamModules = parseDelimited(Property.argsForUpstreamModules.getValue(projectProperties), " ")
+        argsForUpstreamModules = parseDelimited(Property.argsForUpstreamModules.getValue(pluginProperties, projectProperties), " ")
                 .map(Configuration::keyValueStringToEntry)
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
 
-        forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(projectProperties), ",")
+        forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(pluginProperties, projectProperties), ",")
                 .map(str -> compilePattern(str, Property.forceBuildModules))
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
-        excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(projectProperties), ",")
+        excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(pluginProperties, projectProperties), ",")
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
         // error handling config
 
-        failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(projectProperties));
-        failOnError = Boolean.valueOf(Property.failOnError.getValue(projectProperties));
-        logImpactedTo = Optional.ofNullable(Property.logImpactedTo.getValue(projectProperties)).map(Paths::get);
-    }
-
-    /**
-     * Returns the value for {@link Property#enabled} without initializing all the other configuration fields to abort quickly without any additional overhead.
-     *
-     * @param session the current session
-     * @return whether or not GIB is enabled or not
-     */
-    public static boolean isEnabled(MavenSession session) {
-        return Boolean.valueOf(Property.enabled.getValue(getProjectProperties(session)));
-    }
-
-    /**
-     * Returns the value for {@link Property#help} without initializing all the other configuration fields (help can be requested even if
-     * {@link #isEnabled(MavenSession)} returns {@code false}).
-     *
-     * @param session the current session
-     * @return whether or not to print GIB help
-     */
-    public static boolean isHelpRequested(MavenSession session) {
-        return Boolean.valueOf(Property.help.getValue(getProjectProperties(session)));
+        failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(pluginProperties, projectProperties));
+        failOnError = Boolean.valueOf(Property.failOnError.getValue(pluginProperties, projectProperties));
+        logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
     }
 
     /**
@@ -142,35 +173,32 @@ public class Configuration {
         return session.getTopLevelProject().getProperties();
     }
 
-    private static void checkProperties(Properties projectProperties) {
-        Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .flatMap(p -> p.allNames().stream())
-                .collect(Collectors.toSet());
-        String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
-                .distinct()
-                .map(k -> (String) k)
-                .filter(k -> k.startsWith(Property.PREFIX) && !availablePropertyNames.contains(k))
-                .collect(Collectors.joining("\n\t"));
-        if (!invalidPropertyNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid GIB properties found:%n\t%s%nAllowed properties:%n%s", invalidPropertyNames, Property.exemplifyAll()));
+    private static Properties getPluginProperties(MavenSession session) {
+        Properties properties = new Properties();
+        Plugin plugin = session.getTopLevelProject().getPlugin(PLUGIN_KEY);
+        if (plugin != null) {
+            Arrays.stream(((Xpp3Dom) plugin.getConfiguration()).getChildren())
+                    .forEach(child -> properties.put(child.getName(), child.getValue()));
         }
+        return properties;
     }
 
-    private static BuildUpstreamMode parseBuildUpstreamMode(MavenSession session, Properties projectProperties) {
-        if (!isBuildStreamActive(Property.buildUpstream, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
+    private static BuildUpstreamMode parseBuildUpstreamMode(MavenSession session, Properties pluginProperties, Properties projectProperties) {
+        if (!isBuildStreamActive(Property.buildUpstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
             return BuildUpstreamMode.NONE;
         }
+        ValueWithOriginContext propertyValue = Property.buildUpstreamMode.getValueWithOriginContext(pluginProperties, projectProperties);
         try {
-            String propertyValue = Optional.ofNullable(Property.buildUpstreamMode.getValue(projectProperties)).orElse("");
-            return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
+            return BuildUpstreamMode.valueOf(propertyValue.value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullOrShortName() + " defines an invalid mode", e);
+            throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid mode: " + propertyValue, e);
         }
     }
 
-    private static boolean isBuildStreamActive(Property property, Properties projectProperties, MavenSession session, String expectedMakeBehavior) {
-        switch (property.getValue(projectProperties)) {
+    private static boolean isBuildStreamActive(Property property, Properties pluginProperties, Properties projectProperties, MavenSession session,
+            String expectedMakeBehavior) {
+        ValueWithOriginContext propertyValue = property.getValueWithOriginContext(pluginProperties, projectProperties);
+        switch (propertyValue.value) {
             case "derived":
                 return isMakeBehaviourActive(expectedMakeBehavior, session);
             case "always":
@@ -180,8 +208,7 @@ public class Configuration {
             case "false":
                 return false;
             default:
-                throw new IllegalArgumentException(
-                        "GIB property " + property.fullOrShortName() + " defines an invalid value: " + property.getValue(projectProperties));
+                throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid value: " + propertyValue);
         }
     }
 
@@ -208,12 +235,13 @@ public class Configuration {
         try {
             return Pattern.compile(patternString);
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("GIB property " + property.fullOrShortName() + " defines an invalid pattern string", e);
+            // just using prefixedName() because it is too laborious get ValueWithOriginContext here
+            throw new IllegalArgumentException("GIB property '" + property.prefixedName() + "' defines an invalid pattern string", e);
         }
     }
 
-    private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties projectProperties) {
-        return Optional.ofNullable(property.getValue(projectProperties))
+    private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties pluginProperties, Properties projectProperties) {
+        return property.getValueOpt(pluginProperties, projectProperties)
                 .map(patternString -> compilePattern(patternString, property))
                 .map(Pattern::asPredicate);
     }

@@ -43,7 +43,7 @@ public class ProcessUtils {
         // https://www.baeldung.com/run-shell-command-in-java#Output
         new Thread(() -> {
             new BufferedReader(new InputStreamReader(inStream, Charset.defaultCharset())).lines()
-                    .forEach(l -> outBuilder.append(l).append("\n"));
+                    .forEach(l -> outBuilder.append("> ").append(l).append("\n"));
         }).start();
         return outBuilder;
     }

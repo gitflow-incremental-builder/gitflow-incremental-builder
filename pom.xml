@@ -60,6 +60,7 @@
         <version.jgit>5.8.0.202006091008-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.3.9</version.maven-core>
+        <version.maven-plugin>3.6.0</version.maven-plugin>
         <version.slf4j>1.7.5</version.slf4j>    <!-- must match the version that is provided by maven -->
         <version.logback>1.1.3</version.logback>    <!-- the latest that appears to work properly with slf4j 1.7.5 -->
         <version.javax.inject>1</version.javax.inject>
@@ -73,6 +74,7 @@
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.5</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
+        <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.plexus-component-metadata>2.1.0</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
@@ -160,6 +162,12 @@
                     <artifactId>guice</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+            <version>${version.maven-plugin}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -258,6 +266,26 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${version.jacoco-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${version.maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>${version.maven-replacer-plugin}</version>
+                    <dependencies>
+                        <!-- Saxon for XPath 2.0 support -->
+                        <dependency>
+                            <groupId>net.sf.saxon</groupId>
+                            <artifactId>Saxon-HE</artifactId>
+                            <!-- This really old version 9.5 is the last version providing automatic discovery via XPathFactory,
+                                 see also: https://www.saxonica.com/html/documentation/xpath-api/jaxp-xpath/factory.html -->
+                            <version>9.5.1-8</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
@@ -434,6 +462,65 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <configuration>
+                    <packagingTypes>
+                        <packagingType>jar</packagingType>
+                    </packagingTypes>
+                    <extractors>
+                        <extractor>java-annotations</extractor>
+                    </extractors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>plugin-descriptor</id>
+                        <goals>
+                            <goal>descriptor</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <!-- replace in plugin.xml com.vackosar.gitflowincrementalbuild.control.Property types with java.lang.String or boolean -->
+                    <execution>
+                        <id>modify-plugin-xml</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.outputDirectory}/META-INF/maven/plugin.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/configuration/*/@implementation</xpath>
+                                    <token>^.*$</token>
+                                    <value>java.lang.String</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
+                                    <token>^.*$</token>
+                                    <value>boolean</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/parameters/parameter/type/text()</xpath>
+                                    <token>^.*$</token>
+                                    <value>java.lang.String</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
+                                    <token>^.*$</token>
+                                    <value>boolean</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <executions>
@@ -467,7 +554,7 @@
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.84</minimum>
+                                            <minimum>0.85</minimum>
                                         </limit>
                                         <limit>
                                             <counter>CLASS</counter>
@@ -572,7 +659,7 @@
                         <executions>
                             <execution>
                                 <id>check-java-version-compatibility</id>
-                                <phase>test</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                    <goal>check</goal>
                                 </goals>

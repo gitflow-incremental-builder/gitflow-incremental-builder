@@ -67,10 +67,10 @@ public abstract class BaseRepoTest {
     }
 
     private void init() {
-        projectProperties.setProperty(Property.uncommited.fullName(), "false");
-        projectProperties.setProperty(Property.untracked.fullName(), "false");
-        projectProperties.setProperty(Property.referenceBranch.fullName(), "refs/heads/develop");
-        projectProperties.setProperty(Property.compareToMergeBase.fullName(), "false");
+        projectProperties.setProperty(Property.uncommited.prefixedName(), "false");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "false");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "refs/heads/develop");
+        projectProperties.setProperty(Property.compareToMergeBase.prefixedName(), "false");
     }
 
     @AfterEach
