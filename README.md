@@ -30,7 +30,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
   - [gib.baseBranch](#gibbasebranch)
   - [gib.fetchBaseBranch](#gibfetchbasebranch)
-  - [gib.useJschAgentProxy](#gibuseJschAgentProxy)
+  - [gib.useJschAgentProxy](#gibusejschagentproxy)
+  - [gib.compareToMergeBase](#gibcomparetomergebase)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
@@ -44,6 +45,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
+  - [gib.failOnMissingGitDir](#failonmissinggitdir)
+  - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
@@ -375,6 +378,10 @@ See also: [SSH](#ssh) in the [Authentication](#authentication) section
 
 Since: 3.9.1
 
+### gib.compareToMergeBase
+
+Controls whether or not to the merge-base mechanism to compare the branches. See also: https://git-scm.com/docs/git-merge-base
+
 ### gib.uncommited
 
 Detects changed files that have not yet been committed. This does **not** include _untracked_ files (see `git status` manual).
@@ -512,6 +519,14 @@ In this scenario, by defining `-Dgib.excludeDownstreamModulesPackagedAs=jar,pom`
 deployment modules will be built.
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+
+### gib.failOnMissingGitDir
+
+Controls whether or not to fail on missing `.git` directory.
+
+### gib.failOnError
+
+Controls whether or not to fail on any error.
 
 ### gib.logImpactedTo
 

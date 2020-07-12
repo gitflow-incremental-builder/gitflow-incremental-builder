@@ -102,7 +102,7 @@ public class Configuration {
 
         failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(projectProperties));
         failOnError = Boolean.valueOf(Property.failOnError.getValue(projectProperties));
-        logImpactedTo = Optional.ofNullable(Property.logImpactedTo.getValue(projectProperties)).map(Paths::get);
+        logImpactedTo = Property.logImpactedTo.getValueOpt(projectProperties).map(Paths::get);
     }
 
     /**
@@ -213,7 +213,7 @@ public class Configuration {
     }
 
     private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties projectProperties) {
-        return Optional.ofNullable(property.getValue(projectProperties))
+        return property.getValueOpt(projectProperties)
                 .map(patternString -> compilePattern(patternString, property))
                 .map(Pattern::asPredicate);
     }
