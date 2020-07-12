@@ -74,6 +74,7 @@
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.5</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
+        <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.plexus-component-metadata>2.1.0</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.1.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
@@ -267,6 +268,26 @@
                     <version>${version.jacoco-maven-plugin}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${version.maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>${version.maven-replacer-plugin}</version>
+                    <dependencies>
+                        <!-- Saxon for XPath 2.0 support -->
+                        <dependency>
+                            <groupId>net.sf.saxon</groupId>
+                            <artifactId>Saxon-HE</artifactId>
+                            <!-- This really old version 9.5 is the last version providing automatic discovery via XPathFactory,
+                                 see also: https://www.saxonica.com/html/documentation/xpath-api/jaxp-xpath/factory.html -->
+                            <version>9.5.1-8</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-component-metadata</artifactId>
                     <version>${version.plexus-component-metadata}</version>
@@ -443,7 +464,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>${version.maven-plugin}</version>
                 <configuration>
                     <packagingTypes>
                         <packagingType>jar</packagingType>
@@ -458,6 +478,45 @@
                         <goals>
                             <goal>descriptor</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <!-- replace in plugin.xml com.vackosar.gitflowincrementalbuild.control.Property types with java.lang.String or boolean -->
+                    <execution>
+                        <id>modify-plugin-xml</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.outputDirectory}/META-INF/maven/plugin.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/configuration/*/@implementation</xpath>
+                                    <token>^.*$</token>
+                                    <value>java.lang.String</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
+                                    <token>^.*$</token>
+                                    <value>boolean</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/parameters/parameter/type/text()</xpath>
+                                    <token>^.*$</token>
+                                    <value>java.lang.String</value>
+                                </replacement>
+                                <replacement>
+                                    <xpath>/plugin/mojos/mojo/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
+                                    <token>^.*$</token>
+                                    <value>boolean</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
