@@ -139,8 +139,8 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     }
 
     protected void addGibProperty(Property property, String value) {
-        gibProperties.put(property.fullName(), value);
-        allModuleMocks.forEach(mod -> mod.getProperties().put(property.fullName(), value));
+        gibProperties.put(property.prefixedName(), value);
+        allModuleMocks.forEach(mod -> mod.getProperties().put(property.prefixedName(), value));
     }
 
     /**

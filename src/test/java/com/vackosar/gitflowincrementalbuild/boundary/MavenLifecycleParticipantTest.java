@@ -80,7 +80,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabled() throws Exception {
-        projectProperties.setProperty(Property.enabled.fullName(), "false");
+        projectProperties.setProperty(Property.enabled.prefixedName(), "false");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -91,8 +91,8 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabled_helpRequested() throws Exception {
-        projectProperties.setProperty(Property.enabled.fullName(), "false");
-        projectProperties.setProperty(Property.help.fullName(), "true");
+        projectProperties.setProperty(Property.enabled.prefixedName(), "false");
+        projectProperties.setProperty(Property.help.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -102,7 +102,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void helpRequested() throws Exception {
-        projectProperties.setProperty(Property.help.fullName(), "true");
+        projectProperties.setProperty(Property.help.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -129,7 +129,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void onRuntimeException_failOnErrorFalse() throws Exception {
-        projectProperties.setProperty(Property.failOnError.fullName(), "false");
+        projectProperties.setProperty(Property.failOnError.prefixedName(), "false");
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
         doThrow(runtimeException).when(unchangedProjectsRemoverMock).act();
 
@@ -162,7 +162,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void enabledForBranch() throws Throwable {
-        projectProperties.setProperty(Property.disableIfBranchRegex.fullName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchRegex.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
 
@@ -173,7 +173,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabledForBranch() throws Throwable {
-        projectProperties.setProperty(Property.disableIfBranchRegex.fullName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchRegex.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
 

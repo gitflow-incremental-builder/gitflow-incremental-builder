@@ -1,6 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginContext;
+
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
@@ -142,7 +144,7 @@ public class Configuration {
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
 
         forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(pluginProperties, projectProperties), ",")
-                .map(str -> compilePattern(str, Property.forceBuildModules, !pluginProperties.isEmpty()))
+                .map(str -> compilePattern(str, Property.forceBuildModules))
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
         excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(pluginProperties, projectProperties), ",")
@@ -185,20 +187,18 @@ public class Configuration {
         if (!isBuildStreamActive(Property.buildUpstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
             return BuildUpstreamMode.NONE;
         }
-        String propertyValue = Property.buildUpstreamMode.getValue(pluginProperties, projectProperties);
+        ValueWithOriginContext propertyValue = Property.buildUpstreamMode.getValueWithOriginContext(pluginProperties, projectProperties);
         try {
-            return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
+            return BuildUpstreamMode.valueOf(propertyValue.value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "GIB property '" + Property.buildUpstreamMode.getSuitableName(!pluginProperties.isEmpty()) + "' defines an invalid mode: "
-                    + propertyValue, e);
+            throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid mode: " + propertyValue, e);
         }
     }
 
     private static boolean isBuildStreamActive(Property property, Properties pluginProperties, Properties projectProperties, MavenSession session,
             String expectedMakeBehavior) {
-        String propertyValue = property.getValue(pluginProperties, projectProperties);
-        switch (propertyValue) {
+        ValueWithOriginContext propertyValue = property.getValueWithOriginContext(pluginProperties, projectProperties);
+        switch (propertyValue.value) {
             case "derived":
                 return isMakeBehaviourActive(expectedMakeBehavior, session);
             case "always":
@@ -208,8 +208,7 @@ public class Configuration {
             case "false":
                 return false;
             default:
-                throw new IllegalArgumentException(
-                        "GIB property '" + property.getSuitableName(!pluginProperties.isEmpty()) + "' defines an invalid value: " + propertyValue);
+                throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid value: " + propertyValue);
         }
     }
 
@@ -232,18 +231,18 @@ public class Configuration {
         return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new);
     }
 
-    private static Pattern compilePattern(String patternString, Property property, boolean pluginPropertiesPresent) {
+    private static Pattern compilePattern(String patternString, Property property) {
         try {
             return Pattern.compile(patternString);
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException(
-                    "GIB property '" + property.getSuitableName(pluginPropertiesPresent) + "' defines an invalid pattern string", e);
+            // just using prefixedName() because it is too laborious get ValueWithOriginContext here
+            throw new IllegalArgumentException("GIB property '" + property.prefixedName() + "' defines an invalid pattern string", e);
         }
     }
 
     private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties pluginProperties, Properties projectProperties) {
         return property.getValueOpt(pluginProperties, projectProperties)
-                .map(patternString -> compilePattern(patternString, property, !pluginProperties.isEmpty()))
+                .map(patternString -> compilePattern(patternString, property))
                 .map(Pattern::asPredicate);
     }
 

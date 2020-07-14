@@ -342,7 +342,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private static String prop(Property property, String value) {
-        String propString =  "-D" + property.fullName();
+        String propString =  "-D" + property.prefixedName();
         if (value != null && !value.isEmpty()) {
             propString += "=" + value;
         }

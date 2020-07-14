@@ -28,13 +28,13 @@ public class PropertyTest {
     @Test
     public void uniqueShortNames() {
         Map<String, List<Property>> byShortName = Arrays.stream(Property.values())
-                .collect(Collectors.groupingBy(Property::shortName));
+                .collect(Collectors.groupingBy(Property::prefixedShortName));
         String nonUniquesString = byShortName.entrySet().stream()
                 .filter(e -> e.getValue().size() > 1)
                 .map(Object::toString)
                 .collect(Collectors.joining("\n\t"));
         if (!nonUniquesString.isEmpty()) {
-            fail("Property.shortName clashed found:\n\t" + nonUniquesString);
+            fail("Property.prefixedShortName clashes found:\n\t" + nonUniquesString);
         }
     }
 
@@ -43,75 +43,75 @@ public class PropertyTest {
         assertEquals("true", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
-    // fullName
+    // prefixedName
 
     @Test
-    public void getValue_fullName_properties() {
-        assertEquals("false", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
+    public void getValue_prefixedName_properties() {
+        assertEquals("false", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.prefixedName(), "false")));
     }
 
     @Test
-    public void getValue_fullName_systemProperties() {
-        System.setProperty(Property.enabled.fullName(), "false");
+    public void getValue_prefixedName_systemProperties() {
+        System.setProperty(Property.enabled.prefixedName(), "false");
 
         assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     @Test
-    public void getValue_fullName_systemProperties_emptyValueMapsToTrue() {
+    public void getValue_prefixedName_systemProperties_emptyValueMapsToTrue() {
         // need to use a property that is false per default
-        System.setProperty(Property.buildAll.fullName(), "");
+        System.setProperty(Property.buildAll.prefixedName(), "");
 
         assertEquals("true", Property.buildAll.getValue(new Properties(), new Properties()));
     }
 
     @Test
-    public void getValue_fullName_systemProperties_emptyValueNotMapped() {
-        System.setProperty(Property.referenceBranch.fullName(), "");
+    public void getValue_prefixedName_systemProperties_emptyValueNotMapped() {
+        System.setProperty(Property.referenceBranch.prefixedName(), "");
 
         assertEquals("", Property.referenceBranch.getValue(new Properties(), new Properties()));
     }
 
     @Test
-    public void getValue_fullName_systemProperties_override() {
-        System.setProperty(Property.enabled.fullName(), "true");
+    public void getValue_prefixedName_systemProperties_override() {
+        System.setProperty(Property.enabled.prefixedName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.prefixedName(), "false")));
     }
 
     @Test
-    public void getValue_fullName_systemProperties_override_shortName() {
-        System.setProperty(Property.enabled.shortName(), "true");
+    public void getValue_prefixedName_systemProperties_override_prefixedShortName() {
+        System.setProperty(Property.enabled.prefixedShortName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.fullName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.prefixedName(), "false")));
     }
 
-    // shortName
+    // prefixedShortName
 
     @Test
-    public void getValue_shortName_properties() {
+    public void getValue_prefixedShortName_properties() {
         // short name will only be resolved from system properties!
-        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.prefixedShortName(), "false")));
     }
 
     @Test
-    public void getValue_shortName_systemProperties() {
-        System.setProperty(Property.enabled.shortName(), "false");
+    public void getValue_prefixedShortName_systemProperties() {
+        System.setProperty(Property.enabled.prefixedShortName(), "false");
 
         assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }
 
     @Test
-    public void getValue_shortName_systemProperties_override() {
-        System.setProperty(Property.enabled.shortName(), "true");
+    public void getValue_prefixedShortName_systemProperties_override() {
+        System.setProperty(Property.enabled.prefixedShortName(), "true");
 
-        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.prefixedShortName(), "false")));
     }
 
     @Test
-    public void getValue_shortName_systemProperties_override_fullNameWins() {
-        System.setProperty(Property.enabled.fullName(), "false");
-        System.setProperty(Property.enabled.shortName(), "true");
+    public void getValue_prefixedShortName_systemProperties_override_prefixedNameWins() {
+        System.setProperty(Property.enabled.prefixedName(), "false");
+        System.setProperty(Property.enabled.prefixedShortName(), "true");
 
         assertEquals("false", Property.enabled.getValue(new Properties(), new Properties()));
     }

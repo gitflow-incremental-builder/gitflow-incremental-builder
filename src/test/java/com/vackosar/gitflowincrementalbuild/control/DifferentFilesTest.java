@@ -46,7 +46,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.fullName(), "true");
+        projectProperties.setProperty(Property.uncommited.prefixedName(), "true");
 
         assertTrue(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -54,7 +54,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted_disabled() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.fullName(), "false");
+        projectProperties.setProperty(Property.uncommited.prefixedName(), "false");
 
         assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -62,8 +62,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted_excluded() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.fullName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
+        projectProperties.setProperty(Property.uncommited.prefixedName(), "true");
+        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
 
         assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -71,7 +71,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUntracked() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
-        projectProperties.setProperty(Property.untracked.fullName(), "true");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
 
         assertTrue(invokeUnderTest().contains(newFilePath));
     }
@@ -79,7 +79,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUntracked_disabled() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
-        projectProperties.setProperty(Property.untracked.fullName(), "false");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "false");
 
         assertFalse(invokeUnderTest().contains(newFilePath));
     }
@@ -87,8 +87,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUntracked_excluded() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
-        projectProperties.setProperty(Property.untracked.fullName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
 
         assertFalse(invokeUnderTest().contains(newFilePath));
     }
@@ -96,8 +96,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithCheckout() throws Exception {
         localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        projectProperties.setProperty(Property.baseBranch.fullName(), "refs/heads/feature/2");
-        projectProperties.setProperty(Property.baseBranch.fullName(), "refs/heads/feature/2");
+        projectProperties.setProperty(Property.baseBranch.prefixedName(), "refs/heads/feature/2");
+        projectProperties.setProperty(Property.baseBranch.prefixedName(), "refs/heads/feature/2");
 
         invokeUnderTest();
 
@@ -119,7 +119,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listExcluding() throws Exception {
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), ".*file2.*");
+        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child3/src/resources/file1"),
                 Paths.get(repoPath + "/parent/child4/pom.xml"),
@@ -131,7 +131,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listIncluding() throws Exception {
-        projectProperties.setProperty(Property.includePathRegex.fullName(), ".*file2.*");
+        projectProperties.setProperty(Property.includePathRegex.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22")
@@ -142,8 +142,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listIncludingAndExcluding() throws Exception {
-        projectProperties.setProperty(Property.includePathRegex.fullName(), ".*file2.*");
-        projectProperties.setProperty(Property.excludePathRegex.fullName(), ".*file22.*");
+        projectProperties.setProperty(Property.includePathRegex.prefixedName(), ".*file2.*");
+        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), ".*file22.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2")
                 ));
@@ -153,7 +153,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listWithDisabledBranchComparison() throws Exception {
-        projectProperties.setProperty(Property.disableBranchComparison.fullName(), "true");
+        projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
 
         assertEquals(Collections.emptySet(), invokeUnderTest());
     }
@@ -177,8 +177,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
         localRepoMock.getGit().checkout().setName(REFS_HEADS_FEATURE_2).call();
         localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        projectProperties.setProperty(Property.baseBranch.fullName(), REFS_HEADS_FEATURE_2);
-        projectProperties.setProperty(Property.compareToMergeBase.fullName(), "true");
+        projectProperties.setProperty(Property.baseBranch.prefixedName(), REFS_HEADS_FEATURE_2);
+        projectProperties.setProperty(Property.compareToMergeBase.prefixedName(), "true");
 
         assertTrue(invokeUnderTest().stream().anyMatch(repoPath.resolve("parent/feature2-only-file.txt")::equals));
 
@@ -188,8 +188,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void fetch() throws Exception {
         addCommitToRemoteRepo(FETCH_FILE);
-        projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
-        projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
+        projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), REMOTE_DEVELOP);
 
         invokeUnderTest();
 
@@ -205,8 +205,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Git localGit = localRepoMock.getGit();
         localGit.branchDelete().setBranchNames(DEVELOP).call();
         localGit.branchDelete().setBranchNames(REMOTE_DEVELOP).call();
-        projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
-        projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
+        projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), REMOTE_DEVELOP);
 
         invokeUnderTest();
 

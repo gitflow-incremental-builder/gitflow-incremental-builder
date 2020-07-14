@@ -200,26 +200,21 @@ public enum Property {
 
     private String exemplify() {
         return String.format(
-                "%-85s", "<" + prefixedName + ">" + defaultValue + "</" + prefixedName + ">") + " <!-- or <" + prefixedShortName + ">... -->";
+                "%-85s<!-- or -D%-13s -->", "<" + prefixedName + ">" + defaultValue + "</" + prefixedName + ">", prefixedShortName + "=...");
     }
 
     /**
      * @return the {@value #PREFIX}-prefixed full name.
      */
-    public String fullName() {
+    public String prefixedName() {
         return prefixedName;
     }
 
     /**
      * @return the {@value #PREFIX}-prefixed short name.
      */
-    public String shortName() {
+    public String prefixedShortName() {
         return prefixedShortName;
-    }
-
-    // only for descriptive output
-    public String getSuitableName(boolean pluginConfigPresent) {
-        return pluginConfigPresent ? name() : prefixedName;
     }
 
     /**
@@ -237,17 +232,21 @@ public enum Property {
         return Optional.ofNullable(deprecatedName()).map(PREFIX::concat).orElse(null);
     }
 
+    public ValueWithOriginContext getValueWithOriginContext(Properties pluginProperties, Properties projectProperties) {
+        Optional<ValueWithOriginContext> valueWithName = getValueWithOriginContext(nameCandidatesForSystemProperties, System.getProperties(), "system");
+        if (!valueWithName.isPresent()) {
+            valueWithName = getValueWithOriginContext(nameCandidatesForPluginProperties, pluginProperties, "plugin");
+        }
+        if (!valueWithName.isPresent()) {
+            valueWithName = getValueWithOriginContext(nameCandidatesForProjectProperties, projectProperties, "project");
+        }
+        ValueWithOriginContext finalValueWithOriginContext = valueWithName.orElseGet(() -> new ValueWithOriginContext(defaultValue, name(), "default"));
+        LOGGER.debug("{}", finalValueWithOriginContext);
+        return finalValueWithOriginContext;
+    }
+
     public String getValue(Properties pluginProperties, Properties projectProperties) {
-        Optional<String> value = getValue(System.getProperties(), nameCandidatesForSystemProperties);
-        if (!value.isPresent()) {
-            value = getValue(pluginProperties, nameCandidatesForPluginProperties);
-        }
-        if (!value.isPresent()) {
-            value = getValue(projectProperties, nameCandidatesForProjectProperties);
-        }
-        String finalValue = value.orElse(defaultValue);
-        LOGGER.debug("{}={}", name(), value);
-        return finalValue;
+        return getValueWithOriginContext(pluginProperties, projectProperties).value;
     }
 
     public Optional<String> getValueOpt(Properties pluginProperties, Properties projectProperties) {
@@ -255,27 +254,28 @@ public enum Property {
         return value.isEmpty() ? Optional.empty() : Optional.of(value);
     }
 
-    private Optional<String> getValue(Properties properties, List<String> nameCandidates) {
+    private Optional<ValueWithOriginContext> getValueWithOriginContext(List<String> nameCandidates, Properties properties, String propertiesDesc) {
         return nameCandidates.stream()
-                .map(nameCandidate -> getValue(nameCandidate, properties))
+                .map(nameCandidate -> getValueWithOriginContext(nameCandidate, properties, propertiesDesc))
                 .filter(Objects::nonNull)
                 .findFirst();
     }
 
-    private String getValue(String name, Properties properties) {
+    private ValueWithOriginContext getValueWithOriginContext(String name, Properties properties, String propertiesDesc) {
         String value = properties.getProperty(name);
-        if (value != null) {
-            boolean prefixed = name.startsWith(PREFIX);
-            String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName();
-            if (name.equals(deprecatedName)) {
-                LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
-                        deprecatedName, prefixed ? prefixedName : name());
-            }
-            if (mapEmptyValueToTrue && value.isEmpty()) {
-                value = "true";
-            }
+        if (value == null) {
+            return null;
         }
-        return value;
+        boolean prefixed = name.startsWith(PREFIX);
+        String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName();
+        if (name.equals(deprecatedName)) {
+            LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
+                    deprecatedName, prefixed ? prefixedName : name());
+        }
+        if (mapEmptyValueToTrue && value.isEmpty()) {
+            value = "true";
+        }
+        return new ValueWithOriginContext(value, name, propertiesDesc);
     }
 
     public static void checkProperties(Properties pluginProperties, Properties projectProperties) {
@@ -321,5 +321,22 @@ public enum Property {
         }
         builder.append("</properties>\n");
         return builder.toString();
+    }
+
+    public static class ValueWithOriginContext {
+        public final String value;
+        public final String originName;
+        public final String originProperties;
+
+        protected ValueWithOriginContext(String value, String originName, String originProperties) {
+            this.value = value;
+            this.originName = originName;
+            this.originProperties = originProperties;
+        }
+
+        @Override
+        public String toString() {
+            return "From " + originProperties + ": " + originName + "=" + value;
+        }
     }
 }
