@@ -42,11 +42,11 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
 
-        if (Configuration.isHelpRequested(session)) {
+        if (configProvider.get().help) {
             logHelp();
         }
 
-        if (!Configuration.isEnabled(session)) {
+        if (!configProvider.get().enabled) {
             logger.info("gitflow-incremental-builder is disabled.");
             return;
         }

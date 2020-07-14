@@ -90,7 +90,8 @@ public class PropertyTest {
 
     @Test
     public void getValue_shortName_properties() {
-        assertEquals("false", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
+        // short name will only be resolved from system properties!
+        assertEquals("true", Property.enabled.getValue(new Properties(), propertiesWith(Property.enabled.shortName(), "false")));
     }
 
     @Test

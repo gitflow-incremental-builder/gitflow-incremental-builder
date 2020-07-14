@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -74,14 +75,20 @@ public class ConfigurationTest {
     public void enabled() {
         System.setProperty(Property.enabled.fullName(), "false");
 
-        assertFalse(Configuration.isEnabled(mavenSessionMock));
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.enabled);
+        assertNull(configuration.disableIfBranchRegex);
     }
 
     @Test
     public void enabled_projectProperties() {
         projectProperties.put(Property.enabled.fullName(), "false");
 
-        assertFalse(Configuration.isEnabled(mavenSessionMock));
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.enabled);
+        assertNull(configuration.disableIfBranchRegex);
     }
 
     @Test
@@ -89,7 +96,10 @@ public class ConfigurationTest {
         projectProperties.put(Property.enabled.fullName(), "true");
         System.setProperty(Property.enabled.fullName(), "false");
 
-        assertFalse(Configuration.isEnabled(mavenSessionMock));
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertFalse(configuration.enabled);
+        assertNull(configuration.disableIfBranchRegex);
     }
 
     @Test
@@ -113,7 +123,7 @@ public class ConfigurationTest {
     // deprecated old name of excludeDownstreamModulesPackagedAs
     @Test
     public void excludeTransitiveModulesPackagedAs() {
-        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedName(), "ear,war");
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedPrefixedName(), "ear,war");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
@@ -362,7 +372,7 @@ public class ConfigurationTest {
 
     @Test
     public void plugin_baseBranch() {
-        mockPluginConfig(Property.baseBranch.fullName(), "foo");
+        mockPluginConfig(Property.baseBranch.name(), "foo");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 
@@ -371,7 +381,7 @@ public class ConfigurationTest {
 
     @Test
     public void plugin_baseBranch_projectProperties() {
-        mockPluginConfig(Property.baseBranch.fullName(), "foo");
+        mockPluginConfig(Property.baseBranch.name(), "foo");
         projectProperties.put(Property.baseBranch.fullName(), "bar");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();

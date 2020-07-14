@@ -6,9 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * GIB configuration properties. This is exposed as a "fake" plugin mojo/goal to generate a plugin descriptor which is picked up by maven-help-plugin and IDEs
@@ -162,6 +168,10 @@ public enum Property {
     private final String prefixedName;
     private final String prefixedShortName;
 
+    private final List<String> nameCandidatesForSystemProperties;
+    private final List<String> nameCandidatesForPluginProperties;
+    private final List<String> nameCandidatesForProjectProperties;
+
     private final String defaultValue;
 
     private final boolean mapEmptyValueToTrue;
@@ -174,6 +184,17 @@ public enum Property {
         this.prefixedName = PREFIX + name();
         this.defaultValue = Objects.requireNonNull(defaultValue);
         this.prefixedShortName = PREFIX + unprefixedShortName;
+
+        this.nameCandidatesForSystemProperties = Stream.of(prefixedName, prefixedShortName, deprecatedPrefixedName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.nameCandidatesForPluginProperties = Stream.of(name(), deprecatedName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.nameCandidatesForProjectProperties = Stream.of(prefixedName, deprecatedPrefixedName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+
         this.mapEmptyValueToTrue = mapNoValueToTrue;
     }
 
@@ -198,7 +219,7 @@ public enum Property {
 
     // only for descriptive output
     public String getSuitableName(boolean pluginConfigPresent) {
-        return pluginConfigPresent ? name() : prefixedName + " (or " + prefixedShortName + ")";
+        return pluginConfigPresent ? name() : prefixedName;
     }
 
     /**
@@ -217,12 +238,12 @@ public enum Property {
     }
 
     public String getValue(Properties pluginProperties, Properties projectProperties) {
-        Optional<String> value = getValue(System.getProperties(), prefixedName, prefixedShortName, deprecatedPrefixedName());
+        Optional<String> value = getValue(System.getProperties(), nameCandidatesForSystemProperties);
         if (!value.isPresent()) {
-            value = getValue(pluginProperties, name(), deprecatedName());
+            value = getValue(pluginProperties, nameCandidatesForPluginProperties);
         }
         if (!value.isPresent()) {
-            value = getValue(projectProperties, prefixedName, deprecatedPrefixedName());
+            value = getValue(projectProperties, nameCandidatesForProjectProperties);
         }
         String finalValue = value.orElse(defaultValue);
         LOGGER.debug("{}={}", name(), value);
@@ -234,8 +255,8 @@ public enum Property {
         return value.isEmpty() ? Optional.empty() : Optional.of(value);
     }
 
-    private Optional<String> getValue(Properties properties, String... nameCandidates) {
-        return Arrays.stream(nameCandidates)
+    private Optional<String> getValue(Properties properties, List<String> nameCandidates) {
+        return nameCandidates.stream()
                 .map(nameCandidate -> getValue(nameCandidate, properties))
                 .filter(Objects::nonNull)
                 .findFirst();
@@ -257,19 +278,39 @@ public enum Property {
         return value;
     }
 
-    public static void checkProperties(Properties projectProperties) {
-        Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .flatMap(p -> p.allNames().stream())
-                .collect(Collectors.toSet());
-        String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
-                .distinct()
-                .map(k -> (String) k)
-                .filter(k -> k.startsWith(Property.PREFIX) && !availablePropertyNames.contains(k))
-                .collect(Collectors.joining("\n\t"));
-        if (!invalidPropertyNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid GIB properties found:%n\t%s%nAllowed properties:%n%s", invalidPropertyNames, Property.exemplifyAll()));
+    public static void checkProperties(Properties pluginProperties, Properties projectProperties) {
+        String errorDetails = "";
+
+        String invalidSystemPropertyNames = checkProperties(System.getProperties(), true, p -> p.nameCandidatesForSystemProperties);
+        if (!invalidSystemPropertyNames.isEmpty()) {
+            errorDetails += "\n\tinvalid system properties:\n\t\t" + invalidSystemPropertyNames;
         }
+
+        String invalidPluginPropertyNames = checkProperties(pluginProperties, false, p -> p.nameCandidatesForPluginProperties);
+        if (!invalidPluginPropertyNames.isEmpty()) {
+            errorDetails += "\n\tinvalid plugin properties:\n\t\t" + invalidPluginPropertyNames;
+        }
+
+        String invalidProjectPropertyNames = checkProperties(projectProperties, true, p -> p.nameCandidatesForProjectProperties);
+        if (!invalidProjectPropertyNames.isEmpty()) {
+            errorDetails += "\n\tinvalid project properties:\n\t\t" + invalidProjectPropertyNames;
+        }
+
+        if (!errorDetails.isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid GIB properties found:%s%nAllowed properties:%n%s", errorDetails, Property.exemplifyAll()));
+        }
+    }
+
+    private static String checkProperties(Properties properties, boolean prefixed, Function<Property, List<String>> availableNamesProvider) {
+        Set<String> allAvailableNames = Arrays.stream(Property.values())
+                .flatMap(p -> availableNamesProvider.apply(p).stream())
+                .collect(Collectors.toSet());
+
+        return properties.isEmpty() ? "" : properties.keySet().stream()
+                .map(k -> (String) k)
+                .filter(k -> (!prefixed || k.startsWith(Property.PREFIX)) && !allAvailableNames.contains(k))
+                .collect(Collectors.joining("\n\t\t"));
     }
 
     public static String exemplifyAll() {
