@@ -160,48 +160,38 @@ public class Configuration {
 
     private static Properties getPluginProperties(MavenSession session) {
         if (cachedPluginProperties == null) {
+            cachedPluginProperties = new Properties();
             Plugin plugin = session.getTopLevelProject().getPlugin(PLUGIN_KEY);
             if (plugin != null) {
-                cachedPluginProperties = new Properties();
                 Arrays.stream(((Xpp3Dom) plugin.getConfiguration()).getChildren())
                         .forEach(child -> cachedPluginProperties.put(child.getName(), child.getValue()));
-            } else {
-                cachedPluginProperties = new Properties();
             }
         }
         return cachedPluginProperties;
     }
 
-    private static void checkProperties(Properties projectProperties) {
-        Set<String> availablePropertyNames = Arrays.stream(Property.values())
-                .flatMap(p -> p.allNames().stream())
-                .collect(Collectors.toSet());
-        String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
-                .distinct()
-                .map(k -> (String) k)
-                .filter(k -> k.startsWith(Property.PREFIX) && !availablePropertyNames.contains(k))
-                .collect(Collectors.joining("\n\t"));
-        if (!invalidPropertyNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid GIB properties found:%n\t%s%nAllowed properties:%n%s", invalidPropertyNames, Property.exemplifyAll()));
-        }
+    private static boolean isPluginPropertiesPresent() {
+        return cachedPluginProperties != null && !cachedPluginProperties.isEmpty();
     }
 
     private static BuildUpstreamMode parseBuildUpstreamMode(MavenSession session, Properties pluginProperties, Properties projectProperties) {
         if (!isBuildStreamActive(Property.buildUpstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
             return BuildUpstreamMode.NONE;
         }
+        String propertyValue = Property.buildUpstreamMode.getValue(pluginProperties, projectProperties);
         try {
-            String propertyValue = Optional.ofNullable(Property.buildUpstreamMode.getValue(pluginProperties, projectProperties)).orElse("");
             return BuildUpstreamMode.valueOf(propertyValue.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("GIB property " + Property.buildUpstreamMode.fullOrShortName() + " defines an invalid mode", e);
+            throw new IllegalArgumentException(
+                    "GIB property '" + Property.buildUpstreamMode.getSuitableName(isPluginPropertiesPresent()) + "' defines an invalid mode: "
+                    + propertyValue, e);
         }
     }
 
     private static boolean isBuildStreamActive(Property property, Properties pluginProperties, Properties projectProperties, MavenSession session,
             String expectedMakeBehavior) {
-        switch (property.getValue(pluginProperties, projectProperties)) {
+        String propertyValue = property.getValue(pluginProperties, projectProperties);
+        switch (propertyValue) {
             case "derived":
                 return isMakeBehaviourActive(expectedMakeBehavior, session);
             case "always":
@@ -212,7 +202,7 @@ public class Configuration {
                 return false;
             default:
                 throw new IllegalArgumentException(
-                        "GIB property " + property.fullOrShortName() + " defines an invalid value: " + property.getValue(pluginProperties, projectProperties));
+                        "GIB property '" + property.getSuitableName(isPluginPropertiesPresent()) + "' defines an invalid value: " + propertyValue);
         }
     }
 
@@ -239,7 +229,8 @@ public class Configuration {
         try {
             return Pattern.compile(patternString);
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("GIB property " + property.fullOrShortName() + " defines an invalid pattern string", e);
+            throw new IllegalArgumentException(
+                    "GIB property '" + property.getSuitableName(isPluginPropertiesPresent()) + "' defines an invalid pattern string", e);
         }
     }
 

@@ -113,7 +113,7 @@ public class ConfigurationTest {
     // deprecated old name of excludeDownstreamModulesPackagedAs
     @Test
     public void excludeTransitiveModulesPackagedAs() {
-        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedFullName(), "ear,war");
+        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedName(), "ear,war");
 
         Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
 

@@ -5,13 +5,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * GIB configuration properties. This is exposed as a "fake" plugin mojo/goal to generate a plugin descriptor which is picked up by maven-help-plugin and IDEs
@@ -137,8 +134,8 @@ public enum Property {
     @Parameter(defaultValue = "", alias = "edmpa")
     excludeDownstreamModulesPackagedAs("", "edmpa") {
         @Override
-        public String deprecatedFullName() {
-            return PREFIX + "excludeTransitiveModulesPackagedAs";
+        public String deprecatedName() {
+            return "excludeTransitiveModulesPackagedAs";
         }
     },
 
@@ -162,10 +159,10 @@ public enum Property {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Property.class);
 
-    private final String fullName;
-    private final String shortName;
+    private final String prefixedName;
+    private final String prefixedShortName;
+
     private final String defaultValue;
-    private final List<String> allNames;
 
     private final boolean mapEmptyValueToTrue;
 
@@ -174,52 +171,62 @@ public enum Property {
     }
 
     Property(String defaultValue, String unprefixedShortName, boolean mapNoValueToTrue) {
-        this.fullName = PREFIX + name();
+        this.prefixedName = PREFIX + name();
         this.defaultValue = Objects.requireNonNull(defaultValue);
-        this.shortName = PREFIX + unprefixedShortName;
-        this.allNames = Stream.of(fullName, shortName, deprecatedFullName())
-                .filter(Objects::nonNull)
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.prefixedShortName = PREFIX + unprefixedShortName;
         this.mapEmptyValueToTrue = mapNoValueToTrue;
     }
 
     private String exemplify() {
-        return String.format("%-85s", "<" + fullName + ">" + ( defaultValue == null ? "" : defaultValue ) + "</" + fullName + ">")
-                + " <!-- or <" + shortName + ">... -->";
+        return String.format(
+                "%-85s", "<" + prefixedName + ">" + defaultValue + "</" + prefixedName + ">") + " <!-- or <" + prefixedShortName + ">... -->";
     }
 
+    /**
+     * @return the {@value #PREFIX}-prefixed full name.
+     */
     public String fullName() {
-        return fullName;
+        return prefixedName;
     }
 
+    /**
+     * @return the {@value #PREFIX}-prefixed short name.
+     */
     public String shortName() {
-        return shortName;
+        return prefixedShortName;
     }
 
     // only for descriptive output
-    public String fullOrShortName() {
-        return fullName + " (or " + shortName + ")";
+    public String getSuitableName(boolean pluginConfigPresent) {
+        return pluginConfigPresent ? name() : prefixedName + " (or " + prefixedShortName + ")";
     }
 
-    public String deprecatedFullName() {
+    /**
+     * @return the deprecated unprefixed name or {@code null} if there is no such deprecated name for this property
+     */
+    public String deprecatedName() {
         // might be overridden by specific enum instances
         return null;
     }
 
-    public List<String> allNames() {
-        return allNames;
+    /**
+     * @return the deprecated prefixed name or {@code null} if there is no such deprecated name for this property
+     */
+    public final String deprecatedPrefixedName() {
+        return Optional.ofNullable(deprecatedName()).map(PREFIX::concat).orElse(null);
     }
 
     public String getValue(Properties pluginProperties, Properties projectProperties) {
-        String value = Stream.of(System.getProperties(), pluginProperties, projectProperties)
-                .flatMap(props -> allNames.stream()
-                        .map(name -> getValue(name, props)))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(defaultValue);
-
-        LOGGER.debug("{}={}", fullName, value);
-        return value;
+        Optional<String> value = getValue(System.getProperties(), prefixedName, prefixedShortName, deprecatedPrefixedName());
+        if (!value.isPresent()) {
+            value = getValue(pluginProperties, name(), deprecatedName());
+        }
+        if (!value.isPresent()) {
+            value = getValue(projectProperties, prefixedName, deprecatedPrefixedName());
+        }
+        String finalValue = value.orElse(defaultValue);
+        LOGGER.debug("{}={}", name(), value);
+        return finalValue;
     }
 
     public Optional<String> getValueOpt(Properties pluginProperties, Properties projectProperties) {
@@ -227,18 +234,42 @@ public enum Property {
         return value.isEmpty() ? Optional.empty() : Optional.of(value);
     }
 
+    private Optional<String> getValue(Properties properties, String... nameCandidates) {
+        return Arrays.stream(nameCandidates)
+                .map(nameCandidate -> getValue(nameCandidate, properties))
+                .filter(Objects::nonNull)
+                .findFirst();
+    }
+
     private String getValue(String name, Properties properties) {
         String value = properties.getProperty(name);
         if (value != null) {
-            if (name.equals(deprecatedFullName())) {
+            boolean prefixed = name.startsWith(PREFIX);
+            String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName();
+            if (name.equals(deprecatedName)) {
                 LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
-                        deprecatedFullName(), fullOrShortName());
+                        deprecatedName, prefixed ? prefixedName : name());
             }
             if (mapEmptyValueToTrue && value.isEmpty()) {
                 value = "true";
             }
         }
         return value;
+    }
+
+    public static void checkProperties(Properties projectProperties) {
+        Set<String> availablePropertyNames = Arrays.stream(Property.values())
+                .flatMap(p -> p.allNames().stream())
+                .collect(Collectors.toSet());
+        String invalidPropertyNames = Stream.concat(System.getProperties().keySet().stream(), projectProperties.keySet().stream())
+                .distinct()
+                .map(k -> (String) k)
+                .filter(k -> k.startsWith(Property.PREFIX) && !availablePropertyNames.contains(k))
+                .collect(Collectors.joining("\n\t"));
+        if (!invalidPropertyNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid GIB properties found:%n\t%s%nAllowed properties:%n%s", invalidPropertyNames, Property.exemplifyAll()));
+        }
     }
 
     public static String exemplifyAll() {
