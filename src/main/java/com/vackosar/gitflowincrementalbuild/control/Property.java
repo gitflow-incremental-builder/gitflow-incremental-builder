@@ -297,8 +297,11 @@ public enum Property {
         }
 
         if (!errorDetails.isEmpty()) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid GIB properties found:%s%nAllowed properties:%n%s", errorDetails, Property.exemplifyAll()));
+            throw new IllegalArgumentException(String.format(
+                    "Invalid GIB properties found:%s%n%nAllowed properties:%n%s%nFor a plugin-<configuration>, use the properties without the %s prefix.",
+                    errorDetails,
+                    Property.exemplifyAll(),
+                    PREFIX));
         }
     }
 
