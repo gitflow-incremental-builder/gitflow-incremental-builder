@@ -17,6 +17,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 ## Table of Contents
 
 - [Usage](#usage)
+  - [Usage as a Maven extension](#usage-as-a-maven-extension)
+  - [Usage as a Maven plugin](#usage-as-a-maven-plugin)
   - [Disable in IDE](#disable-in-ide)
 
 - [Example](#example)
@@ -30,7 +32,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
   - [gib.baseBranch](#gibbasebranch)
   - [gib.fetchBaseBranch](#gibfetchbasebranch)
-  - [gib.useJschAgentProxy](#gibuseJschAgentProxy)
+  - [gib.useJschAgentProxy](#gibusejschagentproxy)
+  - [gib.compareToMergeBase](#gibcomparetomergebase)
   - [gib.uncommited](#gibuncommited)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
@@ -44,6 +47,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
+  - [gib.failOnMissingGitDir](#failonmissinggitdir)
+  - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
@@ -59,7 +64,11 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 ## Usage
 
-- Add into maven pom file:
+There are two usage scenarios of GIB:
+
+### Usage as a Maven extension
+
+Add to (root) `pom.xml`:
 ```xml
 <build>
     <extensions>
@@ -69,9 +78,43 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
             <version>3.10.2</version>
         </extension>
     </extensions>
-    ...
+    <!-- ... -->
 </build>
 ```
+or use [`.mvn/extensions.xml`](https://maven.apache.org/ref/3.6.3/maven-embedder/core-extensions.html).
+
+The [Configuration](#configuration) can then be added via project or system properties.
+
+### Usage as a Maven plugin
+
+Add to (root) `pom.xml`:
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
+            <artifactId>gitflow-incremental-builder</artifactId>
+            <version>3.10.2</version>
+            <extensions>true</extensions>
+            <configuration>
+                <!-- ... -->
+            </configuration>
+        </plugin>
+        <!-- ... -->
+    </plugins>
+    <!-- ... -->
+</build>
+```
+
+The [Configuration](#configuration) can then be added to the `configuration` block of the plugin.
+
+:warning: GIB comes with a "fake" mojo (or goal). **Do _not_ try to execute this fake mojo!**<br/>
+It only exists to generate a plugin descriptor so that you can see the parameters nicely in your IDE or via `maven-help-plugin`.<br/>
+Because of this limitation, you have to use the general `<configuration>` section of the plugin instead of any `<execution>` block.
+
+When defined as a plugin, GIB will still do its work as an extension (see `<extensions>true</extensions>`).<br/>
+The plugin definition is merely a "shell" to provide `<profile>`-support, better visibilty of parameters and works around 3rd-party issues like
+[`versions-maven-plugin`: Support for reporting new extenions versions](https://github.com/mojohaus/versions-maven-plugin/issues/74).
 
 ### Disable in IDE
 
@@ -269,32 +312,32 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 Maven pom properties configuration with default values is below:
 ```xml
 <properties>
-    <gib.help>false</gib.help>                                                            <!-- or <gib.h>... -->
-    <gib.enabled>true</gib.enabled>                                                       <!-- or <gib.e>... -->
-    <gib.disableIfBranchRegex></gib.disableIfBranchRegex>                                 <!-- or <gib.dibr>... -->
-    <gib.disableBranchComparison>false</gib.disableBranchComparison>                      <!-- or <gib.dbc>... -->
-    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>                <!-- or <gib.rb>... -->
-    <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                            <!-- or <gib.frb>... -->
-    <gib.baseBranch>HEAD</gib.baseBranch>                                                 <!-- or <gib.bb>... -->
-    <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                      <!-- or <gib.fbb>... -->
-    <gib.useJschAgentProxy>true</gib.useJschAgentProxy>                                   <!-- or <gib.ujap>... -->
-    <gib.compareToMergeBase>true</gib.compareToMergeBase>                                 <!-- or <gib.ctmb>... -->
-    <gib.uncommited>true</gib.uncommited>                                                 <!-- or <gib.uc>... -->
-    <gib.untracked>true</gib.untracked>                                                   <!-- or <gib.ut>... -->
-    <gib.excludePathRegex></gib.excludePathRegex>                                         <!-- or <gib.epr>... -->
-    <gib.includePathRegex></gib.includePathRegex>                                         <!-- or <gib.ipr>... -->
-    <gib.buildAll>false</gib.buildAll>                                                    <!-- or <gib.ba>... -->
-    <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                              <!-- or <gib.bainc>... -->
-    <gib.buildDownstream>always</gib.buildDownstream>                                     <!-- or <gib.bd>... -->
-    <gib.buildUpstream>derived</gib.buildUpstream>                                        <!-- or <gib.bu>... -->
-    <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>                                <!-- or <gib.bum>... -->
-    <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>              <!-- or <gib.stfum>... -->
-    <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                             <!-- or <gib.afum>... -->
-    <gib.forceBuildModules></gib.forceBuildModules>                                       <!-- or <gib.fbm>... -->
-    <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>     <!-- or <gib.edmpa>... -->
-    <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                               <!-- or <gib.fomgd>... -->
-    <gib.failOnError>true</gib.failOnError>                                               <!-- or <gib.foe>... -->
-    <gib.logImpactedTo></gib.logImpactedTo>                                               <!-- or <gib.lit>... -->
+    <gib.help>false</gib.help>                                                         <!-- or -Dgib.h=...     -->
+    <gib.enabled>true</gib.enabled>                                                    <!-- or -Dgib.e=...     -->
+    <gib.disableIfBranchRegex></gib.disableIfBranchRegex>                              <!-- or -Dgib.dibr=...  -->
+    <gib.disableBranchComparison>false</gib.disableBranchComparison>                   <!-- or -Dgib.dbc=...   -->
+    <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>             <!-- or -Dgib.rb=...    -->
+    <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                         <!-- or -Dgib.frb=...   -->
+    <gib.baseBranch>HEAD</gib.baseBranch>                                              <!-- or -Dgib.bb=...    -->
+    <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                   <!-- or -Dgib.fbb=...   -->
+    <gib.useJschAgentProxy>true</gib.useJschAgentProxy>                                <!-- or -Dgib.ujap=...  -->
+    <gib.compareToMergeBase>true</gib.compareToMergeBase>                              <!-- or -Dgib.ctmb=...  -->
+    <gib.uncommited>true</gib.uncommited>                                              <!-- or -Dgib.uc=...    -->
+    <gib.untracked>true</gib.untracked>                                                <!-- or -Dgib.ut=...    -->
+    <gib.excludePathRegex></gib.excludePathRegex>                                      <!-- or -Dgib.epr=...   -->
+    <gib.includePathRegex></gib.includePathRegex>                                      <!-- or -Dgib.ipr=...   -->
+    <gib.buildAll>false</gib.buildAll>                                                 <!-- or -Dgib.ba=...    -->
+    <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                           <!-- or -Dgib.bainc=... -->
+    <gib.buildDownstream>always</gib.buildDownstream>                                  <!-- or -Dgib.bd=...    -->
+    <gib.buildUpstream>derived</gib.buildUpstream>                                     <!-- or -Dgib.bu=...    -->
+    <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>                             <!-- or -Dgib.bum=...   -->
+    <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>           <!-- or -Dgib.stfum=... -->
+    <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                          <!-- or -Dgib.afum=...  -->
+    <gib.forceBuildModules></gib.forceBuildModules>                                    <!-- or -Dgib.fbm=...   -->
+    <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>  <!-- or -Dgib.edmpa=... -->
+    <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
+    <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
+    <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
 </properties>
 ```
 
@@ -304,7 +347,23 @@ E.g. `-Dgib.e=true` yields the same result as `-Dgib.enabled=true`.
 
 Properties that support the value `true` can be specified _without_ a value, e.g. `-Dgib.enabled` is the same as `-Dgib.enabled=true`.
 
-System properties (`-D`) take precedence over project properties from the POM and secondarily to that a full name takes precedence over the respective short name.
+System properties (`-D`) take precedence over project properties from the POM and secondarily to that a full name takes precedence over the respective short name.<br/>
+Short names can only be used as system properties.
+
+If GIB is [used as a **plugin**](#usage-as-a-maven-plugin) (instead of an extension), the same properties _can_ still be used but it is recommended
+to put the properties into the plugin `<configuration>`-section, but _without_ the `gib.`-prefix.<br/>
+E.g. instead of:
+```xml
+<properties>
+    <gib.uncommited>true</gib.uncommited>
+</properties>
+```
+use:
+```xml
+<configuration>
+    <uncommited>true</uncommited>
+</configuration>
+```
 
 ### gib.help
 
@@ -374,6 +433,10 @@ This might reduce overhead in case you don't use an agent at all (like `ssh-agen
 See also: [SSH](#ssh) in the [Authentication](#authentication) section
 
 Since: 3.9.1
+
+### gib.compareToMergeBase
+
+Controls whether or not to the [merge-base](https://git-scm.com/docs/git-merge-base) mechanism to compare the branches.
 
 ### gib.uncommited
 
@@ -512,6 +575,14 @@ In this scenario, by defining `-Dgib.excludeDownstreamModulesPackagedAs=jar,pom`
 deployment modules will be built.
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+
+### gib.failOnMissingGitDir
+
+Controls whether or not to fail on missing `.git` directory.
+
+### gib.failOnError
+
+Controls whether or not to fail on any error.
 
 ### gib.logImpactedTo
 

@@ -15,8 +15,8 @@ public class DifferentFilesHttpFetchTest extends BaseDifferentFilesTest {
     @Test
     public void fetch() throws Exception {
         addCommitToRemoteRepo(FETCH_FILE);
-        projectProperties.setProperty(Property.fetchReferenceBranch.fullName(), "true");
-        projectProperties.setProperty(Property.referenceBranch.fullName(), REMOTE_DEVELOP);
+        projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), REMOTE_DEVELOP);
 
         invokeUnderTest();
 

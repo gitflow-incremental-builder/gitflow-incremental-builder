@@ -1,4 +1,4 @@
-package com.vackosar.gitflowincrementalbuild.boundary;
+package com.vackosar.gitflowincrementalbuild.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,9 +35,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
+ * Integration test base running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
  * <p/>
- * This test is expected to be called via {@code maven-failsafe-plugin}, dependends on {@code settings-it.xml} and requires two system properties:
+ * Tests extending this base class are expected to be called via {@code maven-failsafe-plugin}, dependends on {@code settings-it.xml} and requires two system
+ * properties:
  * <ul>
  * <li>{@code settings.localRepository} defining the path to the regular local Maven repo (containing the all the basic dependencies and plugins)
  * test</li>
@@ -45,9 +46,9 @@ import java.util.stream.Stream;
  * </ul>
  * Furthermore, {@code mvn} must be on the {@code PATH} environment variable and {@code JAVA_HOME} must also be set.
  */
-public class MavenIntegrationTest extends BaseRepoTest {
+public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MavenIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MavenIntegrationTestBase.class);
 
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
 
@@ -64,7 +65,8 @@ public class MavenIntegrationTest extends BaseRepoTest {
         defaultArgs = Collections.unmodifiableList(Arrays.asList(
                 "--settings=" + createPathToSettingsXml(),
                 "-DgibIntegrationTestRepoRemote=" + createUrlToRemoteRepo(),    // used in/required by settings-it.xml
-                "--batch-mode"));
+                "--batch-mode",
+                "-Dstyle.color=always"));
 
         LOGGER.info("The first test method will execute an initial 'mvn install ...' on the test project to populate the test repo."
                 + " This might take a while.");
@@ -146,7 +148,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
                 .contains(" child4")
                 .contains(" subchild41")
                 .contains(" child6")
-                .contains("[INFO] Tests are skipped.");
+                .contains(" Tests are skipped.");
     }
 
     @Test
@@ -196,7 +198,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
                 .contains(" child4")
                 .contains(" subchild41")
                 .contains(" child6")
-                .contains("[INFO] Tests are skipped.");
+                .contains(" Tests are skipped.");
     }
 
     @Test
@@ -342,7 +344,7 @@ public class MavenIntegrationTest extends BaseRepoTest {
     }
 
     private static String prop(Property property, String value) {
-        String propString =  "-D" + property.fullName();
+        String propString =  "-D" + property.prefixedName();
         if (value != null && !value.isEmpty()) {
             propString += "=" + value;
         }
