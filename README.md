@@ -380,7 +380,7 @@ Since: 3.9.1
 
 ### gib.compareToMergeBase
 
-Controls whether or not to the merge-base mechanism to compare the branches. See also: https://git-scm.com/docs/git-merge-base
+Controls whether or not to the [merge-base](https://git-scm.com/docs/git-merge-base) mechanism to compare the branches.
 
 ### gib.uncommited
 

@@ -200,7 +200,7 @@ public enum Property {
 
     private String exemplify() {
         return String.format(
-                "%-85s<!-- or -D%-13s -->", "<" + prefixedName + ">" + defaultValue + "</" + prefixedName + ">", prefixedShortName + "=...");
+                "%-83s<!-- or -D%-13s -->", "<" + prefixedName + ">" + defaultValue + "</" + prefixedName + ">", prefixedShortName + "=...");
     }
 
     /**
