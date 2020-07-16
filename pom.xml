@@ -481,11 +481,35 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- replace in plugin.xml and plugin-help.xml all com.vackosar.gitflowincrementalbuild.control.Property types with java.lang.String or boolean -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
+                <configuration>
+                    <replacements>
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo/configuration/*/@implementation</xpath>
+                            <token>^.*$</token>
+                            <value>java.lang.String</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
+                            <token>^.*$</token>
+                            <value>boolean</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo/parameters/parameter/type/text()</xpath>
+                            <token>^.*$</token>
+                            <value>java.lang.String</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
+                            <token>^.*$</token>
+                            <value>boolean</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
                 <executions>
-                    <!-- replace in plugin.xml com.vackosar.gitflowincrementalbuild.control.Property types with java.lang.String or boolean -->
                     <execution>
                         <id>modify-plugin-xml</id>
                         <phase>process-classes</phase>
@@ -494,28 +518,16 @@
                         </goals>
                         <configuration>
                             <file>${project.build.outputDirectory}/META-INF/maven/plugin.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/plugin/mojos/mojo/configuration/*/@implementation</xpath>
-                                    <token>^.*$</token>
-                                    <value>java.lang.String</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/plugin/mojos/mojo/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
-                                    <token>^.*$</token>
-                                    <value>boolean</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/plugin/mojos/mojo/parameters/parameter/type/text()</xpath>
-                                    <token>^.*$</token>
-                                    <value>java.lang.String</value>
-                                </replacement>
-                                <replacement>
-                                    <xpath>/plugin/mojos/mojo/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
-                                    <token>^.*$</token>
-                                    <value>boolean</value>
-                                </replacement>
-                            </replacements>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>modify-plugin-help-xml</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.outputDirectory}/META-INF/maven/${project.groupId}/${project.artifactId}/plugin-help.xml</file>
                         </configuration>
                     </execution>
                 </executions>
