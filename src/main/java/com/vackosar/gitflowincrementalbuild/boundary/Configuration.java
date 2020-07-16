@@ -5,7 +5,6 @@ import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginCont
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import javax.inject.Inject;
@@ -174,13 +173,13 @@ public class Configuration {
     }
 
     private static Properties getPluginProperties(MavenSession session) {
-        Properties properties = new Properties();
-        Plugin plugin = session.getTopLevelProject().getPlugin(PLUGIN_KEY);
-        if (plugin != null) {
-            Arrays.stream(((Xpp3Dom) plugin.getConfiguration()).getChildren())
-                    .forEach(child -> properties.put(child.getName(), child.getValue()));
-        }
-        return properties;
+        return Optional.ofNullable(session.getTopLevelProject().getPlugin(PLUGIN_KEY))
+                .map(plugin -> (Xpp3Dom) plugin.getConfiguration())
+                .map(Xpp3Dom::getChildren)
+                .filter(children -> children.length > 0)
+                .map(children -> Arrays.stream(children)
+                        .collect(Collectors.toMap(Xpp3Dom::getName, Xpp3Dom::getValue, (a, b) -> a, Properties::new)))
+                .orElseGet(Properties::new);
     }
 
     private static BuildUpstreamMode parseBuildUpstreamMode(MavenSession session, Properties pluginProperties, Properties projectProperties) {

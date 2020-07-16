@@ -389,14 +389,50 @@ public class ConfigurationTest {
         assertEquals("foo", configuration.baseBranch);
     }
 
+    @Test
+    public void plugin_noConfig_projectProperties() {
+        mockPlugin(null);
+        projectProperties.put(Property.baseBranch.prefixedName(), "foo");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals("foo", configuration.baseBranch);
+    }
+
+    @Test
+    public void plugin_emptyConfigChildrenNull_projectProperties() {
+        mockPlugin(mock(Xpp3Dom.class));
+        projectProperties.put(Property.baseBranch.prefixedName(), "foo");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals("foo", configuration.baseBranch);
+    }
+
+    @Test
+    public void plugin_emptyConfigChildrenEmpty_projectProperties() {
+        Xpp3Dom configMock = mock(Xpp3Dom.class);
+        when(configMock.getChildren()).thenReturn(new Xpp3Dom[] {});
+        mockPlugin(configMock);
+        projectProperties.put(Property.baseBranch.prefixedName(), "foo");
+
+        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+
+        assertEquals("foo", configuration.baseBranch);
+    }
+
     private void mockPluginConfig(String propertyName, String value) {
         Xpp3Dom childConfigMock = mock(Xpp3Dom.class);
         when(childConfigMock.getName()).thenReturn(propertyName);
         when(childConfigMock.getValue()).thenReturn(value);
         Xpp3Dom configMock = mock(Xpp3Dom.class);
         when(configMock.getChildren()).thenReturn(new Xpp3Dom[]{ childConfigMock });
+        mockPlugin(configMock);
+    }
+
+    private void mockPlugin(Xpp3Dom config) {
         Plugin pluginMock = mock(Plugin.class);
-        when(pluginMock.getConfiguration()).thenReturn(configMock);
+        when(pluginMock.getConfiguration()).thenReturn(config);
         when(mockTLProject.getPlugin(Configuration.PLUGIN_KEY)).thenReturn(pluginMock);
     }
 }
