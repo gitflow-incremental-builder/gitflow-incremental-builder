@@ -283,7 +283,7 @@
                             <artifactId>Saxon-HE</artifactId>
                             <!-- This really old version 9.5 is the last version providing automatic discovery via XPathFactory,
                                  see also: https://www.saxonica.com/html/documentation/xpath-api/jaxp-xpath/factory.html -->
-                            <version>9.5.1-8</version>
+                            <version>10.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
