@@ -75,7 +75,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.10.2</version>
+            <version>3.11.0</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -94,7 +94,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.10.2</version>
+            <version>3.11.0</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -113,7 +113,7 @@ It only exists to generate a plugin descriptor so that you can see the parameter
 Because of this limitation, you have to use the general `<configuration>` section of the plugin instead of any `<execution>` block.
 
 When defined as a plugin, GIB will still do its work as an extension (see `<extensions>true</extensions>`).<br/>
-The plugin definition is merely a "shell" to provide `<profile>`-support, better visibilty of parameters and works around 3rd-party issues like
+The plugin definition is merely a "shell" to provide `<profile>`-support, better visibility of parameters and works around 3rd-party issues like
 [`versions-maven-plugin`: Support for reporting new extenions versions](https://github.com/mojohaus/versions-maven-plugin/issues/74).
 
 ### Disable in IDE
