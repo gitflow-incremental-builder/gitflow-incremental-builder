@@ -64,6 +64,7 @@
         <version.slf4j>1.7.5</version.slf4j>    <!-- must match the version that is provided by maven -->
         <version.logback>1.1.3</version.logback>    <!-- the latest that appears to work properly with slf4j 1.7.5 -->
         <version.javax.inject>1</version.javax.inject>
+        <version.bytebuddy>1.10.13</version.bytebuddy>
         <version.junit>5.6.2</version.junit>
         <version.assertj>3.16.1</version.assertj>
         <version.powermock-reflect>2.0.7</version.powermock-reflect>
@@ -82,6 +83,7 @@
         <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
         <version.maven-javadoc-plugin>3.2.0</version.maven-javadoc-plugin>
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
+        <version.maven-help-plugin>3.2.0</version.maven-help-plugin>
         <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
         <version.maven-site-plugin>3.9.1</version.maven-site-plugin>
         <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
@@ -182,6 +184,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-dep</artifactId>
+            <version>${version.bytebuddy}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${version.junit}</version>
@@ -268,6 +277,11 @@
                     <version>${version.jacoco-maven-plugin}</version>
                 </plugin>
                 <plugin>
+                    <groupId>net.bytebuddy</groupId>
+                    <artifactId>byte-buddy-maven-plugin</artifactId>
+                    <version>${version.bytebuddy}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${version.maven-plugin}</version>
@@ -352,7 +366,15 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                         </archive>
+                        <excludes>
+                            <exclude>**/MojoParametersGeneratingByteBuddyPlugin*</exclude>
+                        </excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>${version.maven-help-plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -462,6 +484,34 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-mojo</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformations>
+                                <transformation>
+                                    <plugin>com.vackosar.gitflowincrementalbuild.mojo.MojoParametersGeneratingByteBuddyPlugin</plugin>
+                                </transformation>
+                            </transformations>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- the plugin does not pick up provided dependencies, so those needed for the transformation have to be added here -->
+                    <dependency>
+                        <groupId>org.apache.maven.plugin-tools</groupId>
+                        <artifactId>maven-plugin-annotations</artifactId>
+                        <version>${version.maven-plugin}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <configuration>
@@ -488,24 +538,41 @@
                 <configuration>
                     <replacements>
                         <replacement>
-                            <xpath>/plugin/mojos/mojo/configuration/*/@implementation</xpath>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/implementation/text()</xpath>
+                            <token>^.*$</token>
+                            <value>com.vackosar.gitflowincrementalbuild.mojo.FakeMojo</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/description/text()</xpath>
+                            <token>(?s)^.*$</token>
+                            <value>This fake goal only exposes the general config properties/parameters. DO NOT EXECUTE!</value>
+                        </replacement>
+                        <!-- set proper parameter types (instead of com.vackosar.gitflowincrementalbuild.control.Property) -->
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*/@implementation</xpath>
                             <token>^.*$</token>
                             <value>java.lang.String</value>
                         </replacement>
                         <replacement>
-                            <xpath>/plugin/mojos/mojo/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
                             <token>^.*$</token>
                             <value>boolean</value>
                         </replacement>
                         <replacement>
-                            <xpath>/plugin/mojos/mojo/parameters/parameter/type/text()</xpath>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter/type/text()</xpath>
                             <token>^.*$</token>
                             <value>java.lang.String</value>
                         </replacement>
                         <replacement>
-                            <xpath>/plugin/mojos/mojo/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
                             <token>^.*$</token>
                             <value>boolean</value>
+                        </replacement>
+                        <!-- add link to GH config documentation to each parameter description -->
+                        <replacement>
+                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter/description/text()</xpath>
+                            <token>^.*$</token>
+                            <value>$0&lt;br&gt;&lt;br&gt;See also: https://git.io/JJn42</value>
                         </replacement>
                     </replacements>
                 </configuration>
@@ -535,6 +602,11 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/mojo/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>jacoco-prepare-agent</id>
@@ -627,6 +699,22 @@
                             <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
                             <localRepositoryPath>${gibIntegrationTestRepoLocal}</localRepositoryPath>
                             <pomFile>${project.basedir}/pom.xml</pomFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- help-plugin is required in local repo for integration-tests -->
+            <plugin>
+                <artifactId>maven-help-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>trigger-help-plugin-for-it</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>evaluate</goal>
+                        </goals>
+                        <configuration>
+                            <expression>project.version</expression>    <!-- just something, does not matter -->
                         </configuration>
                     </execution>
                 </executions>
@@ -741,6 +829,76 @@
                         </executions>
                     </plugin>
                 </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>eclipse</id>
+            <activation>
+                <property>
+                    <name>m2e.version</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+                        <!-- Need to use this pseudo plugin instead of <?m2e ... ?> due to https://issues.apache.org/jira/browse/MNG-6204 -->
+                        <plugin>
+                            <groupId>org.eclipse.m2e</groupId>
+                            <artifactId>lifecycle-mapping</artifactId>
+                            <version>1.0.0</version>
+                            <configuration>
+                                <lifecycleMappingMetadata>
+                                    <pluginExecutions>
+                                        <!-- Eclipse tries to resolve our custom bytebuddy plugin from local repo instead of target
+                                             which yields unexpected results, so we better ignore that alltogether and all other executions
+                                             that work with the bytebuddy transformed classes. -->
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>net.bytebuddy</groupId>
+                                                <artifactId>byte-buddy-maven-plugin</artifactId>
+                                                <versionRange>[${version.bytebuddy},)</versionRange>
+                                                <goals>
+                                                    <goal>transform</goal>
+                                                </goals>
+                                            </pluginExecutionFilter>
+                                            <action>
+                                                <ignore/>
+                                            </action>
+                                        </pluginExecution>
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>org.apache.maven.plugin-tools</groupId>
+                                                <artifactId>maven-plugin-annotations</artifactId>
+                                                <version>${version.maven-plugin}</version>
+                                                <versionRange>[${version.maven-plugin},)</versionRange>
+                                                <goals>
+                                                    <goal>descriptor</goal>
+                                                </goals>
+                                            </pluginExecutionFilter>
+                                            <action>
+                                                <ignore/>
+                                            </action>
+                                        </pluginExecution>
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                                                <artifactId>replacer</artifactId>
+                                                <versionRange>[${version.maven-replacer-plugin},)</versionRange>
+                                                <goals>
+                                                    <goal>replace</goal>
+                                                </goals>
+                                            </pluginExecutionFilter>
+                                            <action>
+                                                <ignore/>
+                                            </action>
+                                        </pluginExecution>
+                                    </pluginExecutions>
+                                </lifecycleMappingMetadata>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
     </profiles>

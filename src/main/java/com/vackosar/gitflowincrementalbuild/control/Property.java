@@ -1,7 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,125 +17,106 @@ import java.util.stream.Stream;
 /**
  * GIB configuration properties. This is exposed as a "fake" plugin mojo/goal to generate a plugin descriptor which is picked up by maven-help-plugin and IDEs
  * to provide auto-completion etc. Do not try to execute this fake goal!
+ * <p>
+ * Note: This enum is auto-enriched with maven plugin annotations via
+ * {@link com.vackosar.gitflowincrementalbuild.mojo.MojoParametersGeneratingByteBuddyPlugin MojoParametersGeneratingByteBuddyPlugin}.<br>
+ * Each enum instance <b>must</b> have a short JavaDoc description that should match the respective first sentence in {@code README.md}.
+ * </p>
  */
-@Mojo(name = "config-do-not-execute", threadSafe = true)
 public enum Property {
     /**
      * Logs the available properties etc.
      */
-    @Parameter(property = Property.PREFIX + "help", defaultValue = "false", alias = "h")
     help("false", "h", true),
     /**
      * Can be used to disable this extension temporarily or permanently.
      */
-    @Parameter(property = Property.PREFIX + "enabled", defaultValue = "true", alias = "e")
     enabled("true", "e", true),
     /**
      * Can be used to disable this extension on certain branches.
      */
-    @Parameter(property = Property.PREFIX + "disableIfBranchRegex", defaultValue = "", alias = "dibr")
     disableIfBranchRegex("", "dibr"),
 
     /**
      * Disables the comparison between baseBranch and referenceBranch.
      */
-    @Parameter(property = Property.PREFIX + "disableBranchComparison", defaultValue = "false", alias = "dbc")
     disableBranchComparison("false", "dbc", true),
     /**
      * The branch to compare baseBranch to.
      */
-    @Parameter(property = Property.PREFIX + "referenceBranch", defaultValue = "refs/remotes/origin/develop", alias = "rb")
     referenceBranch("refs/remotes/origin/develop", "rb"),
     /**
      * Fetches the referenceBranch from the remote repository.
      */
-    @Parameter(property = Property.PREFIX + "fetchReferenceBranch", defaultValue = "false", alias = "frb")
     fetchReferenceBranch("false", "frb", true),
     /**
      * The branch that is compared to referenceBranch.
      */
-    @Parameter(property = Property.PREFIX + "baseBranch", defaultValue = "HEAD", alias = "bb")
     baseBranch("HEAD", "bb"),
     /**
      * Fetches the baseBranch from the remote repository
      */
-    @Parameter(property = Property.PREFIX + "fetchBaseBranch", defaultValue = "false", alias = "fbb")
     fetchBaseBranch("false", "fbb", true),
     /**
      * Can be used to disable the usage of jsch-agent-proxy when fetching via SSH.
      */
-    @Parameter(property = Property.PREFIX + "useJschAgentProxy", defaultValue = "true", alias = "ujap")
     useJschAgentProxy("true", "ujap"),
     /**
      * Controls whether or not to the merge-base mechanism to compare the branches.
      */
-    @Parameter(property = Property.PREFIX + "compareToMergeBase", defaultValue = "true", alias = "ctmb")
     compareToMergeBase("true", "ctmb", true),
     /**
      * Detects changed files that have not yet been committed.
      */
-    @Parameter(property = Property.PREFIX + "uncommited", defaultValue = "true", alias = "uc")
     uncommited("true", "uc", true),
     /**
      * Detects files that are not yet tracked by git.
      */
-    @Parameter(property = Property.PREFIX + "untracked", defaultValue = "true", alias = "ut")
     untracked("true", "ut", true),
     /**
      * Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build.
      */
-    @Parameter(property = Property.PREFIX + "excludePathRegex", defaultValue = "", alias = "epr")
     excludePathRegex("", "epr"),
     /**
      * Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build.
      */
-    @Parameter(property = Property.PREFIX + "includePathRegex", defaultValue = "", alias = "ipr")
     includePathRegex("", "ipr"),
 
     /**
      * Builds all modules, including upstream modules.
      */
-    @Parameter(property = Property.PREFIX + "buildAll", defaultValue = "false", alias = "ba")
     buildAll("false", "ba", true),
     /**
      * Can be used to active buildAll if no changes are detected (instead of just building the root module with goal validate).
      */
-    @Parameter(property = Property.PREFIX + "buildAllIfNoChanges", defaultValue = "false", alias = "bainc")
     buildAllIfNoChanges("false", "bainc", true),
     /**
      * Controls whether or not to build downstream modules.
      */
-    @Parameter(property = Property.PREFIX + "buildDownstream", defaultValue = "always", alias = "bd")
     buildDownstream("always", "bd", true),
     /**
      * Controls whether or not to build upstream modules.
      */
-    @Parameter(property = Property.PREFIX + "buildUpstream", defaultValue = "derived", alias = "bu")
     buildUpstream("derived", "bu", true),
     /**
      * This property controls which upstream modules to build.
      */
-    @Parameter(property = Property.PREFIX + "buildUpstreamMode", defaultValue = "changed", alias = "bum")
     buildUpstreamMode("changed", "bum"),
     /**
      * This property disables the compilation/execution of tests for upstream modules.
      */
-    @Parameter(property = Property.PREFIX + "skipTestsForUpstreamModules", defaultValue = "false", alias = "stfum")
     skipTestsForUpstreamModules("false", "stfum", true),
     /**
      * This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead.
      */
-    @Parameter(property = Property.PREFIX + "argsForUpstreamModules", defaultValue = "", alias = "afum")
     argsForUpstreamModules("", "afum"),
     /**
      * Defines artifact ids of modules to build forcibly.
      */
-    @Parameter(property = Property.PREFIX + "forceBuildModules", defaultValue = "", alias = "fbm")
     forceBuildModules("", "fbm"),
     /**
      * Defines the packaging (e.g. jar) of modules that depend on changed modules but shall not be built.
      */
-    @Parameter(property = Property.PREFIX + "excludeDownstreamModulesPackagedAs", defaultValue = "", alias = "edmpa")
     excludeDownstreamModulesPackagedAs("", "edmpa") {
         @Override
         public String deprecatedName() {
@@ -148,17 +127,14 @@ public enum Property {
     /**
      * Controls whether or not to fail on missing .git directory.
      */
-    @Parameter(property = Property.PREFIX + "failOnMissingGitDir", defaultValue = "true", alias = "fomgd")
     failOnMissingGitDir("true", "fomgd", true),
     /**
      * Controls whether or not to fail on any error.
      */
-    @Parameter(property = Property.PREFIX + "failOnError", defaultValue = "true", alias = "foe")
     failOnError("true", "foe", true),
     /**
      * Defines an optional logfile which GIB shall write all "impacted" modules to.
      */
-    @Parameter(property = Property.PREFIX + "logImpactedTo", defaultValue = "", alias = "lit")
     logImpactedTo("", "lit");
 
     public static final String PREFIX = "gib.";
@@ -252,6 +228,14 @@ public enum Property {
     public Optional<String> getValueOpt(Properties pluginProperties, Properties projectProperties) {
         final String value = getValue(pluginProperties, projectProperties);
         return value.isEmpty() ? Optional.empty() : Optional.of(value);
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public boolean isBoolean() {
+        return defaultValue.equals("true") || defaultValue.equals("false");
     }
 
     private Optional<ValueWithOriginContext> getValueWithOriginContext(List<String> nameCandidates, Properties properties, String propertiesDesc) {

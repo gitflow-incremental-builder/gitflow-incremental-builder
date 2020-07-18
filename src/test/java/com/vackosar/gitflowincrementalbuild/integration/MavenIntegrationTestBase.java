@@ -28,9 +28,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,11 +54,15 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenIntegrationTestBase.class);
 
+    private static final Set<Class<?>> INITIAL_INSTALL_DONE = new HashSet<>();
+
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
 
+    private static final Pattern LOG_LINE_FILTER_PATTERN = Pattern.compile("^\\[.*INFO.*\\] Download(ing|ed) from local.central: .*");
+
+    protected static String gibVersion;
+
     private static List<String> defaultArgs;
-    private static String gibVersion;
-    private static boolean initialInstallDone;
 
     private String testDisplayName;
 
@@ -98,12 +106,14 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     @BeforeEach
     void initialInstall(TestInfo testInfo) throws IOException, InterruptedException {
         testDisplayName = testInfo.getDisplayName();
-        if (initialInstallDone) {
+        Class<?> testClass = testInfo.getTestClass().get();
+        if (INITIAL_INSTALL_DONE.contains(testClass)) {
             return;
         }
-        executeBuild(true, false, "--file=build-parent", prop(Property.enabled, "false"));
+        executeBuild(true, false, "--file=build-parent/pom-common.xml", prop(Property.enabled, "false"));
+        executeBuild(true, false, "--file=build-parent/pom.xml", prop(Property.enabled, "false"));
         executeBuild(true, false, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false"));
-        initialInstallDone = true;
+        INITIAL_INSTALL_DONE.add(testClass);
     }
 
     @Test
@@ -321,12 +331,17 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         git.checkout().setName("develop").call();
     }
 
-    private String executeBuild(String... args) throws IOException, InterruptedException {
+    protected String executeBuild(String... args) throws IOException, InterruptedException {
         return executeBuild(false, true, args);
     }
 
-    private String executeBuild(boolean installInsteadOfPackage, boolean logOutput, String... args) throws IOException, InterruptedException {
-        final List<String> commandBase = Arrays.asList("mvn", "-e", installInsteadOfPackage ? "install" : "package");
+    protected String executeBuild(boolean installInsteadOfPackage, boolean logOutput, String... args) throws IOException, InterruptedException {
+        final List<String> commandBase = new ArrayList<>(Arrays.asList("mvn", "-e"));
+        if (installInsteadOfPackage) {
+            commandBase.add("install");
+        } else if (args.length == 0 || !args[0].startsWith("help:")) {
+            commandBase.add("package");
+        }
         final List<String> commandBaseWithFile;
         if (Arrays.stream(args).noneMatch(s -> s.startsWith("--file") || s.equals("-f"))) {
             commandBaseWithFile = Stream.concat(commandBase.stream(), Stream.of(DEFAULT_POMFILE_ARG)).collect(Collectors.toList());
@@ -336,14 +351,15 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         // commandBaseWithFile + args + defaultArgs
         List<String> command = Stream.concat(commandBaseWithFile.stream(), Stream.concat(Arrays.stream(args), defaultArgs.stream()))
                 .collect(Collectors.toList());
-        String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder());
+        String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder(),
+                line -> !LOG_LINE_FILTER_PATTERN.matcher(line).matches());
         if (logOutput) {
             LOGGER.info("Output of {}({}):\n{}", testDisplayName, String.join(" ", command), output);
         }
         return output;
     }
 
-    private static String prop(Property property, String value) {
+    protected static String prop(Property property, String value) {
         String propString =  "-D" + property.prefixedName();
         if (value != null && !value.isEmpty()) {
             propString += "=" + value;

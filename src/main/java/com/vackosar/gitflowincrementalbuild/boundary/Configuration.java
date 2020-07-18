@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 public class Configuration {
 
-    static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
+    public static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
 
     public final boolean help;
     public final boolean enabled;
