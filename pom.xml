@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>3.11.1-SNAPSHOT</version>
+    <version>3.11.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
     <url>https://github.com/vackosar/gitflow-incremental-builder</url>
@@ -17,7 +17,7 @@
         <url>https://github.com/vackosar/gitflow-incremental-builder</url>
         <connection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</connection>
         <developerConnection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>version/3.11.1</tag>
   </scm>
 
     <licenses>
@@ -863,7 +863,7 @@
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
-                                                <ignore/>
+                                                <ignore />
                                             </action>
                                         </pluginExecution>
                                         <pluginExecution>
@@ -877,7 +877,7 @@
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
-                                                <ignore/>
+                                                <ignore />
                                             </action>
                                         </pluginExecution>
                                         <pluginExecution>
@@ -890,7 +890,7 @@
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
-                                                <ignore/>
+                                                <ignore />
                                             </action>
                                         </pluginExecution>
                                     </pluginExecutions>
