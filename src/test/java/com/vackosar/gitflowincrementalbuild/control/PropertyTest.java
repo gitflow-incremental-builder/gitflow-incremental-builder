@@ -190,6 +190,22 @@ public class PropertyTest implements WithAssertions {
                 .withMessageContaining("bing");
     }
 
+    @Test
+    public void getDefaultValue_sample() {
+        assertThat(Property.enabled.getDefaultValue()).isEqualTo("true");
+    }
+
+    @Test
+    public void getDefaultValue_nonNull() {
+        assertThat(Arrays.stream(Property.values()).map(Property::getDefaultValue)).doesNotContainNull();
+    }
+
+    @Test
+    public void isBoolean_samples() {
+        assertThat(Property.enabled.isBoolean()).isTrue();
+        assertThat(Property.referenceBranch.isBoolean()).isFalse();
+    }
+
     private static Properties propsWith(String propertyKey, String value) {
         final Properties properties = new Properties();
         properties.setProperty(propertyKey, value);
