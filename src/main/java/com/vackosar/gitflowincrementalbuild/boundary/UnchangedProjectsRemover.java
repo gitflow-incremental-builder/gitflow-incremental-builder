@@ -37,53 +37,51 @@ class UnchangedProjectsRemover {
     private Logger logger = LoggerFactory.getLogger(UnchangedProjectsRemover.class);
 
     @Inject private ChangedProjects changedProjects;
-    @Inject private MavenSession mavenSession;
-    @Inject private Configuration.Provider configProvider;
 
-    void act() throws GitAPIException, IOException {
+    void act(Configuration config) throws GitAPIException, IOException {
         // ensure to write logfile for impaced (even if just empty)
-        configProvider.get().logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, config.mavenSession));
 
         // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
-        final Set<MavenProject> selected = ProjectSelectionUtil.gatherSelectedProjects(mavenSession);
-        if (onlySelectedModulesPresent(selected)) {
+        final Set<MavenProject> selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession);
+        if (onlySelectedModulesPresent(selected, config.mavenSession)) {
             printDelimiter();
             logger.info("Building explicitly selected projects (without any adjustment): {}",
-                    mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
+                    config.mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
             return;
         }
         // do nothing if:
         // - building non-recursively (-N)
         // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
         // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
-        if (!mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent()) {
+        if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config.mavenSession)) {
             printDelimiter();
-            logger.info("Building single project (without any adjustment): {}", mavenSession.getCurrentProject().getArtifactId());
+            logger.info("Building single project (without any adjustment): {}", config.mavenSession.getCurrentProject().getArtifactId());
             return;
         }
 
-        final Set<MavenProject> changed = changedProjects.get();
+        final Set<MavenProject> changed = changedProjects.get(config);
         printDelimiter();
         if (changed.isEmpty()) {
-            handleNoChangesDetected(selected);
+            handleNoChangesDetected(selected, config);
             return;
         }
-        logProjects(changed, "Changed Artifacts:");
+        logProjects(changed, "Changed Artifacts:", config.mavenSession);
 
-        final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed);
+        final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed, config);
 
-        configProvider.get().logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, config.mavenSession));
 
-        if (!configProvider.get().buildAll) {
-            modifyProjectList(selected, changed, impacted);
+        if (!config.buildAll) {
+            modifyProjectList(selected, changed, impacted, config);
         } else {
-            mavenSession.getProjects().stream()
+            config.mavenSession.getProjects().stream()
                     .filter(proj -> !impacted.contains(proj))
-                    .forEach(this::applyUpstreamModuleArgs);
+                    .forEach(proj -> applyUpstreamModuleArgs(proj, config));
         }
     }
 
-    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath) {
+    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, MavenSession mavenSession) {
         List<String> projectsToLog = impacted.isEmpty()
                 ? Collections.emptyList()
                 : mavenSession.getProjects().stream()   // write in proper order
@@ -98,81 +96,80 @@ class UnchangedProjectsRemover {
         }
     }
 
-    private boolean onlySelectedModulesPresent(Set<MavenProject> selected) {
+    private boolean onlySelectedModulesPresent(Set<MavenProject> selected, MavenSession mavenSession) {
         return !selected.isEmpty() && mavenSession.getProjects().equals(new ArrayList<>(selected));
     }
 
-    private boolean onlySingleLeafModulePresent() {
+    private boolean onlySingleLeafModulePresent(MavenSession mavenSession) {
         // note: explicit check for modules to cover -N case
         return mavenSession.getProjects().size() == 1 && mavenSession.getCurrentProject().getModel().getModules().isEmpty();
     }
 
-    private void handleNoChangesDetected(Set<MavenProject> selected) {
-        Configuration cfg = configProvider.get();
+    private void handleNoChangesDetected(Set<MavenProject> selected, Configuration config) {
         if (!selected.isEmpty()) {
             // note: need to check make behaviour additionally because downstream projects will only be present for -pl when also -amd is set
-            if (cfg.buildDownstream && Configuration.isMakeBehaviourActive(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM, mavenSession)) {
+            if (config.buildDownstream && Configuration.isMakeBehaviourActive(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM, config.mavenSession)) {
                 logger.info("No changed artifacts detected: Building explicitly selected projects and their dependents.");
-                mavenSession.setProjects(selected.stream()
-                        .flatMap(this::streamProjectWithDownstreamProjects)
+                config.mavenSession.setProjects(selected.stream()
+                        .flatMap(proj -> streamProjectWithDownstreamProjects(proj, config))
                         .distinct()
                         .collect(Collectors.toList()));
             } else {
                 logger.info("No changed artifacts detected: Building just explicitly selected projects.");
-                mavenSession.setProjects(new ArrayList<>(selected));
+                config.mavenSession.setProjects(new ArrayList<>(selected));
             }
-        } else if (cfg.buildAllIfNoChanges) {
+        } else if (config.buildAllIfNoChanges) {
             logger.info("No changed artifacts detected: Building all modules in buildAll mode.");
-            logger.info("- skip tests: {}", cfg.skipTestsForUpstreamModules);
-            logger.info("- additional args: {}", cfg.argsForUpstreamModules);
-            mavenSession.getProjects().stream().forEach(this::applyUpstreamModuleArgs);
+            logger.info("- skip tests: {}", config.skipTestsForUpstreamModules);
+            logger.info("- additional args: {}", config.argsForUpstreamModules);
+            config.mavenSession.getProjects().stream().forEach(proj -> applyUpstreamModuleArgs(proj, config));
         } else {
             logger.info("No changed artifacts detected: Executing validate goal on current project only, skipping all submodules.");
-            mavenSession.setProjects(Collections.singletonList(mavenSession.getCurrentProject()));
-            mavenSession.getGoals().clear();
-            mavenSession.getGoals().add("validate");
+            config.mavenSession.setProjects(Collections.singletonList(config.mavenSession.getCurrentProject()));
+            config.mavenSession.getGoals().clear();
+            config.mavenSession.getGoals().add("validate");
         }
     }
 
-    private Set<MavenProject> calculateImpactedProjects(Set<MavenProject> selected, Set<MavenProject> changed) {
-        Configuration cfg = configProvider.get();
+    private Set<MavenProject> calculateImpactedProjects(Set<MavenProject> selected, Set<MavenProject> changed, Configuration config) {
         Stream<MavenProject> impacted = selected.isEmpty() ? changed.stream() : Stream.concat(selected.stream(), changed.stream()).distinct();
         // note: buildAll *always* needs impacted incl. downstream, otherwise applyNotImpactedModuleArgs() might disable tests etc. for downstream modules!
-        if (cfg.buildAll || cfg.buildDownstream) {
-            impacted = impacted.flatMap(this::streamProjectWithDownstreamProjects);
+        if (config.buildAll || config.buildDownstream) {
+            impacted = impacted.flatMap(proj -> streamProjectWithDownstreamProjects(proj, config));
         }
         return impacted
-                .filter(mavenSession.getProjects()::contains)   // not deselected
+                .filter(config.mavenSession.getProjects()::contains)   // not deselected
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted) {
-        Set<MavenProject> rebuild = calculateRebuildProjects(selected, changed, impacted);
+    private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted, Configuration config) {
+        Set<MavenProject> rebuild = calculateRebuildProjects(selected, changed, impacted, config);
         if (rebuild.isEmpty()) {
-            handleNoChangesDetected(selected);
-        } else if (!configProvider.get().forceBuildModules.isEmpty()) {
-            Set<MavenProject> forceBuildModules = mavenSession.getProjects().stream()
+            handleNoChangesDetected(selected, config);
+        } else if (!config.forceBuildModules.isEmpty()) {
+            Set<MavenProject> forceBuildModules = config.mavenSession.getProjects().stream()
                     .filter(proj -> !rebuild.contains(proj))
-                    .filter(proj -> matchesAny(proj.getArtifactId(), configProvider.get().forceBuildModules))
-                    .map(this::applyUpstreamModuleArgs)
+                    .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules))
+                    .map(proj -> applyUpstreamModuleArgs(proj, config))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
-            mavenSession.setProjects(mavenSession.getProjects().stream()
+            config.mavenSession.setProjects(config.mavenSession.getProjects().stream()
                     .filter(proj -> forceBuildModules.contains(proj) || rebuild.contains(proj))
                     .collect(Collectors.toList()));
         } else {
-            mavenSession.setProjects(new ArrayList<>(rebuild));
+            config.mavenSession.setProjects(new ArrayList<>(rebuild));
         }
     }
 
-    private Set<MavenProject> calculateRebuildProjects(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted) {
-        BuildUpstreamMode buildUpstreamMode = configProvider.get().buildUpstreamMode;
+    private Set<MavenProject> calculateRebuildProjects(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted,
+            Configuration config) {
+        BuildUpstreamMode buildUpstreamMode = config.buildUpstreamMode;
         Set<MavenProject> upstreamProjects;
 
         if (!selected.isEmpty()) {
             // note: buildDownstream=false is not relevant here since -amd might have been specified
             //       and we need all downstreams to subtract them from the project list to find the upstreams
             Set<MavenProject> selectedWithDownstream = selected.stream()
-                    .flatMap(this::streamProjectWithDownstreamProjects)
+                    .flatMap(proj -> streamProjectWithDownstreamProjects(proj, config))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             switch (buildUpstreamMode) {
                 case NONE:
@@ -185,7 +182,7 @@ class UnchangedProjectsRemover {
                 case IMPACTED:
                     upstreamProjects = changed.stream()
                             .filter(proj -> !selectedWithDownstream.contains(proj))
-                            .flatMap(this::streamProjectWithDownstreamProjects)
+                            .flatMap(proj -> streamProjectWithDownstreamProjects(proj, config))
                             .filter(proj -> !selectedWithDownstream.contains(proj))
                             .collect(Collectors.toCollection(LinkedHashSet::new));
                     break;
@@ -208,21 +205,21 @@ class UnchangedProjectsRemover {
                     throw new IllegalStateException("Unsupported BuildUpstreamMode: " + buildUpstreamMode);
             }
             upstreamProjects = upstreamRequiringProjects.stream()
-                    .flatMap(this::streamUpstreamProjects)
+                    .flatMap(proj -> streamUpstreamProjects(proj, config.mavenSession))
                     .filter(proj -> !impacted.contains(proj))
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
-        upstreamProjects.forEach(this::applyUpstreamModuleArgs);
+        upstreamProjects.forEach(proj -> applyUpstreamModuleArgs(proj, config));
 
-        return mavenSession.getProjects().stream()
+        return config.mavenSession.getProjects().stream()
                 .filter(proj -> impacted.contains(proj) || upstreamProjects.contains(proj))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private MavenProject applyUpstreamModuleArgs(MavenProject mavenProject) {
+    private MavenProject applyUpstreamModuleArgs(MavenProject mavenProject, Configuration config) {
         final Properties projectProperties = mavenProject.getProperties();
-        if (configProvider.get().skipTestsForUpstreamModules) {
+        if (config.skipTestsForUpstreamModules) {
             if (projectDeclaresTestJarGoal(mavenProject)) {
                 logger.debug("{}: {}", mavenProject.getArtifactId(), TEST_JAR_DETECTED);
                 projectProperties.setProperty(MAVEN_TEST_SKIP_EXEC, Boolean.TRUE.toString());
@@ -230,7 +227,7 @@ class UnchangedProjectsRemover {
                 projectProperties.setProperty(MAVEN_TEST_SKIP, Boolean.TRUE.toString());
             }
         }
-        configProvider.get().argsForUpstreamModules.forEach(projectProperties::setProperty);
+        config.argsForUpstreamModules.forEach(projectProperties::setProperty);
         return mavenProject;
     }
 
@@ -241,7 +238,7 @@ class UnchangedProjectsRemover {
                 .anyMatch(GOAL_TEST_JAR::equals);
     }
 
-    private void logProjects(Set<MavenProject> projects, String title) {
+    private void logProjects(Set<MavenProject> projects, String title, MavenSession mavenSession) {
         logger.info(title);
         logger.info("");
         projects.stream()
@@ -260,14 +257,14 @@ class UnchangedProjectsRemover {
         logger.info("------------------------------------------------------------------------");
     }
 
-    private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project) {
+    private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
         return Stream.concat(
             Stream.of(project),
-            mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
-                    .filter(proj -> !configProvider.get().excludeDownstreamModulesPackagedAs.contains(proj.getPackaging())));
+            config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
+                    .filter(proj -> !config.excludeDownstreamModulesPackagedAs.contains(proj.getPackaging())));
     }
 
-    private Stream<MavenProject> streamUpstreamProjects(MavenProject project) {
+    private Stream<MavenProject> streamUpstreamProjects(MavenProject project, MavenSession mavenSession) {
         return mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream();
     }
 

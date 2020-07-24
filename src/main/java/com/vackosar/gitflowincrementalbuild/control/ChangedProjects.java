@@ -1,10 +1,11 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,12 +25,11 @@ public class ChangedProjects {
     private Logger logger = LoggerFactory.getLogger(ChangedProjects.class);
 
     @Inject private DifferentFiles differentFiles;
-    @Inject private MavenSession mavenSession;
     @Inject private Modules modules;
 
-    public Set<MavenProject> get() throws GitAPIException, IOException {
-        Map<Path, MavenProject> modulesPathMap = modules.createPathMap(mavenSession);
-        return differentFiles.get().stream()
+    public Set<MavenProject> get(Configuration config) throws GitAPIException, IOException {
+        Map<Path, MavenProject> modulesPathMap = modules.createPathMap(config.mavenSession);
+        return differentFiles.get(config).stream()
                 .map(path -> findProject(path, modulesPathMap))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());

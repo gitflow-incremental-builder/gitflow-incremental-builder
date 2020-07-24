@@ -66,7 +66,7 @@ public class ConfigurationTest {
         String invalidProperty = Property.PREFIX + "invalid";
         System.setProperty(invalidProperty, "invalid");
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration.Provider(mavenSessionMock).get())
+        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(invalidProperty)
                 .withMessageContaining(Property.disableBranchComparison.prefixedName());
     }
@@ -75,7 +75,7 @@ public class ConfigurationTest {
     public void enabled() {
         System.setProperty(Property.enabled.prefixedName(), "false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.enabled);
         assertNull(configuration.disableIfBranchRegex);
@@ -85,7 +85,7 @@ public class ConfigurationTest {
     public void enabled_projectProperties() {
         projectProperties.put(Property.enabled.prefixedName(), "false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.enabled);
         assertNull(configuration.disableIfBranchRegex);
@@ -96,7 +96,7 @@ public class ConfigurationTest {
         projectProperties.put(Property.enabled.prefixedName(), "true");
         System.setProperty(Property.enabled.prefixedName(), "false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.enabled);
         assertNull(configuration.disableIfBranchRegex);
@@ -106,7 +106,7 @@ public class ConfigurationTest {
     public void argsForUpstreamModules() {
         System.setProperty(Property.argsForUpstreamModules.prefixedName(), "x=true a=false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
     }
@@ -115,7 +115,7 @@ public class ConfigurationTest {
     public void excludeDownstreamModulesPackagedAs() {
         System.setProperty(Property.excludeDownstreamModulesPackagedAs.prefixedName(), "ear,war");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
@@ -125,7 +125,7 @@ public class ConfigurationTest {
     public void excludeTransitiveModulesPackagedAs() {
         System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedPrefixedName(), "ear,war");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
@@ -135,7 +135,7 @@ public class ConfigurationTest {
         String expectedPatternString = ".*-some-artifact";
         System.setProperty(Property.forceBuildModules.prefixedName(), expectedPatternString);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertNotNull(configuration.forceBuildModules,"Field forceBuildModules is null");
         assertEquals( 1, configuration.forceBuildModules.size(), "Unexpected number of Patterns in forceBuildModules");
@@ -148,7 +148,7 @@ public class ConfigurationTest {
     public void forceBuildModules_patternInvalid() {
         System.setProperty(Property.forceBuildModules.prefixedName(), "*-some-artifact");   // pattern is missing the dot
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration.Provider(mavenSessionMock).get())
+        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(Property.forceBuildModules.prefixedName())
                 .withCauseExactlyInstanceOf(PatternSyntaxException.class);
     }
@@ -160,7 +160,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_never() {
         System.setProperty(Property.buildUpstream.prefixedName(), "never");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
@@ -170,7 +170,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_false() {
         System.setProperty(Property.buildUpstream.prefixedName(), "false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
@@ -180,7 +180,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_always() {
         System.setProperty(Property.buildUpstream.prefixedName(), "always");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
@@ -190,7 +190,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_true() {
         System.setProperty(Property.buildUpstream.prefixedName(), "true");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
@@ -200,7 +200,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_unknown() {
         System.setProperty(Property.buildUpstream.prefixedName(), "foo");
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration.Provider(mavenSessionMock).get())
+        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(Property.buildUpstream.prefixedName());
     }
 
@@ -208,7 +208,7 @@ public class ConfigurationTest {
 
     @Test
     public void buildUpstreamMode_derived_noMake() {
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
     }
@@ -217,7 +217,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_derived_makeUpstream() {
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
     }
@@ -226,7 +226,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_derived_makeBoth() {
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
     }
@@ -235,7 +235,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_derived_makeDownstream() {
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
     }
@@ -245,7 +245,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildUpstreamMode.prefixedName(), "impacted");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.IMPACTED, configuration.buildUpstreamMode);
     }
@@ -255,7 +255,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildUpstreamMode.prefixedName(), "foo");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration.Provider(mavenSessionMock).get())
+        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(Property.buildUpstreamMode.prefixedName())
                 .withCauseExactlyInstanceOf(IllegalArgumentException.class);
     }
@@ -266,7 +266,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildUpstream.prefixedName(), "derived");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
     }
@@ -277,7 +277,7 @@ public class ConfigurationTest {
     // 'always' is default
     @Test
     public void buildDownstream() {
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.buildDownstream);
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
@@ -287,7 +287,7 @@ public class ConfigurationTest {
     public void buildDownstream_never() {
         System.setProperty(Property.buildDownstream.prefixedName(), "never");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.buildDownstream);
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
@@ -297,7 +297,7 @@ public class ConfigurationTest {
     public void buildDownstream_false() {
         System.setProperty(Property.buildDownstream.prefixedName(), "false");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.buildDownstream);
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
@@ -307,7 +307,7 @@ public class ConfigurationTest {
     public void buildDownstream_always() {
         System.setProperty(Property.buildDownstream.prefixedName(), "always");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.buildDownstream);
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
@@ -317,7 +317,7 @@ public class ConfigurationTest {
     public void buildDownstream_true() {
         System.setProperty(Property.buildDownstream.prefixedName(), "true");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.buildDownstream);
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
@@ -327,7 +327,7 @@ public class ConfigurationTest {
     public void buildDownstream_unknown() {
         System.setProperty(Property.buildDownstream.prefixedName(), "foo");
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration.Provider(mavenSessionMock).get())
+        assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(Property.buildDownstream.prefixedName());
     }
 
@@ -335,7 +335,7 @@ public class ConfigurationTest {
     public void buildDownstream_derived_noMake() {
         System.setProperty(Property.buildDownstream.prefixedName(), "derived");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.buildDownstream);
     }
@@ -345,7 +345,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildDownstream.prefixedName(), "derived");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.buildDownstream);
     }
@@ -355,7 +355,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildDownstream.prefixedName(), "derived");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.buildDownstream);
     }
@@ -365,7 +365,7 @@ public class ConfigurationTest {
         System.setProperty(Property.buildDownstream.prefixedName(), "derived");
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertFalse(configuration.buildDownstream);
     }
@@ -374,7 +374,7 @@ public class ConfigurationTest {
     public void plugin_baseBranch() {
         mockPluginConfig(Property.baseBranch.name(), "foo");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals("foo", configuration.baseBranch);
     }
@@ -384,7 +384,7 @@ public class ConfigurationTest {
         mockPluginConfig(Property.baseBranch.name(), "foo");
         projectProperties.put(Property.baseBranch.prefixedName(), "bar");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals("foo", configuration.baseBranch);
     }
@@ -394,7 +394,7 @@ public class ConfigurationTest {
         mockPlugin(null);
         projectProperties.put(Property.baseBranch.prefixedName(), "foo");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals("foo", configuration.baseBranch);
     }
@@ -404,7 +404,7 @@ public class ConfigurationTest {
         mockPlugin(mock(Xpp3Dom.class));
         projectProperties.put(Property.baseBranch.prefixedName(), "foo");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals("foo", configuration.baseBranch);
     }
@@ -416,7 +416,7 @@ public class ConfigurationTest {
         mockPlugin(configMock);
         projectProperties.put(Property.baseBranch.prefixedName(), "foo");
 
-        Configuration configuration = new Configuration.Provider(mavenSessionMock).get();
+        Configuration configuration = new Configuration(mavenSessionMock);
 
         assertEquals("foo", configuration.baseBranch);
     }

@@ -7,10 +7,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
@@ -35,6 +31,8 @@ import static java.util.stream.Collectors.toList;
 public class Configuration {
 
     public static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
+
+    public final MavenSession mavenSession;
 
     public final boolean help;
     public final boolean enabled;
@@ -65,7 +63,8 @@ public class Configuration {
     public final boolean failOnError;
     public final Optional<Path> logImpactedTo;
 
-    private Configuration(MavenSession session) {
+    public Configuration(MavenSession session) {
+        this.mavenSession = session;
         Properties projectProperties = getProjectProperties(session);
         Properties pluginProperties = getPluginProperties(session);
 
@@ -249,32 +248,5 @@ public class Configuration {
         NONE,
         CHANGED,
         IMPACTED;
-    }
-
-    @Singleton
-    @Named
-    public static class Provider implements javax.inject.Provider<Configuration> {
-
-        private final MavenSession mavenSession;
-
-        private Configuration configuration;
-
-        @Inject
-        public Provider(MavenSession mavenSession) {
-            this.mavenSession = mavenSession;
-        }
-
-        /**
-         * Returns a {@link Configuration} instance which is constructed when first called. Subsequent calls will return the same instance.
-         *
-         * @return a {@link Configuration} instance
-         */
-        @Override
-        public Configuration get() {
-            if (configuration == null) {
-                configuration = new Configuration(mavenSession);
-            }
-            return configuration;
-        }
     }
 }

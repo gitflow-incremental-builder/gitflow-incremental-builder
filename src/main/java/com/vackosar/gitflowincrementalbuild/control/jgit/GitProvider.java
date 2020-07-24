@@ -7,12 +7,9 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
@@ -23,33 +20,24 @@ import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 @Singleton
 @Named
-public class GitProvider implements Provider<Git> {
+public class GitProvider {
 
     private static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
     private Logger logger = LoggerFactory.getLogger(GitProvider.class);
 
-    private final MavenSession mavenSession;
-    private final Configuration configuration;
-
     private Git git;
-
-    @Inject
-    public GitProvider(MavenSession mavenSession, Configuration configuration) {
-        this.mavenSession = mavenSession;
-        this.configuration = configuration;
-    }
 
     /**
      * Returns a {@link Git} instance which is constructed when first called. Subsequent calls will return the same instance.
      *
+     * @param config the configuration
      * @return a {@link Git} instance
      */
-    @Override
-    public Git get() {
+    public Git get(Configuration config) {
         if (git == null) {
             try {
-                git = setupGit();
+                git = setupGit(config);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -64,15 +52,15 @@ public class GitProvider implements Provider<Git> {
         }
     }
 
-    private Git setupGit() throws IOException {
+    private Git setupGit(Configuration config) throws IOException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        File pomDir = mavenSession.getCurrentProject().getBasedir().toPath().toFile();
+        File pomDir = config.mavenSession.getCurrentProject().getBasedir().toPath().toFile();
         builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
             String gitDirNotFoundMessage = "Git repository root directory not found ascending from current working directory:'"
                     + pomDir + "'.";
             logger.warn(gitDirNotFoundMessage + " Next step is determined by failOnMissingGitDir property.");
-            if (configuration.failOnMissingGitDir) {
+            if (config.failOnMissingGitDir) {
                 throw new IllegalArgumentException(gitDirNotFoundMessage);
             } else {
                 throw new SkipExecutionException(gitDirNotFoundMessage);

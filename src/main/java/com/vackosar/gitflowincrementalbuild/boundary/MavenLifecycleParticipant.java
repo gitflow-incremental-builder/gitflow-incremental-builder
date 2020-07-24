@@ -24,8 +24,6 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     @Inject private UnchangedProjectsRemover unchangedProjectsRemover;
 
-    @Inject private Configuration.Provider configProvider;
-
     @Inject private GitProvider gitProvider;
 
     private final String implVersion;
@@ -42,11 +40,13 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     @Override
     public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
 
-        if (configProvider.get().help) {
+        final Configuration config = new Configuration(session);
+
+        if (config.help) {
             logHelp();
         }
 
-        if (!configProvider.get().enabled) {
+        if (!config.enabled) {
             logger.info("gitflow-incremental-builder is disabled.");
             return;
         }
@@ -60,25 +60,25 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
 
         try {
-            perform();
+            perform(config);
         } finally {
             gitProvider.close();
         }
     }
 
-    private void perform() throws MavenExecutionException {
+    private void perform(Configuration config) throws MavenExecutionException {
 
         try {
-            if (isDisabledForBranch()) {
+            if (isDisabledForBranch(config)) {
                 logger.info("gitflow-incremental-builder is disabled for this branch.");
                 return;
             }
 
             logger.info("gitflow-incremental-builder {} starting...", implVersion);
-            unchangedProjectsRemover.act();
+            unchangedProjectsRemover.act(config);
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
-            if (!configProvider.get().failOnError || isSkipExecException) {
+            if (!config.failOnError || isSkipExecException) {
                 logger.info("gitflow-incremental-builder execution skipped: {}", (isSkipExecException ? e.getMessage() : e.toString()));
                 logger.debug("Full exception:", e);
             } else {
@@ -88,10 +88,10 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         logger.info("gitflow-incremental-builder exiting...");
     }
 
-    private boolean isDisabledForBranch() {
-        return configProvider.get().disableIfBranchRegex.map(predicate -> {
+    private boolean isDisabledForBranch(Configuration config) {
+        return config.disableIfBranchRegex.map(predicate -> {
             try {
-                return predicate.test(gitProvider.get().getRepository().getBranch());
+                return predicate.test(gitProvider.get(config).getRepository().getBranch());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
