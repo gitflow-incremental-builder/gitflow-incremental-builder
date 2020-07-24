@@ -5,7 +5,10 @@ import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginCont
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,10 +66,13 @@ public class Configuration {
     public final boolean failOnError;
     public final Optional<Path> logImpactedTo;
 
+    private Logger logger = LoggerFactory.getLogger(Configuration.class);
+
     public Configuration(MavenSession session) {
         this.mavenSession = session;
-        Properties projectProperties = getProjectProperties(session);
-        Properties pluginProperties = getPluginProperties(session);
+        Properties[] properties = getProperties(session, logger);
+        Properties projectProperties = properties[0];
+        Properties pluginProperties = properties[1];
 
         help = Boolean.parseBoolean(Property.help.getValue(pluginProperties, projectProperties));
         enabled = Boolean.parseBoolean(Property.enabled.getValue(pluginProperties, projectProperties));
@@ -167,12 +173,20 @@ public class Configuration {
         return expectedMakeBehavior.equals(actualMakeBehavior) || MavenExecutionRequest.REACTOR_MAKE_BOTH.equals(actualMakeBehavior);
     }
 
-    private static Properties getProjectProperties(MavenSession session) {
-        return session.getTopLevelProject().getProperties();
+    private static Properties[] getProperties(MavenSession session, Logger logger) {
+        MavenProject mavenProject = Optional.ofNullable(session.getTopLevelProject()).orElseGet(session::getCurrentProject);
+        if (mavenProject != null) {
+            return new Properties[] { mavenProject.getProperties(), getPluginProperties(mavenProject) };
+        } else {
+            logger.warn("gitflow-incremental-builder could not parse configuration due to missing 'topLevel' or 'current' project in the MavenSession.");
+            Properties fakeProjectProperties = new Properties();
+            fakeProjectProperties.put(Property.enabled.prefixedName(), Boolean.FALSE.toString());
+            return new Properties[] { fakeProjectProperties, new Properties() };
+        }
     }
 
-    private static Properties getPluginProperties(MavenSession session) {
-        return Optional.ofNullable(session.getTopLevelProject().getPlugin(PLUGIN_KEY))
+    private static Properties getPluginProperties(MavenProject mavenProject) {
+        return Optional.ofNullable(mavenProject.getPlugin(PLUGIN_KEY))
                 .map(plugin -> (Xpp3Dom) plugin.getConfiguration())
                 .map(Xpp3Dom::getChildren)
                 .filter(children -> children.length > 0)

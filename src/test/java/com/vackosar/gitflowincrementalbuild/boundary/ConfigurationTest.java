@@ -421,6 +421,25 @@ public class ConfigurationTest {
         assertEquals("foo", configuration.baseBranch);
     }
 
+    @Test
+    public void noTopLevelProject_noCurrentProject() {
+        when(mavenSessionMock.getTopLevelProject()).thenReturn(null);
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertFalse(configuration.enabled);
+    }
+
+    @Test
+    public void noTopLevelProject_fallbackToCurrentProject() {
+        when(mavenSessionMock.getTopLevelProject()).thenReturn(null);
+        when(mavenSessionMock.getCurrentProject()).thenReturn(mockTLProject);
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertTrue(configuration.enabled);
+    }
+
     private void mockPluginConfig(String propertyName, String value) {
         Xpp3Dom childConfigMock = mock(Xpp3Dom.class);
         when(childConfigMock.getName()).thenReturn(propertyName);
