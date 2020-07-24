@@ -44,25 +44,23 @@ public class DifferentFiles {
 
     private Logger logger = LoggerFactory.getLogger(DifferentFiles.class);
 
-    @Inject private Configuration.Provider configProvider;
     @Inject private GitProvider gitProvider;
 
     private final Map<String, String> additionalNativeGitEnvironment = new HashMap<>();
 
-    public Set<Path> get() throws GitAPIException, IOException {
+    public Set<Path> get(Configuration config) throws GitAPIException, IOException {
         Set<Path> paths = new HashSet<>();
 
-        Configuration configuration = configProvider.get();
         Worker worker = null;
         try {
-            worker = new Worker(gitProvider.get(), configuration);
+            worker = new Worker(gitProvider.get(config), config);
 
             worker.fetch();
             worker.checkout();
-            if (!configuration.disableBranchComparison) {
+            if (!config.disableBranchComparison) {
                 paths.addAll(worker.getBranchDiff());
             }
-            if (configuration.uncommited || configuration.untracked) {
+            if (config.uncommited || config.untracked) {
                 paths.addAll(worker.getChangesFromStatus());
             }
         } finally {

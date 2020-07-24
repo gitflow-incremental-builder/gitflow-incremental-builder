@@ -56,10 +56,8 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @BeforeEach
     void injectMavenSessionMockAndGitProvider() throws Exception {
         mavenSessionMock = getMavenSessionMock();
-        Configuration.Provider configProvider = new Configuration.Provider(mavenSessionMock);
-        gitProvider = new GitProvider(mavenSessionMock, configProvider.get());
-        Whitebox.setInternalState(differentFilesSpy, configProvider, gitProvider);
-        Whitebox.setInternalState(underTest, mavenSessionMock);
+        gitProvider = new GitProvider();
+        Whitebox.setInternalState(differentFilesSpy, gitProvider);
     }
 
     @AfterEach
@@ -78,7 +76,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 Paths.get("parent/testJarDependent")
         ));
 
-        final Set<Path> actual = underTest.get().stream()
+        final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
                     .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
@@ -99,12 +97,16 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 Paths.get("parent/testJarDependent")
         ));
 
-        final Set<Path> actual = underTest.get().stream()
+        final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
                     .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
                 .collect(Collectors.toSet());
 
         assertEquals(expected, actual);
+    }
+
+    protected Configuration config() {
+        return new Configuration(mavenSessionMock);
     }
 }

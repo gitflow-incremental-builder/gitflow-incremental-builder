@@ -40,7 +40,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -57,7 +57,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectSelections(moduleB, moduleC);
         overrideProjects(moduleB, moduleC);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -74,7 +74,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -97,7 +97,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -123,7 +123,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildDownstream, "false");
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -154,7 +154,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -179,7 +179,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -198,7 +198,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
     }
@@ -212,7 +212,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
@@ -231,7 +231,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildUpstream, "false");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
@@ -252,7 +252,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         // upstream B was not changed but its upstream A, so B must be built as well
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC));
@@ -277,7 +277,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC));
 
@@ -303,7 +303,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
@@ -328,7 +328,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
@@ -354,7 +354,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
@@ -375,7 +375,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
     }
@@ -396,7 +396,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
     }
@@ -418,7 +418,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         changedProjects.add(moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -433,7 +433,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
     }
@@ -445,7 +445,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
@@ -461,7 +461,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildAll, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -478,7 +478,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.forceBuildModules, "module-A");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
@@ -499,7 +499,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_BOTH);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
@@ -519,7 +519,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleC));
     }
@@ -538,7 +538,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildDownstream, "false");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
@@ -560,7 +560,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         addGibProperty(Property.buildDownstream, "false");
         addGibProperty(Property.buildAllIfNoChanges, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -582,7 +582,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         addGibProperty(Property.buildUpstream, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleC));
 
@@ -605,7 +605,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         addGibProperty(Property.buildUpstream, "true");
         addGibProperty(Property.buildDownstream, "false");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
@@ -633,7 +633,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
 
@@ -665,7 +665,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleC, moduleD, moduleE));
 

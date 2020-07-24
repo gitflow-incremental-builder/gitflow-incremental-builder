@@ -18,13 +18,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -65,8 +65,6 @@ public class MavenLifecycleParticipantTest {
         when(mavenSessionMock.getRequest()).thenReturn(mock(MavenExecutionRequest.class));
 
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(mock(ProjectDependencyGraph.class));
-
-        Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
     }
 
     @Test
@@ -75,7 +73,7 @@ public class MavenLifecycleParticipantTest {
         underTest.afterProjectsRead(mavenSessionMock);
 
         verify(loggerSpy).info(contains("starting..."), eq(TEST_IMPL_VERSION));
-        verify(unchangedProjectsRemoverMock).act();
+        verify(unchangedProjectsRemoverMock).act(any(Configuration.class));
     }
 
     @Test
@@ -107,7 +105,7 @@ public class MavenLifecycleParticipantTest {
         underTest.afterProjectsRead(mavenSessionMock);
 
         verifyHelpLogged(true);
-        verify(unchangedProjectsRemoverMock).act();
+        verify(unchangedProjectsRemoverMock).act(any(Configuration.class));
     }
 
     @Test
@@ -121,7 +119,7 @@ public class MavenLifecycleParticipantTest {
     @Test
     public void onRuntimeException() throws Exception {
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
-        doThrow(runtimeException).when(unchangedProjectsRemoverMock).act();
+        doThrow(runtimeException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
 
         assertThatExceptionOfType(MavenExecutionException.class).isThrownBy(() -> underTest.afterProjectsRead(mavenSessionMock))
                 .withCause(runtimeException);
@@ -131,7 +129,7 @@ public class MavenLifecycleParticipantTest {
     public void onRuntimeException_failOnErrorFalse() throws Exception {
         projectProperties.setProperty(Property.failOnError.prefixedName(), "false");
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
-        doThrow(runtimeException).when(unchangedProjectsRemoverMock).act();
+        doThrow(runtimeException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -142,7 +140,7 @@ public class MavenLifecycleParticipantTest {
     @Test
     public void onSkipExecutionException() throws Exception {
         SkipExecutionException skipExecutionException = new SkipExecutionException("FAIL !!!");
-        doThrow(skipExecutionException).when(unchangedProjectsRemoverMock).act();
+        doThrow(skipExecutionException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -168,7 +166,7 @@ public class MavenLifecycleParticipantTest {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(unchangedProjectsRemoverMock).act();
+        verify(unchangedProjectsRemoverMock).act(any(Configuration.class));
     }
 
     @Test
@@ -188,7 +186,7 @@ public class MavenLifecycleParticipantTest {
         Repository repository = mock(Repository.class);
         when(git.getRepository()).thenReturn(repository);
         when(repository.getBranch()).thenReturn(branchName);
-        when(gitProviderMock.get()).thenReturn(git);
+        when(gitProviderMock.get(any(Configuration.class))).thenReturn(git);
     }
 
     private void verifyHelpLogged(boolean logged) {

@@ -34,7 +34,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     public void nothingChanged() throws GitAPIException, IOException {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goal");
 
@@ -51,7 +51,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildAllIfNoChanges, "true");
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -67,7 +67,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         // note: a more realistic setup would require a proper parent/root
         moduleA.getModel().addModule("test");
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goal");
 
@@ -84,7 +84,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         moduleA.getModel().addModule("test");
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -102,7 +102,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         // emulate -f module-B
         overrideProjects(moduleB);
 
-        underTest.act();
+        underTest.act(config());
 
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
@@ -117,7 +117,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     public void singleChanged() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
     }
@@ -128,7 +128,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
 
@@ -144,7 +144,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
 
@@ -166,7 +166,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));
         when(moduleA.getBuildPlugins()).thenReturn(Collections.singletonList(pluginMock));
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
 
@@ -182,7 +182,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.argsForUpstreamModules, "enforcer.skip=true argWithNoValue");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
 
@@ -202,7 +202,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.buildUpstreamMode, "changed");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock, dependsOnBothModuleMock));
 
@@ -225,7 +225,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildUpstreamMode, "changed");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock, dependsOnBothModuleMock));
 
@@ -251,7 +251,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildUpstreamMode, "changed");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(moduleA, changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock));
@@ -274,7 +274,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.buildUpstreamMode, "impacted");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock));
 
@@ -297,7 +297,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildUpstreamMode, "impacted");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock, dependsOnBothModuleMock));
 
@@ -323,7 +323,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildUpstreamMode, "impacted");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(moduleA, changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock));
@@ -341,7 +341,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.argsForUpstreamModules, "enforcer.skip=true argWithNoValue");
         addGibProperty(Property.buildAll, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -359,7 +359,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         // buildDownstream is enabled by default!
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
     }
@@ -374,7 +374,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.buildDownstream, "false");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock));
     }
@@ -391,7 +391,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.buildAll, "true");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -406,7 +406,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.forceBuildModules, moduleA.getArtifactId());
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
     }
@@ -418,7 +418,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.forceBuildModules, moduleA.getArtifactId() + "," + unchangedModuleMock.getArtifactId());
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock));
@@ -431,7 +431,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.forceBuildModules, AID_MODULE_A + ".*");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock));
@@ -444,7 +444,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.forceBuildModules, AID_MODULE_A +  ".*,.*-C");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock));
@@ -459,7 +459,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
@@ -475,7 +475,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentJar));
@@ -491,7 +491,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war,ear");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock));
@@ -507,7 +507,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
         addGibProperty(Property.buildAll, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock, never())
                 .setProjects(anyList());
@@ -523,7 +523,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
         addGibProperty(Property.forceBuildModules, dependentWar.getArtifactId());
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
@@ -538,7 +538,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));
@@ -554,7 +554,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
-        underTest.act();
+        underTest.act(config());
 
         verify(mavenSessionMock).setProjects(
                 Arrays.asList(changedProjectMock, dependentWar));

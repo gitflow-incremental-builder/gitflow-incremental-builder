@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -28,8 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.powermock.reflect.Whitebox;
-
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
@@ -92,11 +91,9 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
-        when(changedProjectsMock.get()).thenReturn(changedProjects);
+        when(changedProjectsMock.get(any(Configuration.class))).thenReturn(changedProjects);
 
         when(mavenSessionMock.getGoals()).thenReturn(new ArrayList<>());
-
-        Whitebox.setInternalState(underTest, new Configuration.Provider(mavenSessionMock));
     }
 
     protected MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged) {
@@ -166,5 +163,9 @@ public abstract class BaseUnchangedProjectsRemoverTest {
                         (a, b) -> a,
                         TreeMap::new));
         assertEquals(new TreeMap<>(expected), actual, "Unexpected project properties of " + project);
+    }
+
+    protected Configuration config() {
+        return new Configuration(mavenSessionMock);
     }
 }

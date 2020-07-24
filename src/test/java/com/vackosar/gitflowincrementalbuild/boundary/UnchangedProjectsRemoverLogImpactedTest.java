@@ -38,7 +38,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     public void logImpatcedTo_nothingChanged() throws GitAPIException, IOException {
         addModuleMock(AID_MODULE_B, false);
 
-        underTest.act();
+        underTest.act(config());
 
         assertLogFileContains();
     }
@@ -47,7 +47,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     public void singleChanged() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
-        underTest.act();
+        underTest.act(config());
 
         assertLogFileContains(changedModuleMock);
     }
@@ -62,7 +62,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         setDownstreamProjects(changedModuleMock, dependentModuleMock);
         setUpstreamProjects(independentModuleMock, moduleA);
 
-        underTest.act();
+        underTest.act(config());
 
         assertLogFileContains(changedModuleMock, dependentModuleMock);
     }
@@ -73,7 +73,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         addGibProperty(Property.buildUpstream, "true");
 
-        underTest.act();
+        underTest.act(config());
 
         assertLogFileContains(changedModuleMock);
     }

@@ -76,9 +76,8 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
 
         DifferentFiles underTest = new DifferentFiles();
-        Configuration.Provider configProvider = new Configuration.Provider(mavenSessionMock);
-        GitProvider gitProvider = new GitProvider(mavenSessionMock, configProvider.get());
-        Whitebox.setInternalState(underTest, configProvider, gitProvider, loggerSpy);
+        GitProvider gitProvider = new GitProvider();
+        Whitebox.setInternalState(underTest, gitProvider, loggerSpy);
 
         // isolate a possible native git invocation from the settings of the system the test is runing on
         underTest.putAdditionalNativeGitEnvironment("GIT_CONFIG_NOSYSTEM", "1");
@@ -86,7 +85,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
         Set<Path> result;
         try {
-            result = underTest.get();
+            result = underTest.get(new Configuration(mavenSessionMock));
         } finally {
             gitProvider.close();
         }
