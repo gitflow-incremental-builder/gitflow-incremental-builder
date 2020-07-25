@@ -158,6 +158,11 @@
             <version>${version.maven-core}</version>
             <scope>provided</scope>
             <exclusions>
+                <!-- avoid direct usage of Guava (which is dragged in via 3.3.9, but not in 3.6.3) -->
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
                 <!-- avoid direct usage of Guice annotations -->
                 <exclusion>
                     <groupId>com.google.inject</groupId>
@@ -475,6 +480,7 @@
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
+                                        <exclude>com.google.guava:guava</exclude>
                                         <exclude>junit:junit</exclude>
                                     </excludes>
                                 </bannedDependencies>
