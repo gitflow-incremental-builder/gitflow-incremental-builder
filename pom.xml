@@ -893,8 +893,8 @@
                                         </pluginExecution>
                                         <pluginExecution>
                                             <pluginExecutionFilter>
-                                                <groupId>org.apache.maven.plugin-tools</groupId>
-                                                <artifactId>maven-plugin-annotations</artifactId>
+                                                <groupId>org.apache.maven.plugins</groupId>
+                                                <artifactId>maven-plugin-plugin</artifactId>
                                                 <versionRange>[${version.maven-plugin},)</versionRange>
                                                 <goals>
                                                     <goal>descriptor</goal>
