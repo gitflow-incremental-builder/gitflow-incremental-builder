@@ -13,6 +13,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -28,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.SystemPropertiesResetExtension;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration.BuildUpstreamMode;
 import com.vackosar.gitflowincrementalbuild.control.Property;
@@ -108,7 +109,10 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals(ImmutableMap.of("x", "true", "a", "false"), configuration.argsForUpstreamModules);
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("x", "true");
+        expected.put("a", "false");
+        assertEquals(expected, configuration.argsForUpstreamModules);
     }
 
     @Test

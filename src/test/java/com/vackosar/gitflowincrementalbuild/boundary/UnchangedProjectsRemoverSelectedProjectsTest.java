@@ -18,7 +18,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
@@ -46,7 +45,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B,:module-C
@@ -63,8 +62,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B -am
@@ -80,7 +79,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -amd
@@ -103,8 +102,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B -amd
@@ -129,7 +128,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B,:module-D -amd
@@ -160,10 +159,10 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleD, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
+        assertProjectPropertiesEqual(moduleD);
+        assertProjectPropertiesEqual(moduleE);
     }
 
     // mvn -pl :module-B -am -amd
@@ -185,8 +184,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B
@@ -216,8 +215,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am
@@ -235,7 +234,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am
@@ -257,9 +256,9 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         // upstream B was not changed but its upstream A, so B must be built as well
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B -am -amd
@@ -281,9 +280,9 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B -am -amd
@@ -307,8 +306,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl :module-B -am -amd
@@ -332,8 +331,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am -amd
@@ -358,7 +357,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl !:module-A
@@ -422,8 +421,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
-        assertProjectPropertiesEqual(moduleB, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleC, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleC, "maven.test.skip", "true");
     }
 
     // mvn -pl :module-B
@@ -449,7 +448,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am
@@ -465,8 +464,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am
@@ -482,8 +481,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am -amd
@@ -503,8 +502,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
 
-        assertProjectPropertiesEqual(moduleB, Collections.emptyMap());
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl !:module-B
@@ -542,7 +541,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of());
+        assertProjectPropertiesEqual(moduleA);
     }
 
     // mvn -pl !:module-B
@@ -564,8 +563,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleC, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleC, "maven.test.skip", "true");
     }
 
     // mvn -pl !:module-B
@@ -586,8 +585,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleC));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleC, ImmutableMap.of());
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // mvn -pl !:module-B
@@ -609,7 +608,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
-        assertProjectPropertiesEqual(moduleA, ImmutableMap.of("maven.test.skip", "true"));
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
     }
 
     // mvn -pl :module-C,:module-E -am
@@ -637,11 +636,11 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
 
-        assertProjectPropertiesEqual(moduleB, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleC);
 
-        assertProjectPropertiesEqual(moduleD, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleD, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleE);
     }
 
     // mvn -pl :module-C,:module-E -am
@@ -669,10 +668,10 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Arrays.asList(moduleC, moduleD, moduleE));
 
-        assertProjectPropertiesEqual(moduleC, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleC);
 
-        assertProjectPropertiesEqual(moduleD, ImmutableMap.of("maven.test.skip", "true"));
-        assertProjectPropertiesEqual(moduleE, Collections.emptyMap());
+        assertProjectPropertiesEqual(moduleD, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleE);
     }
 
     // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!

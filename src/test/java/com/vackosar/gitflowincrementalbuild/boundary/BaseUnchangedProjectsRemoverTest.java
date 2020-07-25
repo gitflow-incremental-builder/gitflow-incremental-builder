@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
@@ -154,7 +157,8 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenSessionMock.getTopLevelProject()).thenReturn(firstProject);
     }
 
-    protected void assertProjectPropertiesEqual(MavenProject project, Map<String, String> expected) {
+    protected void assertProjectPropertiesEqual(MavenProject project, String... expectedFlat) {
+        Validate.validState(expectedFlat.length % 2 == 0, "Odd number of expected properties (need to form pairs).");
         TreeMap<String, String> actual = project.getProperties().entrySet().stream()
                 .filter(e -> !e.getKey().toString().startsWith(Property.PREFIX))    // we don't want to check for GIB properties here!
                 .collect(Collectors.toMap(
@@ -162,7 +166,13 @@ public abstract class BaseUnchangedProjectsRemoverTest {
                         e -> e.getValue().toString(),
                         (a, b) -> a,
                         TreeMap::new));
-        assertEquals(new TreeMap<>(expected), actual, "Unexpected project properties of " + project);
+        Map<String, String> expected = expectedFlat.length == 0
+                ? Collections.emptyMap()
+                : IntStream.range(0, expectedFlat.length / 2)
+                        .map(i -> i * 2)
+                        .boxed()
+                        .collect(Collectors.toMap(i -> expectedFlat[i], i -> expectedFlat[i + 1], (a, b) -> a, TreeMap::new));
+        assertEquals(expected, actual, "Unexpected project properties of " + project);
     }
 
     protected Configuration config() {

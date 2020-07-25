@@ -1,6 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.jgit;
 
-import com.google.common.io.Files;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
@@ -11,12 +10,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GitProviderTest {
+
+    @TempDir
+    Path tempDir;
 
     @Mock
     private MavenSession mavenSessionMock;
@@ -69,8 +73,7 @@ public class GitProviderTest {
     public void test_no_git_dir() {
 
         MavenProject mavenProject = new MavenProject();
-        File tempDir = Files.createTempDir();
-        File pom = new File(tempDir, "pom.xml");
+        File pom = new File(tempDir.toFile(), "pom.xml");
         mavenProject.setFile(pom);
         doReturn(mavenProject).when(mavenSessionMock).getCurrentProject();
 
