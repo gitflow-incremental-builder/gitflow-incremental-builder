@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,18 +103,29 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
      *
      * @throws IOException on process execution errors
      * @throws InterruptedException on process execution errors
+     * @throws URISyntaxException on classptah lookup problems
      */
     @BeforeEach
-    void initialInstall(TestInfo testInfo) throws IOException, InterruptedException {
+    void initialInstall(TestInfo testInfo) throws IOException, InterruptedException, URISyntaxException {
         testDisplayName = testInfo.getDisplayName();
         Class<?> testClass = testInfo.getTestClass().get();
         if (INITIAL_INSTALL_DONE.contains(testClass)) {
             return;
         }
+        copyCommonBuildParentPom();
         executeBuild(true, false, "--file=build-parent/pom-common.xml", prop(Property.enabled, "false"));
         executeBuild(true, false, "--file=build-parent/pom.xml", prop(Property.enabled, "false"));
         executeBuild(true, false, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false"));
         INITIAL_INSTALL_DONE.add(testClass);
+    }
+
+    private void copyCommonBuildParentPom() throws URISyntaxException, IOException {
+        String relativePath = "build-parent/pom-common.xml";
+        URL buildParentURL = Validate.notNull(
+                Thread.currentThread().getContextClassLoader().getResource(relativePath),"%s not found on classpath", relativePath);
+        Path source = Paths.get(buildParentURL.toURI()).toAbsolutePath();
+        Path target = localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve(relativePath);
+        Files.copy(source, target);
     }
 
     @Test
