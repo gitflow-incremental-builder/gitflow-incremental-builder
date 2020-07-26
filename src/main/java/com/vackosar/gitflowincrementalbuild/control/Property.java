@@ -129,12 +129,7 @@ public enum Property {
     /**
      * Defines the packaging (e.g. jar) of modules that depend on changed modules but shall not be built.
      */
-    excludeDownstreamModulesPackagedAs("", "edmpa") {
-        @Override
-        public String deprecatedName() {
-            return "excludeTransitiveModulesPackagedAs";
-        }
-    },
+    excludeDownstreamModulesPackagedAs("", "edmpa"),
 
     /**
      * Controls whether or not to fail on missing .git directory.

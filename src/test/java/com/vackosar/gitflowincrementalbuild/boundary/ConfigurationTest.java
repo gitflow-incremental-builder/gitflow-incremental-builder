@@ -124,16 +124,6 @@ public class ConfigurationTest {
         assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
     }
 
-    // deprecated old name of excludeDownstreamModulesPackagedAs
-    @Test
-    public void excludeTransitiveModulesPackagedAs() {
-        System.setProperty(Property.excludeDownstreamModulesPackagedAs.deprecatedPrefixedName(), "ear,war");
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
-    }
-
     @Test
     public void forceBuildModules_pattern() {
         String expectedPatternString = ".*-some-artifact";
