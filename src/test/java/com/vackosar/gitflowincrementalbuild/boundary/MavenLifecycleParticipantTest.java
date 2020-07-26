@@ -78,7 +78,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabled() throws Exception {
-        projectProperties.setProperty(Property.enabled.prefixedName(), "false");
+        projectProperties.setProperty(Property.disable.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -89,7 +89,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabled_helpRequested() throws Exception {
-        projectProperties.setProperty(Property.enabled.prefixedName(), "false");
+        projectProperties.setProperty(Property.disable.prefixedName(), "true");
         projectProperties.setProperty(Property.help.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);

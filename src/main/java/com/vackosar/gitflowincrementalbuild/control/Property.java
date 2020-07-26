@@ -30,8 +30,20 @@ public enum Property {
     help("false", "h", true),
     /**
      * Can be used to disable this extension temporarily or permanently.
+     *
+     * @deprecated use {@link #disable} instead
      */
-    enabled("true", "e", true),
+    @Deprecated
+    enabled("true", "e", true) {
+        @Override
+        protected Optional<Property> getPropertyToMigrateTo() {
+            return Optional.of(Property.disable);
+        }
+    },
+    /**
+     * Can be used to disable this extension temporarily or permanently.
+     */
+    disable("false", "d", true),
     /**
      * Can be used to disable this extension on certain branches.
      */
@@ -238,6 +250,10 @@ public enum Property {
         return defaultValue.equals("true") || defaultValue.equals("false");
     }
 
+    protected Optional<Property> getPropertyToMigrateTo() {
+        return Optional.empty();
+    }
+
     private Optional<ValueWithOriginContext> getValueWithOriginContext(List<String> nameCandidates, Properties properties, String propertiesDesc) {
         return nameCandidates.stream()
                 .map(nameCandidate -> getValueWithOriginContext(nameCandidate, properties, propertiesDesc))
@@ -253,9 +269,13 @@ public enum Property {
         boolean prefixed = name.startsWith(PREFIX);
         String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName();
         if (name.equals(deprecatedName)) {
-            LOGGER.warn("{} has been replaced with {} and will be removed in an upcoming release. Please adjust your configuration!",
+            LOGGER.warn("'{}' has been renamed to '{}' and the old name will be removed in an upcoming release. Please adjust your configuration!",
                     deprecatedName, prefixed ? prefixedName : name());
         }
+        getPropertyToMigrateTo().ifPresent(prop -> LOGGER.warn("'{}' is deprecated and will be removed in an upcoming release. Please migrate to '{}'!", name,
+                prefixed
+                        ? prop.prefixedName + (name.equals(prefixedShortName) ? " (" + prop.prefixedShortName + ")" : "")
+                        : prop.name()));
         if (mapEmptyValueToTrue && value.isEmpty()) {
             value = "true";
         }

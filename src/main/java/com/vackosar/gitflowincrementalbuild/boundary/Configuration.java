@@ -38,7 +38,7 @@ public class Configuration {
     public final MavenSession mavenSession;
 
     public final boolean help;
-    public final boolean enabled;
+    public final boolean disable;
     public final Optional<Predicate<String>> disableIfBranchRegex;
 
     public final boolean disableBranchComparison;
@@ -75,8 +75,9 @@ public class Configuration {
         Properties pluginProperties = properties[1];
 
         help = Boolean.parseBoolean(Property.help.getValue(pluginProperties, projectProperties));
-        enabled = Boolean.parseBoolean(Property.enabled.getValue(pluginProperties, projectProperties));
-        if (!enabled) { // abort parsing any other config properties if not enabled at all
+        disable = Boolean.parseBoolean(Property.disable.getValue(pluginProperties, projectProperties))
+                || !Boolean.parseBoolean(Property.enabled.getValue(pluginProperties, projectProperties));
+        if (disable) { // abort parsing any other config properties if not enabled at all
             disableIfBranchRegex = null;
 
             // change detection config
@@ -180,7 +181,7 @@ public class Configuration {
         } else {
             logger.warn("gitflow-incremental-builder could not parse configuration due to missing 'topLevel' or 'current' project in the MavenSession.");
             Properties fakeProjectProperties = new Properties();
-            fakeProjectProperties.put(Property.enabled.prefixedName(), Boolean.FALSE.toString());
+            fakeProjectProperties.put(Property.disable.prefixedName(), Boolean.TRUE.toString());
             return new Properties[] { fakeProjectProperties, new Properties() };
         }
     }
