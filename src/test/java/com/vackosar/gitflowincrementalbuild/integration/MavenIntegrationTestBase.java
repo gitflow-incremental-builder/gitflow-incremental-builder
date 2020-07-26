@@ -113,9 +113,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
             return;
         }
         copyCommonBuildParentPom();
-        executeBuild(true, false, "--file=build-parent/pom-common.xml", prop(Property.enabled, "false"));
-        executeBuild(true, false, "--file=build-parent/pom.xml", prop(Property.enabled, "false"));
-        executeBuild(true, false, DEFAULT_POMFILE_ARG, prop(Property.enabled, "false"));
+        String disableGib = prop(Property.disable, "true");
+        executeBuild(true, false, "--file=build-parent/pom-common.xml", disableGib);
+        executeBuild(true, false, "--file=build-parent/pom.xml", disableGib);
+        executeBuild(true, false, DEFAULT_POMFILE_ARG, disableGib);
         INITIAL_INSTALL_DONE.add(testClass);
     }
 

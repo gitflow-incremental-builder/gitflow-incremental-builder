@@ -73,33 +73,33 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void enabled() {
-        System.setProperty(Property.enabled.prefixedName(), "false");
+    public void disable() {
+        System.setProperty(Property.disable.prefixedName(), "true");
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.enabled);
+        assertTrue(configuration.disable);
         assertNull(configuration.disableIfBranchRegex);
     }
 
     @Test
-    public void enabled_projectProperties() {
-        projectProperties.put(Property.enabled.prefixedName(), "false");
+    public void disable_projectProperties() {
+        projectProperties.put(Property.disable.prefixedName(), "true");
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.enabled);
+        assertTrue(configuration.disable);
         assertNull(configuration.disableIfBranchRegex);
     }
 
     @Test
-    public void enabled_projectProperties_overriddenBySystemProperty() {
-        projectProperties.put(Property.enabled.prefixedName(), "true");
-        System.setProperty(Property.enabled.prefixedName(), "false");
+    public void disable_projectProperties_overriddenBySystemProperty() {
+        projectProperties.put(Property.disable.prefixedName(), "false");
+        System.setProperty(Property.disable.prefixedName(), "true");
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.enabled);
+        assertTrue(configuration.disable);
         assertNull(configuration.disableIfBranchRegex);
     }
 
@@ -431,7 +431,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.enabled);
+        assertTrue(configuration.disable);
     }
 
     @Test
@@ -441,7 +441,25 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.enabled);
+        assertFalse(configuration.disable);
+    }
+
+    @Test
+    public void enabled_systemProperty() {
+        System.setProperty(Property.enabled.prefixedName(), "false");
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertTrue(configuration.disable);
+    }
+
+    @Test
+    public void enabled_systemProperty_shortName() {
+        System.setProperty(Property.enabled.prefixedShortName(), "false");
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertTrue(configuration.disable);
     }
 
     private void mockPluginConfig(String propertyName, String value) {

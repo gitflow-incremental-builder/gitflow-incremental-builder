@@ -622,12 +622,14 @@
                     </execution>
                     <execution>
                         <id>jacoco-report</id>
+                        <phase>test</phase> <!-- integration-tests are not using jacoco -->
                         <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>jacoco-check</id>
+                        <phase>test</phase> <!-- integration-tests are not using jacoco -->
                         <goals>
                             <goal>check</goal>
                         </goals>

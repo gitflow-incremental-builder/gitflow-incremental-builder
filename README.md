@@ -25,7 +25,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 - [Configuration](#configuration)
   - [gib.help](#gibhelp)
-  - [gib.enabled](#gibenabled)
+  - [gib.disable](#gibdisable)
   - [gib.disableIfBranchRegex](#gibdisableifbranchregex)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.referenceBranch](#gibreferencebranch)
@@ -121,7 +121,7 @@ The plugin definition is merely a "shell" to provide `<profile>`-support, better
 As IDEs like IntelliJ IDEA or Eclipse usually apply their own custom strategy to building changed modules,
 this extension should be disabled in such environments to avoid inconsistencies or errors (e.g. see [issue 49](../../issues/49)).
 
-See [gib.enabled](#gibenabled) in the configuration section.
+See [gib.disable](#gibdisable) in the configuration section.
 
 :information_source: If using IntelliJ IDEA, version **2019.3.1** or higher is required for GIB 3.8+ (even if disabled).
 See [IDEA-200272](https://youtrack.jetbrains.com/issue/IDEA-200272) and [issue 91](../../issues/91) for more details.
@@ -313,7 +313,7 @@ Maven pom properties configuration with default values is below:
 ```xml
 <properties>
     <gib.help>false</gib.help>                                                         <!-- or -Dgib.h=...     -->
-    <gib.enabled>true</gib.enabled>                                                    <!-- or -Dgib.e=...     -->
+    <gib.disable>false</gib.disable>                                                   <!-- or -Dgib.d=...     -->
     <gib.disableIfBranchRegex></gib.disableIfBranchRegex>                              <!-- or -Dgib.dibr=...  -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                   <!-- or -Dgib.dbc=...   -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>             <!-- or -Dgib.rb=...    -->
@@ -343,9 +343,9 @@ Maven pom properties configuration with default values is below:
 
 Each property can also be set via `-D` on the command line and to reduce typing to a minimum, each property has a short name (see code block above).
 
-E.g. `-Dgib.e=true` yields the same result as `-Dgib.enabled=true`.
+E.g. `-Dgib.d=true` yields the same result as `-Dgib.disable=true`.
 
-Properties that support the value `true` can be specified _without_ a value, e.g. `-Dgib.enabled` is the same as `-Dgib.enabled=true`.
+Properties that support the value `true` can be specified _without_ a value, e.g. `-Dgib.disable` is the same as `-Dgib.disable=true`.
 
 System properties (`-D`) take precedence over project properties from the POM and secondarily to that a full name takes precedence over the respective short name.<br/>
 Short names can only be used as system properties.
@@ -369,13 +369,15 @@ use:
 
 Logs the available properties etc.
 
-Note: Independent of `gib.enabled`.
+Note: Independent of `gib.disable`.
 
 Since: 3.9.0
 
-### gib.enabled
+### gib.disable
 
 Can be used to disable this extension temporarily or permanently (e.g. to avoid clashes with IDE building strategy).
+
+Since: 3.11.2 (replaces previously used `enabled` property)
 
 ### gib.disableIfBranchRegex
 

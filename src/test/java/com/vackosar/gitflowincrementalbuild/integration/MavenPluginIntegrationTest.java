@@ -35,7 +35,7 @@ public class MavenPluginIntegrationTest extends MavenIntegrationTestBase {
         final String output = executeBuild(
                 "help:describe",
                 "-Dplugin=" + Configuration.PLUGIN_KEY + ":" + gibVersion,
-                "-Ddetail", prop(Property.enabled, "false"),
+                "-Ddetail", prop(Property.disable, "true"),
                 "-N");
         assertThat(output).contains("This plugin has 1 goal:");
         assertThat(output).contains(MojoParametersGeneratingByteBuddyPlugin.FAKE_MOJO_NAME);

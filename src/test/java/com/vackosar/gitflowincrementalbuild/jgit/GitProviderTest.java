@@ -41,7 +41,7 @@ public class GitProviderTest {
     public void setup() {
         MavenProject projectMock = mock(MavenProject.class);
         when(projectMock.getProperties()).thenReturn(new Properties());
-        projectMock.getProperties().put(Property.enabled.prefixedName(), "false"); // otherwise unrelated stuff in MavenSession would need mocking
+        projectMock.getProperties().put(Property.disable.prefixedName(), "true"); // otherwise unrelated stuff in MavenSession would need mocking
         when(mavenSessionMock.getTopLevelProject()).thenReturn(projectMock);
     }
 
