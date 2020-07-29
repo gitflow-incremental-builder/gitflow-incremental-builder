@@ -1,16 +1,21 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,11 +23,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.maven.execution.MavenSession;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.junit.jupiter.api.Test;
 
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import com.vackosar.gitflowincrementalbuild.mocks.EmptyLocalRepoMock;
 import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
@@ -96,7 +103,6 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithCheckout() throws Exception {
         localRepoMock.getGit().reset().setRef(HEAD).setMode(ResetCommand.ResetType.HARD).call();
-        projectProperties.setProperty(Property.baseBranch.prefixedName(), "refs/heads/feature/2");
         projectProperties.setProperty(Property.baseBranch.prefixedName(), "refs/heads/feature/2");
 
         invokeUnderTest();
@@ -213,6 +219,38 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(REMOTE_DEVELOP).call();
         assertCommitExists(FETCH_FILE, localGit);
+    }
+
+    @Test
+    public void emptyLocalRepo() throws Exception {
+        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml"); 
+                EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
+            File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
+            Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
+            MavenSession mavenSessionMock = MavenSessionMock.get(projectFolder.toPath(), projectProperties);
+
+            Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
+
+            assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+            assertThat(thrown).hasMessage("Git branch of name 'HEAD' not found.");
+        }
+    }
+
+    @Test
+    public void localRepoButNoRemoteRepo() throws Exception {
+        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml"); 
+                EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
+            File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
+            Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
+            emptyLocalRepoMock.getGit().add().addFilepattern("pom.xml").call();
+            emptyLocalRepoMock.getGit().commit().setMessage("initial commit with pom.xml").call();
+            MavenSession mavenSessionMock = MavenSessionMock.get(projectFolder.toPath(), projectProperties);
+
+            Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
+            
+            assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+            assertThat(thrown).hasMessage("Git branch of name 'refs/heads/develop' not found.");
+        }
     }
 
     private Path modifyTrackedFile(Path repoPath) throws IOException {
