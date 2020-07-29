@@ -48,6 +48,9 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
                 condition -> Assumptions.assumeTrue(condition.present(), testInfo.getDisplayName() + "() is only supported when running " + condition));
 
         super.before(testInfo);
+        
+        // see GSSUtil.DEFAULT_HANDLER. Setting this to a non-empty String prevents ConsoleCallbackHandler from being used - even without a valid class name
+        java.security.Security.setProperty("auth.login.defaultCallbackHandler", "simplefix");
 
         sshDir = Files.createDirectory(userHome.resolve(".ssh"));
         repoUri = localRepoMock.getRemoteRepo().repoUri;
