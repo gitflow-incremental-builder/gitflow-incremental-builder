@@ -1,0 +1,13 @@
+# https://docs.github.com/en/github/administering-a-repository/enabling-and-disabling-version-updates#enabling-github-dependabot-version-updates
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: org.apache.maven:maven-core
+      - dependency-name: org.slf4j:slf4j-api
+      - dependency-name: ch.qos.logback:logback-classic
+      - dependency-name: javax.inject:javax.inject
+      - dependency-name: net.sf.saxon:Saxon-HE
