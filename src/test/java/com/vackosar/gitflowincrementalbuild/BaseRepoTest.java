@@ -22,6 +22,7 @@ public abstract class BaseRepoTest {
     protected final Properties projectProperties = new Properties();
     private final boolean useSymLinkedFolder;
     private final TestServerType remoteRepoServerType;
+    private File repoBaseFolder;
 
     protected LocalRepoMock localRepoMock;
     /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
@@ -42,7 +43,7 @@ public abstract class BaseRepoTest {
     @BeforeEach
     protected void before(TestInfo testInfo) throws Exception {
         init();
-        File repoBaseFolder = tempDir.toFile();
+        repoBaseFolder = tempDir.toFile();
 
         // place repo in a sym-linked folder if requested by the concrete test class
         if (useSymLinkedFolder) {
@@ -82,5 +83,9 @@ public abstract class BaseRepoTest {
 
     protected MavenSession getMavenSessionMock() throws Exception {
         return MavenSessionMock.get(repoPath, projectProperties);
+    }
+    
+    protected File getRepoBaseFolder() {
+        return repoBaseFolder;
     }
 }

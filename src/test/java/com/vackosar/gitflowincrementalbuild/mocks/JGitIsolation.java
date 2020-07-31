@@ -47,6 +47,6 @@ public class JGitIsolation {
     }
 
     public static void ensureIsolatedFromSystemAndUserConfig() {
-        // noting to do, static block will kick in automatically and only once
+        // nothing to do, static block will kick in automatically and only once
     }
 }
