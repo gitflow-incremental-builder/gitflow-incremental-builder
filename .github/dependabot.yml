@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: ch.qos.logback:logback-classic
+    versions:
+    - ">= 0"
+  - dependency-name: javax.inject:javax.inject
+    versions:
+    - ">= 0"
+  - dependency-name: net.sf.saxon:Saxon-HE
+    versions:
+    - ">= 0"
+  - dependency-name: org.apache.maven:maven-core
+    versions:
+    - ">= 0"
+  - dependency-name: org.slf4j:slf4j-api
+    versions:
+    - ">= 0"
