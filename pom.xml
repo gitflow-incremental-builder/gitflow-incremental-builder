@@ -68,7 +68,7 @@
         <version.junit>5.6.2</version.junit>
         <version.assertj>3.16.1</version.assertj>
         <version.powermock-reflect>2.0.7</version.powermock-reflect>
-        <version.mockito>3.5.0</version.mockito>
+        <version.mockito>3.5.2</version.mockito>
         <version.jetty>9.4.31.v20200723</version.jetty>
 
         <!-- Plugin versions -->
