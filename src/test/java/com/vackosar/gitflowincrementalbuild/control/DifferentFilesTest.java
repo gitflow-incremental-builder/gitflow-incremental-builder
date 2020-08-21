@@ -222,8 +222,19 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
+    public void invalidBaseBranch() throws Exception {
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "FOO");
+
+        Throwable thrown = catchThrowable(() -> invokeUnderTest());
+
+        assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+        assertThat(thrown).hasMessage("Git branch of name 'FOO' not found.");
+    }
+
+    @Test
     public void emptyLocalRepo() throws Exception {
-        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml"); 
+        projectProperties.clear();  // special tests that does not follow the pattern of the test base classes
+        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml");
                 EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
             File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
             Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -231,14 +242,15 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
             Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
 
-            assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
-            assertThat(thrown).hasMessage("Git branch of name 'HEAD' not found.");
+            assertThat(thrown).isInstanceOf(SkipExecutionException.class);
+            assertThat(thrown).hasMessageContaining("'HEAD'");
         }
     }
 
     @Test
     public void localRepoButNoRemoteRepo() throws Exception {
-        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml"); 
+        projectProperties.clear();  // special tests that does not follow the pattern of the test base classes
+        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml");
                 EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
             File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
             Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -247,9 +259,9 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
             MavenSession mavenSessionMock = MavenSessionMock.get(projectFolder.toPath(), projectProperties);
 
             Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
-            
-            assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
-            assertThat(thrown).hasMessage("Git branch of name 'refs/heads/develop' not found.");
+
+            assertThat(thrown).isInstanceOf(SkipExecutionException.class);
+            assertThat(thrown).hasMessageContaining(Property.referenceBranch.getDefaultValue());
         }
     }
 
