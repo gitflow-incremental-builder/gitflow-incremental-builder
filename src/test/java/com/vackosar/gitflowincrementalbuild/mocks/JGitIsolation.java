@@ -5,6 +5,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
 
+import java.io.IOException;
+
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.util.FS;
@@ -41,6 +44,12 @@ public class JGitIsolation {
         SystemReader spiedSystemReader = mock(SystemReader.class, withSettings()
                 .defaultAnswer(AdditionalAnswers.delegatesTo(SystemReader.getInstance()))
                 .lenient());
+        try {
+            doReturn(emptyConfig).when(spiedSystemReader).getSystemConfig();
+            doReturn(emptyConfig).when(spiedSystemReader).getUserConfig();
+        } catch (ConfigInvalidException | IOException e) {
+            // cannot happen for mock
+        }
         doReturn(emptyConfig).when(spiedSystemReader).openSystemConfig(any(Config.class), any(FS.class));
         doReturn(emptyConfig).when(spiedSystemReader).openUserConfig(any(Config.class), any(FS.class));
         SystemReader.setInstance(spiedSystemReader);
