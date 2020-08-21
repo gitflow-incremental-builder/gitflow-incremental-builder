@@ -4,11 +4,14 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
@@ -177,12 +180,21 @@ public class DifferentFiles {
         }
 
         private RevCommit getBranchCommit(String branchName) throws IOException {
-            ObjectId objectId = git.getRepository().resolve(branchName);
+            Repository repository = git.getRepository();
+            ObjectId objectId = repository.resolve(branchName);
 
             if (objectId == null) {
+                if (repository.simplify(branchName) != null) {
+                    throw new SkipExecutionException("Could not get Git ObjectId for branch of name '" + branchName
+                            + "'. Is this repository empty (no commits yet)?");
+                }
+                if (branchName.startsWith(REFS_REMOTES) && repository.getRemoteNames().isEmpty()) {
+                    throw new SkipExecutionException("Could not get Git ObjectId for branch of name '" + branchName
+                            + "'. No remotes found at all, push still pending?");
+                }
                 throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
             }
-            final RevWalk walk = new RevWalk(git.getRepository());
+            final RevWalk walk = new RevWalk(repository);
             RevCommit commit = walk.parseCommit(objectId);
             walk.close();
             logger.info("Reference commit of branch " + branchName + " is commit of id: " + commit.getId());
