@@ -68,7 +68,7 @@ public abstract class BaseRepoTest {
     }
 
     private void init() {
-        projectProperties.setProperty(Property.uncommited.prefixedName(), "false");
+        projectProperties.setProperty(Property.uncommitted.prefixedName(), "false");
         projectProperties.setProperty(Property.untracked.prefixedName(), "false");
         projectProperties.setProperty(Property.referenceBranch.prefixedName(), "refs/heads/develop");
         projectProperties.setProperty(Property.compareToMergeBase.prefixedName(), "false");

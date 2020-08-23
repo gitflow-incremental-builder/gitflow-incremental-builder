@@ -202,8 +202,8 @@ public class FakeMojoTest implements WithAssertions {
 
     private void check(String asTextFormat, ImmutablePair<List<String>, List<String>> nodeTexts, Consumer<ProxyableListAssert<String>> assertionConsumer) {
         SoftAssertions softly = new SoftAssertions();
-        assertionConsumer.accept(softly.assertThat(nodeTexts.left) .as(asTextFormat, "plugin.xml"));
-        assertionConsumer.accept(softly.assertThat(nodeTexts.right) .as(asTextFormat, "plugin-help.xml"));
+        assertionConsumer.accept(softly.assertThat(nodeTexts.left).as(asTextFormat, "plugin.xml"));
+        assertionConsumer.accept(softly.assertThat(nodeTexts.right).as(asTextFormat, "plugin-help.xml"));
         softly.assertAll();
     }
 }

@@ -63,7 +63,7 @@ public class DifferentFiles {
             if (!config.disableBranchComparison) {
                 paths.addAll(worker.getBranchDiff());
             }
-            if (config.uncommited || config.untracked) {
+            if (config.uncommitted || config.untracked) {
                 paths.addAll(worker.getChangesFromStatus());
             }
         } finally {
@@ -204,7 +204,7 @@ public class DifferentFiles {
         private Set<Path> getChangesFromStatus() throws GitAPIException {
             Set<String> changes = new HashSet<>();
             Status status = git.status().call();
-            if (configuration.uncommited) {
+            if (configuration.uncommitted) {
                 changes.addAll(status.getUncommittedChanges());
             }
             if (configuration.untracked) {

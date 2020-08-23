@@ -53,7 +53,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.prefixedName(), "true");
+        projectProperties.setProperty(Property.uncommitted.prefixedName(), "true");
 
         assertTrue(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -61,7 +61,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted_disabled() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.prefixedName(), "false");
+        projectProperties.setProperty(Property.uncommitted.prefixedName(), "false");
 
         assertFalse(invokeUnderTest().contains(modifiedFilePath));
     }
@@ -69,7 +69,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void listWithUncommitted_excluded() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
-        projectProperties.setProperty(Property.uncommited.prefixedName(), "true");
+        projectProperties.setProperty(Property.uncommitted.prefixedName(), "true");
         projectProperties.setProperty(Property.excludePathRegex.prefixedName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
 
         assertFalse(invokeUnderTest().contains(modifiedFilePath));

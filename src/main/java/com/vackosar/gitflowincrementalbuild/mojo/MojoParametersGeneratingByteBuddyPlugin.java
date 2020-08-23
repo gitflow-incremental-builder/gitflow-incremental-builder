@@ -3,7 +3,6 @@ package com.vackosar.gitflowincrementalbuild.mojo;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-
 import org.apache.maven.plugins.annotations.InstantiationStrategy;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -217,7 +216,7 @@ public class MojoParametersGeneratingByteBuddyPlugin implements Plugin {
 
             @Override
             public String alias() {
-                // cannot be used for the short name since in Eclipse this would then be a valid option to select (but only -D is allowed)
+                // Cannot be used for the short name since in Eclipse this would then be a valid option to select (but only -D is allowed).
                 return "";
             }
         };

@@ -80,7 +80,12 @@ public enum Property {
     /**
      * Detects changed files that have not yet been committed.
      */
-    uncommited("true", "uc", true),
+    uncommitted("true", "uc", true) {
+        @Override
+        public Optional<String> deprecatedName() {
+            return Optional.of("uncommited");
+        }
+    },
     /**
      * Detects files that are not yet tracked by git.
      */
@@ -171,7 +176,7 @@ public enum Property {
         this.nameCandidatesForSystemProperties = Stream.of(prefixedName, prefixedShortName, deprecatedPrefixedName())
                 .filter(Objects::nonNull)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-        this.nameCandidatesForPluginProperties = Stream.of(name(), deprecatedName())
+        this.nameCandidatesForPluginProperties = Stream.of(name(), deprecatedName().orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         this.nameCandidatesForProjectProperties = Stream.of(prefixedName, deprecatedPrefixedName())
@@ -203,16 +208,16 @@ public enum Property {
     /**
      * @return the deprecated unprefixed name or {@code null} if there is no such deprecated name for this property
      */
-    public String deprecatedName() {
+    public Optional<String> deprecatedName() {
         // might be overridden by specific enum instances
-        return null;
+        return Optional.empty();
     }
 
     /**
      * @return the deprecated prefixed name or {@code null} if there is no such deprecated name for this property
      */
     public final String deprecatedPrefixedName() {
-        return Optional.ofNullable(deprecatedName()).map(PREFIX::concat).orElse(null);
+        return deprecatedName().map(PREFIX::concat).orElse(null);
     }
 
     public ValueWithOriginContext getValueWithOriginContext(Properties pluginProperties, Properties projectProperties) {
@@ -262,7 +267,7 @@ public enum Property {
             return null;
         }
         boolean prefixed = name.startsWith(PREFIX);
-        String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName();
+        String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName().orElse(null);
         if (name.equals(deprecatedName)) {
             LOGGER.warn("'{}' has been renamed to '{}' and the old name will be removed in an upcoming release. Please adjust your configuration!",
                     deprecatedName, prefixed ? prefixedName : name());

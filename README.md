@@ -33,7 +33,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.fetchBaseBranch](#gibfetchbasebranch)
   - [gib.useJschAgentProxy](#gibusejschagentproxy)
   - [gib.compareToMergeBase](#gibcomparetomergebase)
-  - [gib.uncommited](#gibuncommited)
+  - [gib.uncommitted](#gibuncommitted)
   - [gib.untracked](#gibuntracked)
   - [gib.excludePathRegex](#gibexcludePathRegex)
   - [gib.includePathRegex](#gibincludepathregex)
@@ -321,7 +321,7 @@ Maven pom properties configuration with default values is below:
     <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                   <!-- or -Dgib.fbb=...   -->
     <gib.useJschAgentProxy>true</gib.useJschAgentProxy>                                <!-- or -Dgib.ujap=...  -->
     <gib.compareToMergeBase>true</gib.compareToMergeBase>                              <!-- or -Dgib.ctmb=...  -->
-    <gib.uncommited>true</gib.uncommited>                                              <!-- or -Dgib.uc=...    -->
+    <gib.uncommitted>true</gib.uncommitted>                                            <!-- or -Dgib.uc=...    -->
     <gib.untracked>true</gib.untracked>                                                <!-- or -Dgib.ut=...    -->
     <gib.excludePathRegex></gib.excludePathRegex>                                      <!-- or -Dgib.epr=...   -->
     <gib.includePathRegex></gib.includePathRegex>                                      <!-- or -Dgib.ipr=...   -->
@@ -354,16 +354,16 @@ to put the properties into the plugin `<configuration>`-section, but _without_ t
 E.g. instead of:
 ```xml
 <properties>
-    <gib.uncommited>true</gib.uncommited>
+    <gib.uncommitted>true</gib.uncommitted>
 </properties>
 ```
 use:
 ```xml
 <configuration>
-    <uncommited>true</uncommited>
+    <uncommitted>true</uncommitted>
 </configuration>
 ```
-Just like for regular plugins, a plugin config property that is set to a _fixed_ value **cannot be changed via the respective system property** (here: `-Dgib.uncommited=false`).
+Just like for regular plugins, a plugin config property that is set to a _fixed_ value **cannot be changed via the respective system property** (here: `-Dgib.uncommitted=false`).
 
 ### gib.help
 
@@ -387,7 +387,7 @@ Since: 3.11.0
 
 ### gib.disableBranchComparison
 
-Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommited` and `gib.untracked`).
+Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommitted` and `gib.untracked`).
 The following properties are _not_ evaluated when `gib.disableBranchComparison` is enabled:
 - `gib.referenceBranch`
 - `gib.compareToMergeBase`
@@ -440,7 +440,7 @@ Since: 3.9.1
 
 Controls whether or not to the [merge-base](https://git-scm.com/docs/git-merge-base) mechanism to compare the branches.
 
-### gib.uncommited
+### gib.uncommitted
 
 Detects changed files that have not yet been committed. This does **not** include _untracked_ files (see `git status` manual).
 
