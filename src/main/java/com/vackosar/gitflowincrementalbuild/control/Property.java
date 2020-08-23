@@ -216,9 +216,9 @@ public enum Property {
     }
 
     public ValueWithOriginContext getValueWithOriginContext(Properties pluginProperties, Properties projectProperties) {
-        Optional<ValueWithOriginContext> valueWithName = getValueWithOriginContext(nameCandidatesForSystemProperties, System.getProperties(), "system");
+        Optional<ValueWithOriginContext> valueWithName = getValueWithOriginContext(nameCandidatesForPluginProperties, pluginProperties, "plugin");
         if (!valueWithName.isPresent()) {
-            valueWithName = getValueWithOriginContext(nameCandidatesForPluginProperties, pluginProperties, "plugin");
+            valueWithName = getValueWithOriginContext(nameCandidatesForSystemProperties, System.getProperties(), "system");
         }
         if (!valueWithName.isPresent()) {
             valueWithName = getValueWithOriginContext(nameCandidatesForProjectProperties, projectProperties, "project");
@@ -250,7 +250,7 @@ public enum Property {
     }
 
     private Optional<ValueWithOriginContext> getValueWithOriginContext(List<String> nameCandidates, Properties properties, String propertiesDesc) {
-        return nameCandidates.stream()
+        return properties.isEmpty() ? Optional.empty() : nameCandidates.stream()
                 .map(nameCandidate -> getValueWithOriginContext(nameCandidate, properties, propertiesDesc))
                 .filter(Objects::nonNull)
                 .findFirst();
