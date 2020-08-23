@@ -131,17 +131,17 @@ public class PropertyTest implements WithAssertions {
     }
 
     @Test
-    public void getValue_pluginProperties_systemProperties_override() {
+    public void getValue_pluginProperties_overridesSystemProperties() {
         System.setProperty(Property.disable.prefixedName(), "false");
 
-        assertEquals("false", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
+        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
     }
 
     @Test
-    public void getValue_pluginProperties_systemProperties_overrideWithPrefixedShortName() {
+    public void getValue_pluginProperties_overridesSystemPropertiesWithPrefixedShortName() {
         System.setProperty(Property.disable.prefixedShortName(), "false");
 
-        assertEquals("false", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
+        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
     }
 
     // misc

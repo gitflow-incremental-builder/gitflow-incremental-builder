@@ -363,6 +363,7 @@ use:
     <uncommited>true</uncommited>
 </configuration>
 ```
+Just like for regular plugins, a plugin config property that is set to a _fixed_ value **cannot be changed via the respective system property** (here: `-Dgib.uncommited=false`).
 
 ### gib.help
 
