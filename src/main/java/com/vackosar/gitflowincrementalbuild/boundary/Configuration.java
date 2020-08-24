@@ -48,7 +48,7 @@ public class Configuration {
     public final boolean fetchBaseBranch;
     public final boolean useJschAgentProxy;
     public final boolean compareToMergeBase;
-    public final boolean uncommited;
+    public final boolean uncommitted;
     public final boolean untracked;
     public final Optional<Predicate<String>> excludePathRegex;
     public final Optional<Predicate<String>> includePathRegex;
@@ -89,7 +89,7 @@ public class Configuration {
             fetchBaseBranch = false;
             useJschAgentProxy = false;
             compareToMergeBase = false;
-            uncommited = false;
+            uncommitted = false;
             untracked = false;
             excludePathRegex = null;
             includePathRegex = null;
@@ -130,7 +130,7 @@ public class Configuration {
         fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(pluginProperties, projectProperties));
         useJschAgentProxy = Boolean.valueOf(Property.useJschAgentProxy.getValue(pluginProperties, projectProperties));
         compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
-        uncommited = Boolean.valueOf(Property.uncommited.getValue(pluginProperties, projectProperties));
+        uncommitted = Boolean.valueOf(Property.uncommitted.getValue(pluginProperties, projectProperties));
         untracked = Boolean.valueOf(Property.untracked.getValue(pluginProperties, projectProperties));
         excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, pluginProperties, projectProperties);
         includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, pluginProperties, projectProperties);
