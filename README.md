@@ -74,7 +74,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.11.2</version>
+            <version>3.11.3</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -93,7 +93,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.11.2</version>
+            <version>3.11.3</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
