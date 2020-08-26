@@ -125,10 +125,22 @@ class UnchangedProjectsRemover {
             config.mavenSession.getProjects().stream().forEach(proj -> applyUpstreamModuleArgs(proj, config));
         } else {
             logger.info("No changed artifacts detected: Executing validate goal on current project only, skipping all submodules.");
-            config.mavenSession.setProjects(Collections.singletonList(config.mavenSession.getCurrentProject()));
+            config.mavenSession.setProjects(Collections.singletonList(getCurrentProject(config.mavenSession)));
             config.mavenSession.getGoals().clear();
             config.mavenSession.getGoals().add("validate");
         }
+    }
+
+    private MavenProject getCurrentProject(MavenSession mavenSession) {
+        // MavenSession.getCurrentProject() does not return the correct value in some cases
+        String executionRootDirectory = mavenSession.getExecutionRootDirectory();
+        if (executionRootDirectory == null) {
+            return mavenSession.getCurrentProject();
+        }
+        return mavenSession.getProjects().stream()
+                .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
+                .findFirst()
+                .orElse(mavenSession.getCurrentProject());
     }
 
     private Set<MavenProject> calculateImpactedProjects(Set<MavenProject> selected, Set<MavenProject> changed, Configuration config) {

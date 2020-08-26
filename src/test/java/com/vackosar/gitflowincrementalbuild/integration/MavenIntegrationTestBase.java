@@ -196,7 +196,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild(prop(Property.baseBranch, "refs/heads/develop"));
 
         assertThat(output).contains("Executing validate goal on current project only")
-                .contains(" child1")
+                .contains(" parent")
+                .doesNotContain(" child1")
                 .doesNotContain(" child2")
                 .doesNotContain(" subchild1")
                 .doesNotContain(" subchild42")
