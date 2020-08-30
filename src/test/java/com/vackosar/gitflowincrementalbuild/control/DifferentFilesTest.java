@@ -9,13 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
@@ -233,36 +230,32 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void emptyLocalRepo() throws Exception {
-        projectProperties.clear();  // special tests that does not follow the pattern of the test base classes
-        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml");
-                EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
-            File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
-            Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
-            MavenSession mavenSessionMock = MavenSessionMock.get(projectFolder.toPath(), projectProperties);
+        projectProperties.clear();  // special test that does not follow the pattern of the test base classes
+
+        EmptyLocalRepoMock.withBasicPom(getRepoBaseFolder().toPath(), emptyLocalRepoMock -> {
+            MavenSession mavenSessionMock = MavenSessionMock.get(emptyLocalRepoMock.getRepoDir(), projectProperties);
 
             Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
 
             assertThat(thrown).isInstanceOf(SkipExecutionException.class);
             assertThat(thrown).hasMessageContaining("'HEAD'");
-        }
+        });
     }
 
     @Test
     public void localRepoButNoRemoteRepo() throws Exception {
-        projectProperties.clear();  // special tests that does not follow the pattern of the test base classes
-        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/DifferentFilesTest/pom.xml");
-                EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(getRepoBaseFolder())) {
-            File projectFolder = emptyLocalRepoMock.getBaseCanonicalBaseFolder();
-            Files.copy(basicPomData, new File(projectFolder, "pom.xml").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        projectProperties.clear();  // special test that does not follow the pattern of the test base classes
+
+        EmptyLocalRepoMock.withBasicPom(getRepoBaseFolder().toPath(), emptyLocalRepoMock -> {
             emptyLocalRepoMock.getGit().add().addFilepattern("pom.xml").call();
             emptyLocalRepoMock.getGit().commit().setMessage("initial commit with pom.xml").call();
-            MavenSession mavenSessionMock = MavenSessionMock.get(projectFolder.toPath(), projectProperties);
+            MavenSession mavenSessionMock = MavenSessionMock.get(emptyLocalRepoMock.getRepoDir(), projectProperties);
 
             Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
 
             assertThat(thrown).isInstanceOf(SkipExecutionException.class);
             assertThat(thrown).hasMessageContaining(Property.referenceBranch.getDefaultValue());
-        }
+        });
     }
 
     private Path modifyTrackedFile(Path repoPath) throws IOException {

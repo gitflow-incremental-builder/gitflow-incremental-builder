@@ -1,5 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +30,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -43,6 +47,9 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 @ExtendWith({SystemPropertiesResetExtension.class, MockitoExtension.class})
 public class ConfigurationTest {
 
+    @TempDir
+    Path tempDir;
+
     @Mock
     private MavenExecutionRequest mavenExecutionRequestMock;
 
@@ -50,7 +57,7 @@ public class ConfigurationTest {
     private MavenSession mavenSessionMock;
 
     @Mock(lenient = true)
-    private MavenProject mockTLProject;
+    private MavenProject currentProjectMock;
 
     private final Properties projectProperties = new Properties();
 
@@ -58,8 +65,8 @@ public class ConfigurationTest {
     void before() {
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
 
-        when(mockTLProject.getProperties()).thenReturn(projectProperties);
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(mockTLProject);
+        when(currentProjectMock.getProperties()).thenReturn(projectProperties);
+        when(mavenSessionMock.getCurrentProject()).thenReturn(currentProjectMock);
     }
 
     @Test
@@ -70,6 +77,42 @@ public class ConfigurationTest {
         assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(invalidProperty)
                 .withMessageContaining(Property.disableBranchComparison.prefixedName());
+    }
+
+    @Test
+    public void mavenSession() {
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.mavenSession).isSameAs(mavenSessionMock);
+    }
+
+    @Test
+    public void currentProject_execRoot() {
+        MavenProject execRootProject = mock(MavenProject.class);
+        when(execRootProject.isExecutionRoot()).thenReturn(true);
+        when(execRootProject.getProperties()).thenReturn(new Properties());
+        when(mavenSessionMock.getProjects()).thenReturn(Arrays.asList(currentProjectMock, execRootProject));
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.currentProject).isSameAs(execRootProject);
+    }
+
+    @Test
+    public void currentProject_execRootNoMatch() {
+        MavenProject execRootProject = mock(MavenProject.class);
+        when(mavenSessionMock.getProjects()).thenReturn(Arrays.asList(currentProjectMock, execRootProject));
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.currentProject).isSameAs(currentProjectMock);
+    }
+
+    @Test
+    public void currentProject_noExecRoot() {
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.currentProject).isSameAs(currentProjectMock);
     }
 
     @Test
@@ -416,22 +459,12 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void noTopLevelProject_noCurrentProject() {
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(null);
+    public void noCurrentProject() {
+        when(mavenSessionMock.getCurrentProject()).thenReturn(null);
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
         assertTrue(configuration.disable);
-    }
-
-    @Test
-    public void noTopLevelProject_fallbackToCurrentProject() {
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(null);
-        when(mavenSessionMock.getCurrentProject()).thenReturn(mockTLProject);
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertFalse(configuration.disable);
     }
 
     @Test
@@ -464,6 +497,6 @@ public class ConfigurationTest {
     private void mockPlugin(Xpp3Dom config) {
         Plugin pluginMock = mock(Plugin.class);
         when(pluginMock.getConfiguration()).thenReturn(config);
-        when(mockTLProject.getPlugin(Configuration.PLUGIN_KEY)).thenReturn(pluginMock);
+        when(currentProjectMock.getPlugin(Configuration.PLUGIN_KEY)).thenReturn(pluginMock);
     }
 }

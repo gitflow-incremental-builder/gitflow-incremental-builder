@@ -58,9 +58,9 @@ public class MavenLifecycleParticipantTest {
 
     @BeforeEach
     void before() {
-        MavenProject mockTLProject = mock(MavenProject.class);
-        when(mockTLProject.getProperties()).thenReturn(projectProperties);
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(mockTLProject);
+        MavenProject currentProjectMock = mock(MavenProject.class);
+        when(currentProjectMock.getProperties()).thenReturn(projectProperties);
+        when(mavenSessionMock.getCurrentProject()).thenReturn(currentProjectMock);
 
         when(mavenSessionMock.getRequest()).thenReturn(mock(MavenExecutionRequest.class));
 

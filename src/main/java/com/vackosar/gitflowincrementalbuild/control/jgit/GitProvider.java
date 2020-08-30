@@ -54,7 +54,7 @@ public class GitProvider {
 
     private Git setupGit(Configuration config) throws IOException {
         final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        File pomDir = config.mavenSession.getCurrentProject().getBasedir().toPath().toFile();
+        File pomDir = config.currentProject.getBasedir();
         builder.findGitDir(pomDir);
         if (builder.getGitDir() == null) {
             String gitDirNotFoundMessage = "Git repository root directory not found ascending from current working directory:'"
