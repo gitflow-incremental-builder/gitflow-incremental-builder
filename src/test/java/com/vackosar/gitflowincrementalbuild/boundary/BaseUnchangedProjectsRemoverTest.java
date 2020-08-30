@@ -88,7 +88,6 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         moduleA = addModuleMock(AID_MODULE_A, false);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(moduleA);
 
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(true);
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
@@ -151,10 +150,9 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         projects.clear();
         projects.addAll(Arrays.asList(moduleMocks));
 
-        // Maven shifts currentProject and topLevelProject to the first(!) project (as per Maven 3.6.3 with -pl and -f)
+        // Maven shifts currentProject to the first(!) project (as per Maven 3.6.3 with -pl and -f)
         MavenProject firstProject = moduleMocks[0];
         when(mavenSessionMock.getCurrentProject()).thenReturn(firstProject);
-        when(mavenSessionMock.getTopLevelProject()).thenReturn(firstProject);
     }
 
     protected void assertProjectPropertiesEqual(MavenProject project, String... expectedFlat) {

@@ -36,6 +36,7 @@ public class Configuration {
     public static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
 
     public final MavenSession mavenSession;
+    public final MavenProject currentProject;
 
     public final boolean help;
     public final boolean disable;
@@ -70,7 +71,9 @@ public class Configuration {
 
     public Configuration(MavenSession session) {
         this.mavenSession = session;
-        Properties[] properties = getProperties(session, logger);
+        this.currentProject = findCurrentProject(session);
+
+        Properties[] properties = getProperties(currentProject, logger);
         Properties projectProperties = properties[0];
         Properties pluginProperties = properties[1];
 
@@ -174,12 +177,25 @@ public class Configuration {
         return expectedMakeBehavior.equals(actualMakeBehavior) || MavenExecutionRequest.REACTOR_MAKE_BOTH.equals(actualMakeBehavior);
     }
 
-    private static Properties[] getProperties(MavenSession session, Logger logger) {
-        MavenProject mavenProject = Optional.ofNullable(session.getTopLevelProject()).orElseGet(session::getCurrentProject);
-        if (mavenProject != null) {
-            return new Properties[] { mavenProject.getProperties(), getPluginProperties(mavenProject) };
+    private static MavenProject findCurrentProject(MavenSession session) {
+        // MavenSession.getCurrentProject() does not return the correct value in some cases,
+        // see: https://issues.apache.org/jira/browse/MNG-6979
+        MavenProject currentProject = session.getCurrentProject();
+        if (currentProject == null || !currentProject.isExecutionRoot()) {
+            currentProject = session.getProjects().stream()
+                    .filter(MavenProject::isExecutionRoot)
+                    .findAny()
+                    .orElse(currentProject);
+        }
+        // design note: could theoretically call session.setCurrentProject(...) here, but this seems too risky
+        return currentProject;
+    }
+
+    private static Properties[] getProperties(MavenProject currentProject, Logger logger) {
+        if (currentProject != null) {
+            return new Properties[] { currentProject.getProperties(), getPluginProperties(currentProject) };
         } else {
-            logger.warn("gitflow-incremental-builder could not parse configuration due to missing 'topLevel' or 'current' project in the MavenSession.");
+            logger.warn("gitflow-incremental-builder could not parse configuration due to missing 'current' project in the MavenSession.");
             Properties fakeProjectProperties = new Properties();
             fakeProjectProperties.put(Property.disable.prefixedName(), Boolean.TRUE.toString());
             return new Properties[] { fakeProjectProperties, new Properties() };

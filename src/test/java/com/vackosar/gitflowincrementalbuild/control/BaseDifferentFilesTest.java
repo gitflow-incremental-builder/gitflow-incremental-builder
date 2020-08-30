@@ -73,7 +73,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     }
 
     protected Set<Path> invokeUnderTest(final MavenSession mavenSessionMock) throws Exception {
-        mavenSessionMock.getTopLevelProject().getProperties().putAll(projectProperties);
+        mavenSessionMock.getCurrentProject().getProperties().putAll(projectProperties);
 
         DifferentFiles underTest = new DifferentFiles();
         GitProvider gitProvider = new GitProvider();

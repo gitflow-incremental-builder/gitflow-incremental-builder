@@ -54,9 +54,9 @@ class UnchangedProjectsRemover {
         // - building non-recursively (-N)
         // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
         // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
-        if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config.mavenSession)) {
+        if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config)) {
             printDelimiter();
-            logger.info("Building single project (without any adjustment): {}", config.mavenSession.getCurrentProject().getArtifactId());
+            logger.info("Building single project (without any adjustment): {}", config.currentProject.getArtifactId());
             return;
         }
 
@@ -100,9 +100,9 @@ class UnchangedProjectsRemover {
         return !selected.isEmpty() && mavenSession.getProjects().equals(new ArrayList<>(selected));
     }
 
-    private boolean onlySingleLeafModulePresent(MavenSession mavenSession) {
+    private boolean onlySingleLeafModulePresent(Configuration config) {
         // note: explicit check for modules to cover -N case
-        return mavenSession.getProjects().size() == 1 && mavenSession.getCurrentProject().getModel().getModules().isEmpty();
+        return config.mavenSession.getProjects().size() == 1 && config.currentProject.getModel().getModules().isEmpty();
     }
 
     private void handleNoChangesDetected(Set<MavenProject> selected, Configuration config) {
@@ -125,22 +125,10 @@ class UnchangedProjectsRemover {
             config.mavenSession.getProjects().stream().forEach(proj -> applyUpstreamModuleArgs(proj, config));
         } else {
             logger.info("No changed artifacts detected: Executing validate goal on current project only, skipping all submodules.");
-            config.mavenSession.setProjects(Collections.singletonList(getCurrentProject(config.mavenSession)));
+            config.mavenSession.setProjects(Collections.singletonList(config.currentProject));
             config.mavenSession.getGoals().clear();
             config.mavenSession.getGoals().add("validate");
         }
-    }
-
-    private MavenProject getCurrentProject(MavenSession mavenSession) {
-        // MavenSession.getCurrentProject() does not return the correct value in some cases
-        String executionRootDirectory = mavenSession.getExecutionRootDirectory();
-        if (executionRootDirectory == null) {
-            return mavenSession.getCurrentProject();
-        }
-        return mavenSession.getProjects().stream()
-                .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
-                .findFirst()
-                .orElse(mavenSession.getCurrentProject());
     }
 
     private Set<MavenProject> calculateImpactedProjects(Set<MavenProject> selected, Set<MavenProject> changed, Configuration config) {

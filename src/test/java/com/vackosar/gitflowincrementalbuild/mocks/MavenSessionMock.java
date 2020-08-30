@@ -27,7 +27,7 @@ public class MavenSessionMock {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenSessionMock.class);
 
-    public static MavenSession get(Path workDir, Properties topLevelProjectProperties) throws Exception {
+    public static MavenSession get(Path workDir, Properties topLevelProjectProperties) throws IOException {
         PomFinder finder = new PomFinder();
         Files.walkFileTree(workDir, finder);
         List<MavenProject> projects = finder.projects.stream()
@@ -35,15 +35,14 @@ public class MavenSessionMock {
                 .map(MavenSessionMock::createProject)
                 .collect(Collectors.toList());
 
-        MavenProject topLevelProject = projects.get(0);
-        topLevelProject.getModel().setProperties(topLevelProjectProperties);
+        MavenProject currentProject = projects.get(0);
+        currentProject.getModel().setProperties(topLevelProjectProperties);
         MavenSession mavenSession = mock(MavenSession.class, withSettings().lenient());
-        when(mavenSession.getCurrentProject()).thenReturn(topLevelProject);
+        when(mavenSession.getCurrentProject()).thenReturn(currentProject);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
         when(mavenSession.getRequest()).thenReturn(request);
         when(mavenSession.getAllProjects()).thenReturn(projects);
         when(mavenSession.getProjects()).thenReturn(projects);
-        when(mavenSession.getTopLevelProject()).thenReturn(topLevelProject);
         ProjectDependencyGraph dependencyGraphMock = mock(ProjectDependencyGraph.class);
         when(mavenSession.getProjectDependencyGraph()).thenReturn(dependencyGraphMock);
         return mavenSession;
