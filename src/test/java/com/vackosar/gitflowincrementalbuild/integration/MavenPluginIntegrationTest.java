@@ -3,7 +3,6 @@ package com.vackosar.gitflowincrementalbuild.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -24,7 +23,7 @@ public class MavenPluginIntegrationTest extends MavenIntegrationTestBase {
 
     @Override
     @BeforeEach
-    void initialInstall(TestInfo testInfo) throws IOException, InterruptedException, URISyntaxException {
+    void initialInstall(TestInfo testInfo) throws Exception {
         Path projectRoot = localRepoMock.getBaseCanonicalBaseFolder().toPath();
         Files.move(projectRoot.resolve("build-parent/pom-plugin.xml"), projectRoot.resolve("build-parent/pom.xml"), StandardCopyOption.REPLACE_EXISTING);
         super.initialInstall(testInfo);

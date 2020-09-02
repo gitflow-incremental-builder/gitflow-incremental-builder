@@ -3,9 +3,17 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration.BuildUpstreamMode;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.TypeAwareExpressionEvaluator;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +41,24 @@ class UnchangedProjectsRemover {
     private static final String MAVEN_TEST_SKIP_EXEC = "skipTests";
     private static final String TEST_JAR_DETECTED = "Dependency with test-jar goal detected. Will compile test sources.";
     private static final String GOAL_TEST_JAR = "test-jar";
+    private static final String PCKG_POM = "pom";
 
     private Logger logger = LoggerFactory.getLogger(UnchangedProjectsRemover.class);
 
     @Inject private ChangedProjects changedProjects;
 
+    private final Map<MavenProject, Set<MavenProject>> downstreamCache = new HashMap<>();
+
     void act(Configuration config) throws GitAPIException, IOException {
+        try {
+            doAct(config);
+        } finally {
+            // don't be a memory hog
+            downstreamCache.clear();
+        }
+    }
+
+    private void doAct(Configuration config) throws GitAPIException, IOException {
         // ensure to write logfile for impaced (even if just empty)
         config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, config.mavenSession));
 
@@ -50,6 +70,7 @@ class UnchangedProjectsRemover {
                     config.mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
             return;
         }
+
         // do nothing if:
         // - building non-recursively (-N)
         // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
@@ -258,10 +279,45 @@ class UnchangedProjectsRemover {
     }
 
     private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
-        return Stream.concat(
-            Stream.of(project),
-            config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
-                    .filter(proj -> !config.excludeDownstreamModulesPackagedAs.contains(proj.getPackaging())));
+        // note: not using computeIfAbsent() here since it would break recursive invocations with ConcurrentModificationException
+        Set<MavenProject> downstream = downstreamCache.get(project);
+        if (downstream == null) {
+            downstream = Stream
+                    .concat(Stream.of(project),
+                            config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true)
+                                    .stream().filter(proj -> isDownstreamModuleNotExcluded(proj, config)))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (PCKG_POM.equals(project.getPackaging())) {    // performance hint: bomArtifactIdRegex or similar could speed things up
+                downstream.addAll(findBOMDownstreamProjects(project, downstream, config));
+            }
+            downstreamCache.put(project, downstream);
+        }
+        return downstream.stream();
+    }
+
+    private Set<MavenProject> findBOMDownstreamProjects(MavenProject potentialBOMProject, Set<MavenProject> downstream, Configuration config) {
+        return config.mavenSession.getProjects().stream()
+                .filter(proj -> !downstream.contains(proj)) // optimization
+                .filter(proj -> isDownstreamModuleNotExcluded(proj, config))
+                .filter(proj -> Optional.ofNullable(proj.getOriginalModel())    // >original< model is crucial since BOM deps are gone in effective model
+                        .map(Model::getDependencyManagement)
+                        .map(depMgtm -> depMgtm.getDependencies().stream().anyMatch(dep -> isBOMImport(dep, potentialBOMProject, proj, config)))
+                        .orElse(false))
+                .flatMap(proj -> streamProjectWithDownstreamProjects(proj, config)) // (indirect) recursion!
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private boolean isDownstreamModuleNotExcluded(MavenProject proj, Configuration config) {
+        return !config.excludeDownstreamModulesPackagedAs.contains(proj.getPackaging());
+    }
+
+    private boolean isBOMImport(Dependency dependency, MavenProject potentialBOMProject, MavenProject depDefiningProject, Configuration config) {
+        LazyExpressionEvaluator evaluator = new LazyExpressionEvaluator(config.mavenSession, depDefiningProject);
+        return Objects.equals(evaluator.evaluate(dependency.getType()), PCKG_POM)
+                && Objects.equals(evaluator.evaluate(dependency.getScope()), Artifact.SCOPE_IMPORT)
+                && Objects.equals(evaluator.evaluate(dependency.getArtifactId()), potentialBOMProject.getArtifactId())
+                && Objects.equals(evaluator.evaluate(dependency.getGroupId()), potentialBOMProject.getGroupId())
+                && Objects.equals(evaluator.evaluate(dependency.getVersion()), potentialBOMProject.getVersion());
     }
 
     private Stream<MavenProject> streamUpstreamProjects(MavenProject project, MavenSession mavenSession) {
@@ -307,6 +363,41 @@ class UnchangedProjectsRemover {
                 }
             }
             return false;
+        }
+    }
+
+    private static class LazyExpressionEvaluator {
+
+        private static final Logger LOGGER = LoggerFactory.getLogger(LazyExpressionEvaluator.class);
+
+        private final MavenSession session;
+        private final MavenProject project;
+
+        private TypeAwareExpressionEvaluator evaluator;
+
+        public LazyExpressionEvaluator(MavenSession session, MavenProject project) {
+            this.session = session;
+            this.project = project;
+        }
+
+        public String evaluate(String expression) {
+            if (expression == null || !expression.contains("${")) {
+                return expression;
+            }
+            if (evaluator == null) {
+                // set project on cloned session otherwise properties might be resolved from a more or less unrelated project
+                MavenSession clonedSession = session.clone();
+                clonedSession.setCurrentProject(project);
+                // there is also a ctor without MojoExecution parameter but evaluate() will then fail with a NPE (sic!)
+                // see also: https://issues.apache.org/jira/browse/MNG-6982
+                evaluator = new PluginParameterExpressionEvaluator(clonedSession, new MojoExecution(new MojoDescriptor()));
+            }
+            try {
+                return evaluator.evaluate(expression, String.class).toString();
+            } catch (ExpressionEvaluationException e) {
+                LOGGER.warn("Failed to evaluate: " + expression, e);
+                return expression;
+            }
         }
     }
 }

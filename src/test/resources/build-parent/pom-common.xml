@@ -9,6 +9,13 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <!-- This file is the root parent of the projects in template.zip and contains properties that are replaced at build time. -->
+
+    <properties>
+        <!-- These properties are needed by pom.xml files within template.zip: -->
+        <version.jgit>${version.jgit}</version.jgit>
+    </properties>
+
     <build>
         <pluginManagement>
             <plugins>
