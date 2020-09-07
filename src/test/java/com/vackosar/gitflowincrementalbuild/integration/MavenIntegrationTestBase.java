@@ -29,6 +29,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,9 +56,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenIntegrationTestBase.class);
 
-    private static final Set<Class<?>> INITIAL_INSTALL_DONE = new HashSet<>();
+    private static final Set<String> INITIAL_INSTALL_DONE = new HashSet<>();
 
     private static final String DEFAULT_POMFILE_ARG = "--file=parent/pom.xml";
+    private static final String QUARKUS_POMFILE_ARG = "--file=quarkus-scenario/pom.xml";
 
     private static final Pattern LOG_LINE_FILTER_PATTERN = Pattern.compile("^\\[.*INFO.*\\] Download(ing|ed) from local.central: .*");
 
@@ -106,18 +108,26 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
      * @throws URISyntaxException on classptah lookup problems
      */
     @BeforeEach
-    void initialInstall(TestInfo testInfo) throws IOException, InterruptedException, URISyntaxException {
+    void initialInstall(TestInfo testInfo) throws Exception {
         testDisplayName = testInfo.getDisplayName();
-        Class<?> testClass = testInfo.getTestClass().get();
-        if (INITIAL_INSTALL_DONE.contains(testClass)) {
-            return;
-        }
-        copyCommonBuildParentPom();
         String disableGib = prop(Property.disable, "true");
-        executeBuild(true, false, "--file=build-parent/pom-common.xml", disableGib);
-        executeBuild(true, false, "--file=build-parent/pom.xml", disableGib);
-        executeBuild(true, false, DEFAULT_POMFILE_ARG, disableGib);
-        INITIAL_INSTALL_DONE.add(testClass);
+        Class<?> testClass = testInfo.getTestClass().get();
+        String cacheKey = testClass.getName();
+        if (!INITIAL_INSTALL_DONE.contains(cacheKey)) {
+            copyCommonBuildParentPom();
+            executeBuild(true, false, "--file=build-parent/pom-common.xml", disableGib);
+            executeBuild(true, false, "--file=build-parent/pom.xml", disableGib);
+            executeBuild(true, false, DEFAULT_POMFILE_ARG, disableGib);
+            INITIAL_INSTALL_DONE.add(cacheKey);
+        }
+        if (testDisplayName.startsWith("quarkusScenario_")) {
+            checkout(Branch.QUARKUS);
+            cacheKey = cacheKey + "_quarkusScenario";
+            if (!INITIAL_INSTALL_DONE.contains(cacheKey)) {
+                executeBuild(true, false, QUARKUS_POMFILE_ARG, disableGib);
+                INITIAL_INSTALL_DONE.add(cacheKey);
+            }
+        }
     }
 
     private void copyCommonBuildParentPom() throws URISyntaxException, IOException {
@@ -191,7 +201,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void buildNoChanged() throws Exception {
-        checkoutDevelop();
+        checkout(Branch.DEVELOP);
 
         final String output = executeBuild(prop(Property.baseBranch, "refs/heads/develop"));
 
@@ -257,7 +267,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void buildWithSingleSelectedModule() throws Exception {
-        checkoutDevelop();
+        checkout(Branch.DEVELOP);
 
         final String output = executeBuild("-pl", "child2", prop(Property.disableBranchComparison, "true"));
 
@@ -277,7 +287,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void buildWithSingleLeafModule() throws Exception {
-        checkoutDevelop();
+        checkout(Branch.DEVELOP);
 
         final String output = executeBuild("-f", "parent/child3", prop(Property.disableBranchComparison, "true"));
 
@@ -297,7 +307,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void buildWithSingleSelectedModule_alsoMake() throws Exception {
-        checkoutDevelop();
+        checkout(Branch.DEVELOP);
 
         // tests that child6 upstream of child3 is built
         Files.write(repoPath.resolve("parent").resolve("child6").resolve("changed.xml"), new byte[0]);
@@ -321,7 +331,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void buildWithSingleSelectedModule_alsoMakeDependends() throws Exception {
-        checkoutDevelop();
+        checkout(Branch.DEVELOP);
 
         final String output = executeBuild("-pl", "child6", "-amd", prop(Property.disableBranchComparison, "true"));
 
@@ -338,11 +348,35 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .doesNotContain(" testJarDependent");
     }
 
-    private void checkoutDevelop() throws GitAPIException, CheckoutConflictException, RefAlreadyExistsException,
+    @Test
+    public void quarkusScenario_noChanges() throws Exception {
+        final String output = executeBuild(quarkusScenarioProps());
+
+        assertThat(output).contains("Executing validate goal on current project only")
+                .contains(" parent")
+                .doesNotContain(" bom")
+                .doesNotContain(" child1")
+                .doesNotContain(" child2");
+    }
+
+    @Test
+    public void quarkusScenario_bomChanged() throws Exception {
+        Files.write(repoPath.resolve("quarkus-scenario").resolve("bom").resolve("pom.xml"), Arrays.asList("<!-- changed -->"), StandardOpenOption.APPEND);
+
+        final String output = executeBuild(quarkusScenarioProps());
+
+        assertThat(output)
+                .doesNotContain(" parent")
+                .contains(" bom")
+                .doesNotContain(" child1")
+                .contains(" child2");
+    }
+
+    private void checkout(Branch branch) throws GitAPIException, CheckoutConflictException, RefAlreadyExistsException,
             RefNotFoundException, InvalidRefNameException {
         Git git = localRepoMock.getGit();
         git.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD").call();
-        git.checkout().setName("develop").call();
+        git.checkout().setName(branch.branchName).call();
     }
 
     protected String executeBuild(String... args) throws IOException, InterruptedException {
@@ -379,5 +413,26 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
             propString += "=" + value;
         }
         return propString;
+    }
+
+    protected static String[] quarkusScenarioProps(/* String... additional */) {
+        return new String[] {
+                QUARKUS_POMFILE_ARG,
+                prop(Property.baseBranch, Branch.QUARKUS.branchName),
+                prop(Property.disableBranchComparison, "true"),
+                prop(Property.uncommitted, "true")
+        };
+    }
+
+    private enum Branch {
+
+        DEVELOP("develop"),
+        QUARKUS("quarkus");
+
+        private final String branchName;
+
+        Branch(String branchName) {
+            this.branchName = branchName;
+        }
     }
 }

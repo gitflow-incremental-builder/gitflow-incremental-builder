@@ -105,7 +105,9 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     protected MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged, final String packaging) {
         MavenProject newModuleMock = mock(MavenProject.class, withSettings().name(moduleArtifactId).lenient());
         allModuleMocks.add(newModuleMock);
+        when(newModuleMock.getGroupId()).thenReturn("com.vackosar.gitflowincrementalbuild");
         when(newModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
+        when(newModuleMock.getVersion()).thenReturn("0.0.1");
         when(newModuleMock.getBasedir()).thenReturn(new File(moduleArtifactId));
         when(newModuleMock.getPackaging()).thenReturn(packaging);
         if (addToChanged) {
