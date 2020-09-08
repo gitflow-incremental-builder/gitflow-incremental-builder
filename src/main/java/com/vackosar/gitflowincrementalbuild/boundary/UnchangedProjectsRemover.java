@@ -62,23 +62,29 @@ class UnchangedProjectsRemover {
         // ensure to write logfile for impaced (even if just empty)
         config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, config.mavenSession));
 
-        // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
-        final Set<MavenProject> selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession);
-        if (onlySelectedModulesPresent(selected, config.mavenSession)) {
-            printDelimiter();
-            logger.info("Building explicitly selected projects (without any adjustment): {}",
-                    config.mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
-            return;
-        }
+        final Set<MavenProject> selected;
+        if (config.disableSelectedProjectsHandling) {
+            selected = Collections.emptySet();
+        } else {
+            selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession);
 
-        // do nothing if:
-        // - building non-recursively (-N)
-        // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
-        // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
-        if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config)) {
-            printDelimiter();
-            logger.info("Building single project (without any adjustment): {}", config.currentProject.getArtifactId());
-            return;
+            // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
+            if (onlySelectedModulesPresent(selected, config.mavenSession)) {
+                printDelimiter();
+                logger.info("Building explicitly selected projects (without any adjustment): {}",
+                        config.mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
+                return;
+            }
+
+            // do nothing if:
+            // - building non-recursively (-N)
+            // - or only one "leaf" project/module is present (cases: mvn -f ... or cd ... or unusual case of non-multi-module project)
+            // the assumption here (similar to the -pl approach above): the user has decided to build a single module, so don't mess with that
+            if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config)) {
+                printDelimiter();
+                logger.info("Building single project (without any adjustment): {}", config.currentProject.getArtifactId());
+                return;
+            }
         }
 
         final Set<MavenProject> changed = changedProjects.get(config);
