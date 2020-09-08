@@ -48,6 +48,25 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertProjectPropertiesEqual(moduleB);
     }
 
+    // mvn -pl :module-B
+    @Test
+    public void nothingChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goals");
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+
+        assertProjectPropertiesEqual(moduleB);
+    }
+
+
     // mvn -pl :module-B,:module-C
     @Test
     public void nothingChanged_twoSelected() throws GitAPIException, IOException {
@@ -61,6 +80,26 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
 
         verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
+    }
+
+    // mvn -pl :module-B,:module-C
+    @Test
+    public void nothingChanged_twoSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setProjectSelections(moduleB, moduleC);
+        overrideProjects(moduleB, moduleC);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goals");
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));   // only B (sic!), as there can only be one "current" project
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
@@ -200,6 +239,26 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         underTest.act(config());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
+    }
+
+    // mvn -pl :module-B
+    @Test
+    public void moduleAChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
+
+        changedProjects.add(moduleA);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+
+        assertProjectPropertiesEqual(moduleB);
     }
 
     // mvn -pl :module-B -am
@@ -437,6 +496,37 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         verify(mavenSessionMock, never()).setProjects(anyList());
     }
 
+    @Test
+    public void moduleBChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+
+        assertProjectPropertiesEqual(moduleB);
+    }
+
+    @Test
+    public void moduleBChanged_twoSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        setProjectSelections(moduleB, moduleC);
+        overrideProjects(moduleB, moduleC);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+
+        assertProjectPropertiesEqual(moduleB);
+    }
+
     // mvn -pl :module-B -am
     @Test
     public void moduleBChanged_makeUpstream() throws GitAPIException, IOException {
@@ -672,6 +762,23 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertProjectPropertiesEqual(moduleD, "maven.test.skip", "true");
         assertProjectPropertiesEqual(moduleE);
+    }
+
+    @Test
+    public void twoSelected_bothChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
+        MavenProject moduleC = addModuleMock(AID_MODULE_C, true);
+        setProjectSelections(moduleB, moduleC);
+        overrideProjects(moduleB, moduleC);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleC);
     }
 
     // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!

@@ -62,6 +62,7 @@ public class Configuration {
     public final Map<String, String> argsForUpstreamModules;
     public final List<Pattern> forceBuildModules;
     public final List<String> excludeDownstreamModulesPackagedAs;
+    public final boolean disableSelectedProjectsHandling;
 
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
@@ -111,6 +112,8 @@ public class Configuration {
 
             excludeDownstreamModulesPackagedAs = null;
 
+            disableSelectedProjectsHandling = false;
+
             // error handling config
 
             failOnMissingGitDir = false;
@@ -126,26 +129,26 @@ public class Configuration {
 
         // change detection config
 
-        disableBranchComparison = Boolean.valueOf(Property.disableBranchComparison.getValue(pluginProperties, projectProperties));
+        disableBranchComparison = Boolean.parseBoolean(Property.disableBranchComparison.getValue(pluginProperties, projectProperties));
         referenceBranch = Property.referenceBranch.getValue(pluginProperties, projectProperties);
-        fetchReferenceBranch = Boolean.valueOf(Property.fetchReferenceBranch.getValue(pluginProperties, projectProperties));
+        fetchReferenceBranch = Boolean.parseBoolean(Property.fetchReferenceBranch.getValue(pluginProperties, projectProperties));
         baseBranch = Property.baseBranch.getValue(pluginProperties, projectProperties);
-        fetchBaseBranch = Boolean.valueOf(Property.fetchBaseBranch.getValue(pluginProperties, projectProperties));
-        useJschAgentProxy = Boolean.valueOf(Property.useJschAgentProxy.getValue(pluginProperties, projectProperties));
-        compareToMergeBase = Boolean.valueOf(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
-        uncommitted = Boolean.valueOf(Property.uncommitted.getValue(pluginProperties, projectProperties));
-        untracked = Boolean.valueOf(Property.untracked.getValue(pluginProperties, projectProperties));
+        fetchBaseBranch = Boolean.parseBoolean(Property.fetchBaseBranch.getValue(pluginProperties, projectProperties));
+        useJschAgentProxy = Boolean.parseBoolean(Property.useJschAgentProxy.getValue(pluginProperties, projectProperties));
+        compareToMergeBase = Boolean.parseBoolean(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
+        uncommitted = Boolean.parseBoolean(Property.uncommitted.getValue(pluginProperties, projectProperties));
+        untracked = Boolean.parseBoolean(Property.untracked.getValue(pluginProperties, projectProperties));
         excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, pluginProperties, projectProperties);
         includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, pluginProperties, projectProperties);
 
         // build config
 
-        buildAll = Boolean.valueOf(Property.buildAll.getValue(pluginProperties, projectProperties));
-        buildAllIfNoChanges = Boolean.valueOf(Property.buildAllIfNoChanges.getValue(pluginProperties, projectProperties));
+        buildAll = Boolean.parseBoolean(Property.buildAll.getValue(pluginProperties, projectProperties));
+        buildAllIfNoChanges = Boolean.parseBoolean(Property.buildAllIfNoChanges.getValue(pluginProperties, projectProperties));
         buildDownstream = isBuildStreamActive(
                 Property.buildDownstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
         buildUpstreamMode = parseBuildUpstreamMode(session, pluginProperties, projectProperties);
-        skipTestsForUpstreamModules = Boolean.valueOf(Property.skipTestsForUpstreamModules.getValue(pluginProperties, projectProperties));
+        skipTestsForUpstreamModules = Boolean.parseBoolean(Property.skipTestsForUpstreamModules.getValue(pluginProperties, projectProperties));
 
         argsForUpstreamModules = parseDelimited(Property.argsForUpstreamModules.getValue(pluginProperties, projectProperties), " ")
                 .map(Configuration::keyValueStringToEntry)
@@ -158,10 +161,12 @@ public class Configuration {
         excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(pluginProperties, projectProperties), ",")
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
+        disableSelectedProjectsHandling = Boolean.parseBoolean(Property.disableSelectedProjectsHandling.getValue(pluginProperties, projectProperties));
+
         // error handling config
 
-        failOnMissingGitDir = Boolean.valueOf(Property.failOnMissingGitDir.getValue(pluginProperties, projectProperties));
-        failOnError = Boolean.valueOf(Property.failOnError.getValue(pluginProperties, projectProperties));
+        failOnMissingGitDir = Boolean.parseBoolean(Property.failOnMissingGitDir.getValue(pluginProperties, projectProperties));
+        failOnError = Boolean.parseBoolean(Property.failOnError.getValue(pluginProperties, projectProperties));
         logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
     }
 

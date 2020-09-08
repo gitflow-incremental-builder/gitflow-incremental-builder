@@ -46,6 +46,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
+  - [gib.disableSelectedProjectsHandling](#gibdisableselectedprojectshandling)
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
@@ -334,6 +335,7 @@ Maven pom properties configuration with default values is below:
     <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                          <!-- or -Dgib.afum=...  -->
     <gib.forceBuildModules></gib.forceBuildModules>                                    <!-- or -Dgib.fbm=...   -->
     <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>  <!-- or -Dgib.edmpa=... -->
+    <gib.disableSelectedProjectsHandling>false</gib.disableSelectedProjectsHandling>   <!-- or -Dgib.dsph=...  -->
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
@@ -578,6 +580,15 @@ deployment modules will be built.
 
 This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
 
+### gib.disableSelectedProjectsHandling
+
+Disables special handling of [explicitly selected projects](#explicitly-selected-projects) (-pl, -f etc.).
+
+This can come in handy if you select just one module with `-pl` but you only want to have it built _fully_ (with tests etc.)
+if the selected module itself is changed or one of its (non-selected) upstream modules.
+
+Since: 3.12.0
+
 ### gib.failOnMissingGitDir
 
 Controls whether or not to fail on missing `.git` directory.
@@ -597,6 +608,10 @@ or only [explicitly selected projects](#explicitly-selected-projects) are presen
 Since: 3.10.1
 
 ## Explicitly selected projects
+
+By default, GIB tries not to interfere with any projects/modules that have been selected explicitely by the user.
+
+The details are described in the following subsections. This special handling can be disabled via [gib.disableSelectedProjectsHandling](#gibdisableSelectedProjectsHandling).
 
 ### mvn -pl
 
