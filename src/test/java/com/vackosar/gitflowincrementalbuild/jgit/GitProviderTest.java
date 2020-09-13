@@ -1,10 +1,13 @@
 package com.vackosar.gitflowincrementalbuild.jgit;
 
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
-import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
-import com.vackosar.gitflowincrementalbuild.mocks.EmptyLocalRepoMock;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.Properties;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -17,14 +20,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Properties;
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import com.vackosar.gitflowincrementalbuild.mocks.EmptyLocalRepoMock;
 
 @ExtendWith(MockitoExtension.class)
 public class GitProviderTest {

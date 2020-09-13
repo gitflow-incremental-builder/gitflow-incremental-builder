@@ -1,20 +1,21 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
-import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 @Singleton
 @Named

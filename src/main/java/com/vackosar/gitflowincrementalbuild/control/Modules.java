@@ -1,14 +1,14 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.MavenProject;
-
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 
 @Singleton
 @Named

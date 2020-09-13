@@ -1,9 +1,9 @@
 package com.vackosar.gitflowincrementalbuild;
 
-import com.vackosar.gitflowincrementalbuild.control.Property;
-import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
-import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
-import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
+
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.execution.MavenSession;
 import org.junit.jupiter.api.AfterEach;
@@ -11,10 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Properties;
+import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.mocks.LocalRepoMock;
+import com.vackosar.gitflowincrementalbuild.mocks.MavenSessionMock;
+import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
 public abstract class BaseRepoTest {
 
@@ -22,14 +22,13 @@ public abstract class BaseRepoTest {
     protected final Properties projectProperties = new Properties();
     private final boolean useSymLinkedFolder;
     private final TestServerType remoteRepoServerType;
-    private File repoBaseFolder;
 
     protected LocalRepoMock localRepoMock;
-    /** {@link LocalRepoMock#getBaseCanonicalBaseFolder()} of {@link #localRepoMock}. */
+    /** {@link LocalRepoMock#getRepoDir()} of {@link #localRepoMock}. */
     protected Path repoPath;
 
     @TempDir
-    protected Path tempDir;
+    protected Path repoBaseDir;
 
     public BaseRepoTest() {
         this(false, null);
@@ -43,12 +42,11 @@ public abstract class BaseRepoTest {
     @BeforeEach
     protected void before(TestInfo testInfo) throws Exception {
         init();
-        repoBaseFolder = tempDir.toFile();
 
         // place repo in a sym-linked folder if requested by the concrete test class
         if (useSymLinkedFolder) {
-            Path linkTarget = repoBaseFolder.toPath().resolve("link-target");
-            Path link = repoBaseFolder.toPath().resolve("link");
+            Path linkTarget = repoBaseDir.resolve("link-target");
+            Path link = repoBaseDir.resolve("link");
             Files.createDirectory(linkTarget);
 
             // - creation of most links requires elevated rights on windows, including the ones
@@ -61,10 +59,10 @@ public abstract class BaseRepoTest {
                 Files.createSymbolicLink(link, linkTarget);
             }
 
-            repoBaseFolder = link.toFile();
+            repoBaseDir = link;
         }
-        localRepoMock = new LocalRepoMock(repoBaseFolder, remoteRepoServerType);
-        repoPath = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        localRepoMock = new LocalRepoMock(repoBaseDir, remoteRepoServerType);
+        repoPath = localRepoMock.getRepoDir();
     }
 
     private void init() {
@@ -84,8 +82,8 @@ public abstract class BaseRepoTest {
     protected MavenSession getMavenSessionMock() throws Exception {
         return MavenSessionMock.get(repoPath, projectProperties);
     }
-    
-    protected File getRepoBaseFolder() {
-        return repoBaseFolder;
+
+    protected Path getRepoBaseDir() {
+        return repoBaseDir;
     }
 }

@@ -41,7 +41,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void worktree() throws Exception {
-        Path workDir = tempDir.resolve("tmp/repo/wrkf2");
+        Path workDir = repoBaseDir.resolve("tmp/repo/wrkf2");
 
         assertThatExceptionOfType(SkipExecutionException.class).isThrownBy(
                 () -> invokeUnderTest(MavenSessionMock.get(workDir, projectProperties)));
@@ -232,7 +232,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void emptyLocalRepo() throws Exception {
         projectProperties.clear();  // special test that does not follow the pattern of the test base classes
 
-        EmptyLocalRepoMock.withBasicPom(getRepoBaseFolder().toPath(), emptyLocalRepoMock -> {
+        EmptyLocalRepoMock.withBasicPom(getRepoBaseDir(), emptyLocalRepoMock -> {
             MavenSession mavenSessionMock = MavenSessionMock.get(emptyLocalRepoMock.getRepoDir(), projectProperties);
 
             Throwable thrown = catchThrowable(() -> invokeUnderTest(mavenSessionMock));
@@ -246,7 +246,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void localRepoButNoRemoteRepo() throws Exception {
         projectProperties.clear();  // special test that does not follow the pattern of the test base classes
 
-        EmptyLocalRepoMock.withBasicPom(getRepoBaseFolder().toPath(), emptyLocalRepoMock -> {
+        EmptyLocalRepoMock.withBasicPom(getRepoBaseDir(), emptyLocalRepoMock -> {
             emptyLocalRepoMock.getGit().add().addFilepattern("pom.xml").call();
             emptyLocalRepoMock.getGit().commit().setMessage("initial commit with pom.xml").call();
             MavenSession mavenSessionMock = MavenSessionMock.get(emptyLocalRepoMock.getRepoDir(), projectProperties);

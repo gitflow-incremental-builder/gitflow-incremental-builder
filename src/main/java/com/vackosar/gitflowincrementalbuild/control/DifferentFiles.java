@@ -1,10 +1,17 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
-import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
-import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
@@ -22,18 +29,11 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
+import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 @Singleton
 @Named

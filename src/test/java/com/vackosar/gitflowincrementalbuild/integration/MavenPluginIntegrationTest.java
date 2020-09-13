@@ -24,7 +24,7 @@ public class MavenPluginIntegrationTest extends MavenIntegrationTestBase {
     @Override
     @BeforeEach
     void initialInstall(TestInfo testInfo) throws Exception {
-        Path projectRoot = localRepoMock.getBaseCanonicalBaseFolder().toPath();
+        Path projectRoot = localRepoMock.getRepoDir();
         Files.move(projectRoot.resolve("build-parent/pom-plugin.xml"), projectRoot.resolve("build-parent/pom.xml"), StandardCopyOption.REPLACE_EXISTING);
         super.initialInstall(testInfo);
     }

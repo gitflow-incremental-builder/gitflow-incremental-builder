@@ -2,26 +2,6 @@ package com.vackosar.gitflowincrementalbuild.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
-import com.vackosar.gitflowincrementalbuild.ProcessUtils;
-import com.vackosar.gitflowincrementalbuild.control.DifferentFiles;
-import com.vackosar.gitflowincrementalbuild.control.Property;
-
-import org.apache.commons.lang3.Validate;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRefNameException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -39,6 +19,26 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.Validate;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.ProcessUtils;
+import com.vackosar.gitflowincrementalbuild.control.DifferentFiles;
+import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
  * Integration test base running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
@@ -135,7 +135,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         URL buildParentURL = Validate.notNull(
                 Thread.currentThread().getContextClassLoader().getResource(relativePath),"%s not found on classpath", relativePath);
         Path source = Paths.get(buildParentURL.toURI()).toAbsolutePath();
-        Path target = localRepoMock.getBaseCanonicalBaseFolder().toPath().resolve(relativePath);
+        Path target = localRepoMock.getRepoDir().resolve(relativePath);
         Files.copy(source, target);
     }
 
@@ -399,7 +399,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         // commandBaseWithFile + args + defaultArgs
         List<String> command = Stream.concat(commandBaseWithFile.stream(), Stream.concat(Arrays.stream(args), defaultArgs.stream()))
                 .collect(Collectors.toList());
-        String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getBaseCanonicalBaseFolder(),
+        String output = ProcessUtils.startAndWaitForProcess(command, localRepoMock.getRepoDir(),
                 line -> !LOG_LINE_FILTER_PATTERN.matcher(line).matches());
         if (logOutput) {
             LOGGER.info("Output of {}({}):\n{}", testDisplayName, String.join(" ", command), output);

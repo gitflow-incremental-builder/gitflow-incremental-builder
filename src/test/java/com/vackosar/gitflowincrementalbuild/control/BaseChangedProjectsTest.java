@@ -2,9 +2,13 @@ package com.vackosar.gitflowincrementalbuild.control;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
-import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -17,13 +21,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
+import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 
 /**
  * Base class for testing {@link ChangedProjects}. This class does <em>not</em> isolate {@link ChangedProjects}, it rather combines
@@ -79,7 +79,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
         final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
-                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
+                    .map(localRepoMock.getRepoDir()::relativize)
                 .collect(Collectors.toSet());
 
         assertEquals(expected, actual);
@@ -100,7 +100,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
         final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
-                    .map(localRepoMock.getBaseCanonicalBaseFolder().toPath()::relativize)
+                    .map(localRepoMock.getRepoDir()::relativize)
                 .collect(Collectors.toSet());
 
         assertEquals(expected, actual);

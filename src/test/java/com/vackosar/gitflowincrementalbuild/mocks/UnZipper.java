@@ -1,41 +1,58 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class UnZipper {
 
-    public void act(File zip, File outputFolder){
+    public static final Path TEMPLATE_PROJECT_ZIP;
+
+    static {
+        try {
+            TEMPLATE_PROJECT_ZIP = Paths.get(
+                    UnZipper.class.getClassLoader().getResource("template.zip").toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Failed to get template.zip", e);
+        }
+    }
+
+    public void act(Path zip, Path outputFolder) {
         try{
             createOutputFolder(outputFolder);
             try (ZipInputStream zis = createZipInputStream(zip)) {
                 process(outputFolder, zis);
                 zis.closeEntry();
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void process(File outputFolder, ZipInputStream zis) throws IOException {
+    private void process(Path outputFolder, ZipInputStream zis) throws IOException {
         ZipEntry ze = zis.getNextEntry();
-        while(ze != null){
+        while(ze != null) {
             String fileName = ze.getName();
-            File newFile = new File(outputFolder, fileName);
+            Path newFile = outputFolder.resolve(fileName);
             createParentDirectories(newFile);
             if (ze.isDirectory()) {
-                newFile.mkdir();
+                Files.createDirectory(newFile);
             } else {
                 writeToFile(zis, newFile);
             }
-            newFile.setLastModified(ze.getLastModifiedTime().toMillis());
+            Files.setLastModifiedTime(newFile, FileTime.fromMillis(ze.getLastModifiedTime().toMillis()));
             ze = zis.getNextEntry();
         }
     }
 
-    private void writeToFile(ZipInputStream zis, File newFile) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(newFile)) {
+    private void writeToFile(ZipInputStream zis, Path newFile) throws IOException {
+        try (OutputStream fos = Files.newOutputStream(newFile)) {
             int len;
             byte[] buffer = new byte[1024];
             while ((len = zis.read(buffer)) > 0) {
@@ -44,18 +61,16 @@ public class UnZipper {
         }
     }
 
-    private void createParentDirectories(File newFile) {
-        new File(newFile.getParent()).mkdirs();
+    private void createParentDirectories(Path newFile) throws IOException {
+        Files.createDirectories(newFile.getParent());
     }
 
-    private ZipInputStream createZipInputStream(File zip) throws FileNotFoundException {
-        return new ZipInputStream(new FileInputStream(zip));
+    private ZipInputStream createZipInputStream(Path zip) throws IOException {
+        return new ZipInputStream(Files.newInputStream(zip));
     }
 
-    private void createOutputFolder(File outputFolder) {
-        if(!outputFolder.exists()){
-            outputFolder.mkdir();
-        }
+    private void createOutputFolder(Path outputFolder) throws IOException {
+        Files.createDirectories(outputFolder);
     }
 
 }
