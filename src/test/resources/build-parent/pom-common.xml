@@ -12,6 +12,7 @@
     <!-- This file is the root parent of the projects in template.zip and contains properties that are replaced at build time. -->
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- These properties are needed by pom.xml files within template.zip: -->
         <version.jgit>${version.jgit}</version.jgit>
     </properties>
