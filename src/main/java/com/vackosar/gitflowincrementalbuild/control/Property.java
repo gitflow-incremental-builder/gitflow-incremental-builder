@@ -68,12 +68,7 @@ public enum Property {
     /**
      * Detects changed files that have not yet been committed.
      */
-    uncommitted("true", "uc", true) {
-        @Override
-        public Optional<String> deprecatedName() {
-            return Optional.of("uncommited");
-        }
-    },
+    uncommitted("true", "uc", true),
     /**
      * Detects files that are not yet tracked by git.
      */
