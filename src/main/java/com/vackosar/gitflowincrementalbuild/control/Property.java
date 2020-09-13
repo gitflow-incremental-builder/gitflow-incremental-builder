@@ -30,18 +30,6 @@ public enum Property {
     help("false", "h", true),
     /**
      * Can be used to disable this extension temporarily or permanently.
-     *
-     * @deprecated use {@link #disable} instead
-     */
-    @Deprecated
-    enabled("true", "e", true) {
-        @Override
-        protected Optional<Property> getPropertyToMigrateTo() {
-            return Optional.of(Property.disable);
-        }
-    },
-    /**
-     * Can be used to disable this extension temporarily or permanently.
      */
     disable("false", "d", true),
     /**
