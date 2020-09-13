@@ -467,24 +467,6 @@ public class ConfigurationTest {
         assertTrue(configuration.disable);
     }
 
-    @Test
-    public void enabled_systemProperty() {
-        System.setProperty(Property.enabled.prefixedName(), "false");
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertTrue(configuration.disable);
-    }
-
-    @Test
-    public void enabled_systemProperty_shortName() {
-        System.setProperty(Property.enabled.prefixedShortName(), "false");
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertTrue(configuration.disable);
-    }
-
     private void mockPluginConfig(String propertyName, String value) {
         Xpp3Dom childConfigMock = mock(Xpp3Dom.class);
         when(childConfigMock.getName()).thenReturn(propertyName);

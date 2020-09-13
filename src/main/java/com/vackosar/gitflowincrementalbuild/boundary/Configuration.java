@@ -79,8 +79,7 @@ public class Configuration {
         Properties pluginProperties = properties[1];
 
         help = Boolean.parseBoolean(Property.help.getValue(pluginProperties, projectProperties));
-        disable = Boolean.parseBoolean(Property.disable.getValue(pluginProperties, projectProperties))
-                || !Boolean.parseBoolean(Property.enabled.getValue(pluginProperties, projectProperties));
+        disable = Boolean.parseBoolean(Property.disable.getValue(pluginProperties, projectProperties));
         if (disable) { // abort parsing any other config properties if not enabled at all
             disableIfBranchRegex = null;
 
