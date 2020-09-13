@@ -4,6 +4,7 @@ import static com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType.H
 
 import java.io.IOException;
 import java.nio.file.Files;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.StoredConfig;

@@ -1,11 +1,12 @@
 package com.vackosar.gitflowincrementalbuild;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,13 +26,13 @@ public class ProcessUtils {
     private static final String LINE_PREFIX = "> ";
 
     public static String startAndWaitForProcess(String... args) throws InterruptedException, IOException {
-        return startAndWaitForProcess(Arrays.asList(args), new File("."), line -> true);
+        return startAndWaitForProcess(Arrays.asList(args), Paths.get("."), line -> true);
     }
 
-    public static String startAndWaitForProcess(List<String> args, File dir, Predicate<String> lineFilterPredicate) throws InterruptedException, IOException {
+    public static String startAndWaitForProcess(List<String> args, Path dir, Predicate<String> lineFilterPredicate) throws InterruptedException, IOException {
         final Process process = new ProcessBuilder(cmdArgs(args))
                 .redirectErrorStream(true)
-                .directory(dir)
+                .directory(dir.toFile())
                 .start();
         final List<String> lines = captureOutput(process.getInputStream());
         final int returnCode = process.waitFor();

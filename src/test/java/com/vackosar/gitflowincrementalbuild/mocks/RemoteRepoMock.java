@@ -1,14 +1,15 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServer;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 
 public class RemoteRepoMock implements AutoCloseable {
 
@@ -19,25 +20,24 @@ public class RemoteRepoMock implements AutoCloseable {
     public final URI repoUri;
 
     private final Git git;
-    private final File repoFolder;
-    private final File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
+    private final Path repoDir;
     private final TestServer testServer;
 
-    public RemoteRepoMock(File baseFolder, TestServerType testServerType) throws IOException {
-        this(baseFolder, false, testServerType);
+    public RemoteRepoMock(Path baseDir, TestServerType testServerType) throws IOException {
+        this(baseDir, false, testServerType);
     }
 
-    public RemoteRepoMock(File baseFolder, boolean bare, TestServerType testServerType) throws IOException {
-        this.repoFolder = new File(baseFolder, "tmp/remote");
+    public RemoteRepoMock(Path baseDir, boolean bare, TestServerType testServerType) throws IOException {
+        this.repoDir = baseDir.resolve("tmp/remote");
 
         if (bare) {
-            repoFolder.mkdirs();
+            Files.createDirectories(repoDir);
         } else {
             unpackTemplateProject();
         }
 
         try {
-            git = new Git(new FileRepository(new File(repoFolder, ".git")));
+            git = new Git(new FileRepository(repoDir.resolve(".git").toFile()));
         } catch (IOException | RuntimeException e) {
             close();
             throw e;
@@ -48,7 +48,7 @@ public class RemoteRepoMock implements AutoCloseable {
     }
 
     private void unpackTemplateProject() {
-        new UnZipper().act(templateProjectZip, repoFolder);
+        new UnZipper().act(UnZipper.TEMPLATE_PROJECT_ZIP, repoDir);
     }
 
     @Override

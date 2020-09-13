@@ -1,5 +1,9 @@
 package com.vackosar.gitflowincrementalbuild.mocks;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -10,27 +14,22 @@ import org.eclipse.jgit.transport.URIish;
 
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 public class LocalRepoMock implements AutoCloseable {
 
     static {
         JGitIsolation.ensureIsolatedFromSystemAndUserConfig();
     }
 
-    private File baseFolder;
-    private File templateProjectZip = new File(getClass().getClassLoader().getResource("template.zip").getFile());
+    private Path repoDir;
     private RemoteRepoMock remoteRepo;
     private Git git;
 
-    public LocalRepoMock(File baseFolder, TestServerType remoteRepoServerType) throws IOException, URISyntaxException, GitAPIException {
-        this.baseFolder = new File(baseFolder.getAbsolutePath(), "tmp/repo/");
-        new UnZipper().act(templateProjectZip, this.baseFolder);
+    public LocalRepoMock(Path baseDir, TestServerType remoteRepoServerType) throws IOException, URISyntaxException, GitAPIException {
+        this.repoDir = baseDir.resolve("tmp/repo/");
+        new UnZipper().act(UnZipper.TEMPLATE_PROJECT_ZIP, repoDir);
 
-        remoteRepo = remoteRepoServerType != null ? new RemoteRepoMock(baseFolder, remoteRepoServerType) : null;
-        git = new Git(new FileRepository(new File(this.baseFolder, ".git")));
+        remoteRepo = remoteRepoServerType != null ? new RemoteRepoMock(repoDir, remoteRepoServerType) : null;
+        git = new Git(new FileRepository(repoDir.resolve(".git").toFile()));
 
         if (remoteRepoServerType != null) {
             try {
@@ -86,7 +85,7 @@ public class LocalRepoMock implements AutoCloseable {
         return remoteRepo;
     }
 
-    public File getBaseCanonicalBaseFolder() throws IOException {
-        return baseFolder.getCanonicalFile();
+    public Path getRepoDir() throws IOException {
+        return repoDir;
     }
 }

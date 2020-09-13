@@ -18,8 +18,8 @@ import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
-import org.eclipse.jgit.util.TemporaryBuffer;
 import org.eclipse.jgit.util.FS.ExecutionResult;
+import org.eclipse.jgit.util.TemporaryBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
