@@ -26,9 +26,9 @@ jobs:
       apt:
         packages:
           - lynx
-  - name: "Maven 3.6.3 & Open JDK 14"
-    jdk: openjdk14
-    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=14
+  - name: "Maven 3.6.3 & Open JDK 15"
+    jdk: openjdk15
+    env: MVN_VERSION="3.6.3" OPENJDK_VERSION=15
   #- name: "Maven 3.6.3 & Oracle JDK 11"
   #  jdk: oraclejdk11
   #  env: MVN_VERSION="3.6.3"
@@ -108,7 +108,7 @@ install:
 script:
   # ssh-agent for DifferentFilesSshFetchTest.fetchWithPassphraseEncryptedKey()
   - eval $(ssh-agent)
-  - mvn verify
+  - mvn --batch-mode verify
   - if [ "${COVERAGE_REPORT}" == "true" ]; then
       lynx -width=120 -dump target/site/jacoco/index.html || true;
     fi
