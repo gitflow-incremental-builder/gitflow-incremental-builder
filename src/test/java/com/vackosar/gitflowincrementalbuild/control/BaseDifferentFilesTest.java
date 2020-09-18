@@ -1,7 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -66,7 +65,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     }
 
     protected void assertCommitExists(String message, Git git) throws Exception {
-        assertEquals(message, git.log().setMaxCount(1).call().iterator().next().getFullMessage());
+        assertThat(git.log().setMaxCount(1).call().iterator().next().getFullMessage()).isEqualTo(message);
     }
 
     protected Set<Path> invokeUnderTest() throws Exception {
@@ -91,7 +90,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
             gitProvider.close();
         }
 
-        assertNotNull(result, "Resulting set is unexpectedly null");
+        assertThat(result).as("Resulting set is unexpectedly null").isNotNull();
         return result;
     }
 }

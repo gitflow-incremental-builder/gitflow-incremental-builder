@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -82,7 +82,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                     .map(localRepoMock.getRepoDir()::relativize)
                 .collect(Collectors.toSet());
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -103,7 +103,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                     .map(localRepoMock.getRepoDir()::relativize)
                 .collect(Collectors.toSet());
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     protected Configuration config() {

@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -173,7 +173,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
                         .map(i -> i * 2)
                         .boxed()
                         .collect(Collectors.toMap(i -> expectedFlat[i], i -> expectedFlat[i + 1], (a, b) -> a, TreeMap::new));
-        assertEquals(expected, actual, "Unexpected project properties of " + project);
+        assertThat(actual).as("Unexpected project properties of " + project).isEqualTo(expected);
     }
 
     protected Configuration config() {

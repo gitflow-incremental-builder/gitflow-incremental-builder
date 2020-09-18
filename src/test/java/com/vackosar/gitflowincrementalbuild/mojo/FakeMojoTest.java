@@ -1,5 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.mojo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -25,7 +27,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ProxyableListAssert;
 import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -42,7 +43,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  *
  * @see MojoParametersGeneratingByteBuddyPlugin
  */
-public class FakeMojoTest implements WithAssertions {
+public class FakeMojoTest {
 
     private static final String XPATH_ROOT = "/plugin/mojos/mojo[goal/text() = '" + MojoParametersGeneratingByteBuddyPlugin.FAKE_MOJO_NAME + "']/";
 

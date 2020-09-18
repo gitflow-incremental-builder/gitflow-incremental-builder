@@ -1,8 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,10 +78,11 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     private void assertLogFileContains(MavenProject... mavenProjects) throws IOException {
-        assertTrue(Files.isReadable(logFilePath), logFilePath + " is missing");
-        assertEquals(
-                Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getPath()).collect(Collectors.toList()),
-                Files.readAllLines(logFilePath),
-                "Unexpected content of " + logFilePath);
+        assertThat(Files.isReadable(logFilePath))
+                .as(logFilePath + " is missing")
+                .isTrue();
+        assertThat(Files.readAllLines(logFilePath))
+                .as("Unexpected content of " + logFilePath)
+                .isEqualTo(Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getPath()).collect(Collectors.toList()));
     }
 }

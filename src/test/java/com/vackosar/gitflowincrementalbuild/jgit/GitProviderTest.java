@@ -1,7 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.jgit;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class GitProviderTest {
         EmptyLocalRepoMock.withBasicPom(tempDir, emptyLocalRepoMock -> {
             when(currentProjectMock.getBasedir()).thenReturn(emptyLocalRepoMock.getRepoDir().toFile());
 
-            assertNotNull(underTest.get(new Configuration(mavenSessionMock)));
+            assertThat(underTest.get(new Configuration(mavenSessionMock))).isNotNull();
         });
     }
 
@@ -66,6 +66,7 @@ public class GitProviderTest {
 
         when(currentProjectMock.getBasedir()).thenReturn(tempDir.toFile());
 
-        assertThrows(SkipExecutionException.class, () -> underTest.get(new Configuration(mavenSessionMock)));
+        assertThatExceptionOfType(SkipExecutionException.class)
+                .isThrownBy(() -> underTest.get(new Configuration(mavenSessionMock)));
     }
 }

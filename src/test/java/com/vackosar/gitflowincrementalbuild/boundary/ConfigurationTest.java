@@ -2,12 +2,6 @@ package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -121,8 +115,8 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.disable);
-        assertNull(configuration.disableIfBranchRegex);
+        assertThat(configuration.disable).isTrue();
+        assertThat(configuration.disableIfBranchRegex).isNull();
     }
 
     @Test
@@ -131,8 +125,8 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.disable);
-        assertNull(configuration.disableIfBranchRegex);
+        assertThat(configuration.disable).isTrue();
+        assertThat(configuration.disableIfBranchRegex).isNull();
     }
 
     @Test
@@ -142,8 +136,8 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.disable);
-        assertNull(configuration.disableIfBranchRegex);
+        assertThat(configuration.disable).isTrue();
+        assertThat(configuration.disableIfBranchRegex).isNull();
     }
 
     @Test
@@ -155,7 +149,7 @@ public class ConfigurationTest {
         Map<String, String> expected = new LinkedHashMap<>();
         expected.put("x", "true");
         expected.put("a", "false");
-        assertEquals(expected, configuration.argsForUpstreamModules);
+        assertThat(configuration.argsForUpstreamModules).isEqualTo(expected);
     }
 
     @Test
@@ -164,7 +158,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals(Arrays.asList("ear", "war"), configuration.excludeDownstreamModulesPackagedAs);
+        assertThat(configuration.excludeDownstreamModulesPackagedAs).isEqualTo(Arrays.asList("ear", "war"));
     }
 
     @Test
@@ -174,11 +168,11 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertNotNull(configuration.forceBuildModules,"Field forceBuildModules is null");
-        assertEquals( 1, configuration.forceBuildModules.size(), "Unexpected number of Patterns in forceBuildModules");
+        assertThat(configuration.forceBuildModules).as("Field forceBuildModules is null").isNotNull();
+        assertThat(configuration.forceBuildModules).as("Unexpected number of Patterns in forceBuildModules").hasSize(1);
         Pattern pattern = configuration.forceBuildModules.get(0);
-        assertNotNull(pattern, "Pattern form forceBuildModules is null");
-        assertEquals(expectedPatternString, pattern.pattern(), "Unexpected pattern string of Pattern from forceBuildModules");
+        assertThat(pattern).as("Pattern form forceBuildModules is null").isNotNull();
+        assertThat(pattern.pattern()).as("Unexpected pattern string of Pattern from forceBuildModules").isEqualTo(expectedPatternString);
     }
 
     @Test
@@ -199,7 +193,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.NONE);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
     }
 
@@ -209,7 +203,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.NONE);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
     }
 
@@ -219,7 +213,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.CHANGED);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
     }
 
@@ -229,7 +223,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.CHANGED);
         verify(mavenExecutionRequestMock, never()).getMakeBehavior();
     }
 
@@ -247,7 +241,7 @@ public class ConfigurationTest {
     public void buildUpstreamMode_derived_noMake() {
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.NONE);
     }
 
     @Test
@@ -256,7 +250,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.CHANGED);
     }
 
     @Test
@@ -265,7 +259,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.CHANGED);
     }
 
     @Test
@@ -274,7 +268,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.NONE, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.NONE);
     }
 
     @Test
@@ -284,7 +278,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.IMPACTED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.IMPACTED);
     }
 
     @Test
@@ -305,7 +299,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertSame(BuildUpstreamMode.CHANGED, configuration.buildUpstreamMode);
+        assertThat(configuration.buildUpstreamMode).isSameAs(BuildUpstreamMode.CHANGED);
     }
 
     // ///////////////////////////////////////
@@ -316,7 +310,7 @@ public class ConfigurationTest {
     public void buildDownstream() {
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isTrue();
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
     }
 
@@ -326,7 +320,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isFalse();
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
     }
 
@@ -336,7 +330,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isFalse();
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
     }
 
@@ -346,7 +340,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isTrue();
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
     }
 
@@ -356,7 +350,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isTrue();
         verify(mavenExecutionRequestMock, times(1)).getMakeBehavior();  // called once for buildDownstreamMode
     }
 
@@ -374,7 +368,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isFalse();
     }
 
     @Test
@@ -384,7 +378,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isTrue();
     }
 
     @Test
@@ -394,7 +388,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isTrue();
     }
 
     @Test
@@ -404,7 +398,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertFalse(configuration.buildDownstream);
+        assertThat(configuration.buildDownstream).isFalse();
     }
 
     @Test
@@ -413,7 +407,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals("foo", configuration.baseBranch);
+        assertThat(configuration.baseBranch).isEqualTo("foo");
     }
 
     @Test
@@ -423,7 +417,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals("foo", configuration.baseBranch);
+        assertThat(configuration.baseBranch).isEqualTo("foo");
     }
 
     @Test
@@ -433,7 +427,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals("foo", configuration.baseBranch);
+        assertThat(configuration.baseBranch).isEqualTo("foo");
     }
 
     @Test
@@ -443,7 +437,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals("foo", configuration.baseBranch);
+        assertThat(configuration.baseBranch).isEqualTo("foo");
     }
 
     @Test
@@ -455,7 +449,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertEquals("foo", configuration.baseBranch);
+        assertThat(configuration.baseBranch).isEqualTo("foo");
     }
 
     @Test
@@ -464,7 +458,7 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertTrue(configuration.disable);
+        assertThat(configuration.disable).isTrue();
     }
 
     private void mockPluginConfig(String propertyName, String value) {
