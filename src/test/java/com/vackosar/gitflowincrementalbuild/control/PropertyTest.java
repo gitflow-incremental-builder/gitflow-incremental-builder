@@ -1,7 +1,8 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.fail;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.vackosar.gitflowincrementalbuild.SystemPropertiesResetExtension;
 
 @ExtendWith(SystemPropertiesResetExtension.class)
-public class PropertyTest implements WithAssertions {
+public class PropertyTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyTest.class);
 
@@ -44,21 +44,21 @@ public class PropertyTest implements WithAssertions {
 
     @Test
     public void getValue_unset() {
-        assertEquals("false", Property.disable.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.disable.getValue(NO_PROPS, NO_PROPS)).isEqualTo("false");
     }
 
     // prefixedName
 
     @Test
     public void getValue_prefixedName_projectProperties() {
-        assertEquals("true", Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true")));
+        assertThat(Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true"))).isEqualTo("true");
     }
 
     @Test
     public void getValue_prefixedName_systemProperties() {
         System.setProperty(Property.disable.prefixedName(), "true");
 
-        assertEquals("true", Property.disable.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.disable.getValue(NO_PROPS, NO_PROPS)).isEqualTo("true");
     }
 
     @Test
@@ -66,28 +66,28 @@ public class PropertyTest implements WithAssertions {
         // need to use a property that is false per default
         System.setProperty(Property.buildAll.prefixedName(), "");
 
-        assertEquals("true", Property.buildAll.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.buildAll.getValue(NO_PROPS, NO_PROPS)).isEqualTo("true");
     }
 
     @Test
     public void getValue_prefixedName_systemProperties_emptyValueNotMapped() {
         System.setProperty(Property.referenceBranch.prefixedName(), "");
 
-        assertEquals("", Property.referenceBranch.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.referenceBranch.getValue(NO_PROPS, NO_PROPS)).isEqualTo("");
     }
 
     @Test
     public void getValue_prefixedName_systemProperties_override() {
         System.setProperty(Property.disable.prefixedName(), "false");
 
-        assertEquals("false", Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true")));
+        assertThat(Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true"))).isEqualTo("false");
     }
 
     @Test
     public void getValue_prefixedName_systemProperties_override_prefixedShortName() {
         System.setProperty(Property.disable.prefixedShortName(), "false");
 
-        assertEquals("false", Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true")));
+        assertThat(Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedName(), "true"))).isEqualTo("false");
     }
 
     // prefixedShortName
@@ -95,21 +95,21 @@ public class PropertyTest implements WithAssertions {
     @Test
     public void getValue_prefixedShortName_projectProperties() {
         // short name will only be resolved from system properties!
-        assertEquals("false", Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedShortName(), "true")));
+        assertThat(Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedShortName(), "true"))).isEqualTo("false");
     }
 
     @Test
     public void getValue_prefixedShortName_systemProperties() {
         System.setProperty(Property.disable.prefixedShortName(), "true");
 
-        assertEquals("true", Property.disable.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.disable.getValue(NO_PROPS, NO_PROPS)).isEqualTo("true");
     }
 
     @Test
     public void getValue_prefixedShortName_systemProperties_override() {
         System.setProperty(Property.disable.prefixedShortName(), "false");
 
-        assertEquals("false", Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedShortName(), "true")));
+        assertThat(Property.disable.getValue(NO_PROPS, propsWith(Property.disable.prefixedShortName(), "true"))).isEqualTo("false");
     }
 
     @Test
@@ -117,33 +117,33 @@ public class PropertyTest implements WithAssertions {
         System.setProperty(Property.disable.prefixedName(), "true");
         System.setProperty(Property.disable.prefixedShortName(), "false");
 
-        assertEquals("true", Property.disable.getValue(NO_PROPS, NO_PROPS));
+        assertThat(Property.disable.getValue(NO_PROPS, NO_PROPS)).isEqualTo("true");
     }
 
     // name (plugin mode)
 
     @Test
     public void getValue_pluginProperties() {
-        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
+        assertThat(Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS)).isEqualTo("true");
     }
 
     @Test
     public void getValue_pluginProperties_overridesProjectProperties() {
-        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), propsWith(Property.disable.name(), "false")));
+        assertThat(Property.disable.getValue(propsWith(Property.disable.name(), "true"), propsWith(Property.disable.name(), "false"))).isEqualTo("true");
     }
 
     @Test
     public void getValue_pluginProperties_overridesSystemProperties() {
         System.setProperty(Property.disable.prefixedName(), "false");
 
-        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
+        assertThat(Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS)).isEqualTo("true");
     }
 
     @Test
     public void getValue_pluginProperties_overridesSystemPropertiesWithPrefixedShortName() {
         System.setProperty(Property.disable.prefixedShortName(), "false");
 
-        assertEquals("true", Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS));
+        assertThat(Property.disable.getValue(propsWith(Property.disable.name(), "true"), NO_PROPS)).isEqualTo("true");
     }
 
     // misc
@@ -152,14 +152,14 @@ public class PropertyTest implements WithAssertions {
     public void getValueOpt_empty() {
         Optional<String> valueOpt = Property.disableIfBranchRegex.getValueOpt(NO_PROPS, NO_PROPS);
 
-        assertEquals(Optional.empty(), valueOpt);
+        assertThat(valueOpt).isEqualTo(Optional.empty());
     }
 
     @Test
     public void getValueOpt_notEmpty() {
         Optional<String> valueOpt = Property.disableIfBranchRegex.getValueOpt(NO_PROPS, propsWith(Property.disableIfBranchRegex.prefixedName(), "master"));
 
-        assertEquals(Optional.of("master"), valueOpt);
+        assertThat(valueOpt).isEqualTo(Optional.of("master"));
     }
 
     @Test

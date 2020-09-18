@@ -1,5 +1,7 @@
 package com.vackosar.gitflowincrementalbuild;
 
+import static org.assertj.core.api.Assertions.fail;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class ProcessUtils {
         final int returnCode = process.waitFor();
         if (returnCode > 0) {
             LOGGER.error("stdOut/stdErr:\n{}", linesToString(lines, line -> true));
-            Assertions.fail("Process failed with return code " + returnCode);
+            fail("Process failed with return code " + returnCode);
         }
         return linesToString(lines, lineFilterPredicate);
     }

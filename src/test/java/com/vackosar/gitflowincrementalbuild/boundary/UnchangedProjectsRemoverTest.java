@@ -1,6 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,7 +36,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goal");
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goal").isEqualTo(Collections.singletonList("validate"));
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
@@ -53,7 +53,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
 
@@ -69,7 +69,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        assertEquals(Collections.singletonList("validate"), mavenSessionMock.getGoals(), "Unexpected goal");
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goal").isEqualTo(Collections.singletonList("validate"));
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
         verify(moduleA, Mockito.times(2)).getModel();   // +1 due to test setup
@@ -86,7 +86,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
         verify(moduleA).getModel();   // only once due to test setup
@@ -104,7 +104,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        assertEquals(Collections.emptyList(), mavenSessionMock.getGoals(), "Unexpected goals");
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
         verify(moduleB).getModel();
