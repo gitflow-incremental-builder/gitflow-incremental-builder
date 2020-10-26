@@ -66,7 +66,7 @@
         <version.javax.inject>1</version.javax.inject>
         <version.bytebuddy>1.10.17</version.bytebuddy>
         <version.junit>5.7.0</version.junit>
-        <version.assertj>3.17.2</version.assertj>
+        <version.assertj>3.18.0</version.assertj>
         <version.powermock-reflect>2.0.7</version.powermock-reflect>
         <version.mockito>3.5.15</version.mockito>
         <version.jetty>9.4.33.v20201020</version.jetty>
