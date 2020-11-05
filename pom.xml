@@ -69,7 +69,7 @@
         <version.assertj>3.18.0</version.assertj>
         <version.powermock-reflect>2.0.7</version.powermock-reflect>
         <version.mockito>3.6.0</version.mockito>
-        <version.jetty>9.4.33.v20201020</version.jetty>
+        <version.jetty>9.4.34.v20201102</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
