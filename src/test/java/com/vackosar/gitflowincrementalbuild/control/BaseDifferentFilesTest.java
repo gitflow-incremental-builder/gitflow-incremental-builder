@@ -14,7 +14,10 @@ import org.eclipse.jgit.util.FS;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-import org.powermock.reflect.Whitebox;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
@@ -23,6 +26,7 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
 
+@ExtendWith(MockitoExtension.class)
 public abstract class BaseDifferentFilesTest extends BaseRepoTest {
 
     protected static final String FETCH_FILE = "fetch-file";
@@ -30,6 +34,13 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     protected static final String REMOTE_DEVELOP = "refs/remotes/origin/develop";
 
     protected final Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(DifferentFiles.class);
+
+    @Spy
+    private GitProvider gitProviderSpy;
+
+    @Spy
+    @InjectMocks
+    private DifferentFiles underTest;
 
     protected Path userHome;
     private File jGitUserHomeBackup;
@@ -45,6 +56,10 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         super.before(testInfo);
         userHome = Files.createDirectory(repoBaseDir.resolve("userHome"));
         FS.DETECTED.setUserHome(userHome.toFile());
+
+        // isolate a possible native git invocation from the settings of the system the test is runing on
+        underTest.putAdditionalNativeGitEnvironment("GIT_CONFIG_NOSYSTEM", "1");
+        underTest.putAdditionalNativeGitEnvironment("HOME", userHome.toAbsolutePath().toString());
     }
 
     @Override
@@ -52,6 +67,10 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     protected void after() throws Exception {
         FS.DETECTED.setUserHome(jGitUserHomeBackup);
         super.after();
+
+        if (gitProviderSpy != null) {
+            gitProviderSpy.close();
+        }
     }
 
     protected void addCommitToRemoteRepo(String newFileNameAndMessage) throws Exception {
@@ -75,20 +94,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     protected Set<Path> invokeUnderTest(final MavenSession mavenSessionMock) throws Exception {
         mavenSessionMock.getCurrentProject().getProperties().putAll(projectProperties);
 
-        DifferentFiles underTest = new DifferentFiles();
-        GitProvider gitProvider = new GitProvider();
-        Whitebox.setInternalState(underTest, gitProvider, loggerSpy);
-
-        // isolate a possible native git invocation from the settings of the system the test is runing on
-        underTest.putAdditionalNativeGitEnvironment("GIT_CONFIG_NOSYSTEM", "1");
-        underTest.putAdditionalNativeGitEnvironment("HOME", userHome.toAbsolutePath().toString());
-
-        Set<Path> result;
-        try {
-            result = underTest.get(new Configuration(mavenSessionMock));
-        } finally {
-            gitProvider.close();
-        }
+        Set<Path> result = underTest.get(new Configuration(mavenSessionMock));
 
         assertThat(result).as("Resulting set is unexpectedly null").isNotNull();
         return result;
