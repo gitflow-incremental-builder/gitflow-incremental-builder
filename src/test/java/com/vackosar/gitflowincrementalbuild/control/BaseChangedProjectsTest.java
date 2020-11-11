@@ -19,8 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.powermock.reflect.Whitebox;
-
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
@@ -37,7 +35,7 @@ import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 public abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
     @Spy
-    @InjectMocks    // note: this won't populate mavenSession because the mock for this is created later via getMavenSessionMock()
+    @InjectMocks
     protected DifferentFiles differentFilesSpy;
 
     @Spy
@@ -46,24 +44,24 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @InjectMocks
     protected ChangedProjects underTest;
 
+    @Spy
+    private GitProvider gitProviderSpy;
+
     private MavenSession mavenSessionMock;
-    private GitProvider gitProvider;
 
     public BaseChangedProjectsTest(boolean useSymLinkedFolder) {
         super(useSymLinkedFolder, /* remoteRepoServerType */ null);
     }
 
     @BeforeEach
-    void injectMavenSessionMockAndGitProvider() throws Exception {
+    void initMavenSessionMock() throws Exception {
         mavenSessionMock = getMavenSessionMock();
-        gitProvider = new GitProvider();
-        Whitebox.setInternalState(differentFilesSpy, gitProvider);
     }
 
     @AfterEach
     void closeGitProvider() {
-        if (gitProvider != null) {
-            gitProvider.close();
+        if (gitProviderSpy != null) {
+            gitProviderSpy.close();
         }
     }
 
