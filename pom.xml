@@ -68,7 +68,7 @@
         <version.junit>5.7.0</version.junit>
         <version.assertj>3.18.1</version.assertj>
         <version.mockito>3.6.28</version.mockito>
-        <version.jetty>9.4.35.v20201120</version.jetty>
+        <version.jetty>11.0.0</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0-M3</version.maven-enforcer-plugin>
