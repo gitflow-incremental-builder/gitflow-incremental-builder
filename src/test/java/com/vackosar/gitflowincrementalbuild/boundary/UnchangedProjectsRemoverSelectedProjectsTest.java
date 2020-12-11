@@ -116,6 +116,26 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
+        verify(mavenSessionMock, never()).setProjects(anyList());
+
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+        assertProjectPropertiesEqual(moduleB);
+    }
+
+    // mvn -pl :module-B -am
+    @Test
+    public void nothingChanged_makeUpstream_buildUpstreamDisabled() throws GitAPIException, IOException {
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        setProjectSelections(moduleB);
+
+        when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+
+        addGibProperty(Property.buildUpstream, "false");
+
+        underTest.act(config());
+
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
+
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
         assertProjectPropertiesEqual(moduleB);
@@ -139,7 +159,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+        // verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+        verify(mavenSessionMock, never()).setProjects(anyList());
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
@@ -196,7 +217,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
+        verify(mavenSessionMock, never()).setProjects(anyList());
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
@@ -221,8 +242,9 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+        verify(mavenSessionMock, never()).setProjects(anyList());
 
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
     }
@@ -536,7 +558,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act(config());
 
-        verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB));
 
         assertProjectPropertiesEqual(moduleB);
     }
@@ -590,7 +612,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act(config());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC));
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC));
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
@@ -724,7 +746,9 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act(config());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleB, moduleC, moduleD, moduleE));
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC, moduleD, moduleE));
+
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
 
         assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
         assertProjectPropertiesEqual(moduleC);
@@ -756,8 +780,11 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         underTest.act(config());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(moduleC, moduleD, moduleE));
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, moduleB, moduleC, moduleD, moduleE));
 
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
+
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
         assertProjectPropertiesEqual(moduleC);
 
         assertProjectPropertiesEqual(moduleD, "maven.test.skip", "true");

@@ -628,7 +628,7 @@ Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is use
 - Upstream projects of these selected projects are built if:
   - `-am` (`--also-make`) is used
   - _and_:
-    - they are **changed** (or depend on other changed upstream modules) _and_ [`buildUpstream`](#gibbuildUpstream) is _not_ `never` or `false`
+    - [`buildUpstream`](#gibbuildUpstream) is _not_ `never` or `false`
     - _or_ [`buildAll`](#gibbuildall) is enabled
 
 Other properties/features are applied as usual to the resulting subset of modules/projects.
