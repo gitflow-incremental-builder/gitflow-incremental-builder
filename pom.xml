@@ -57,7 +57,7 @@
         <javaSourceLevel>1.8</javaSourceLevel>
 
         <!-- Dependency versions -->
-        <version.jgit>5.9.0.202009080501-r</version.jgit>
+        <version.jgit>5.10.0.202012080955-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.3.9</version.maven-core>
         <version.maven-plugin>3.6.0</version.maven-plugin>
