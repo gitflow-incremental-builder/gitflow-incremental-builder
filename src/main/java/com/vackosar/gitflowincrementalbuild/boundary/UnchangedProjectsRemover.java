@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -69,8 +71,9 @@ class UnchangedProjectsRemover {
     }
 
     private void doAct(Configuration config) throws GitAPIException, IOException {
+        LazyMavenProjectComparator projectComparator = new LazyMavenProjectComparator(config.mavenSession);
         // ensure to write logfile for impaced (even if just empty)
-        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, config.mavenSession));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator));
 
         final Set<MavenProject> selected;
         if (config.disableSelectedProjectsHandling) {
@@ -100,17 +103,17 @@ class UnchangedProjectsRemover {
         final Set<MavenProject> changed = changedProjects.get(config);
         printDelimiter();
         if (changed.isEmpty()) {
-            handleNoChangesDetected(selected, config);
+            handleNoChangesDetected(selected, projectComparator, config);
             return;
         }
-        logProjects(changed, "Changed Artifacts:", config.mavenSession);
+        logProjects(changed, "Changed Artifacts:", projectComparator, config.mavenSession);
 
         final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed, config);
 
-        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, config.mavenSession));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, projectComparator));
 
         if (!config.buildAll) {
-            modifyProjectList(selected, changed, impacted, config);
+            modifyProjectList(selected, changed, impacted, projectComparator, config);
         } else {
             config.mavenSession.getProjects().stream()
                     .filter(proj -> !impacted.contains(proj))
@@ -127,7 +130,7 @@ class UnchangedProjectsRemover {
         return config.mavenSession.getProjects().size() == 1 && config.currentProject.getModel().getModules().isEmpty();
     }
 
-    private void handleNoChangesDetected(Set<MavenProject> selected, Configuration config) {
+    private void handleNoChangesDetected(Set<MavenProject> selected, LazyMavenProjectComparator projectComparator, Configuration config) {
         if (!selected.isEmpty()) {
             logger.info("No changed artifacts detected: Building just explicitly selected projects (and their upstream and/or downstream, if requested).");
             // note: "only selected" case was handled before, so we have up- and/or downstream projects in the session as well
@@ -138,8 +141,8 @@ class UnchangedProjectsRemover {
             if (Configuration.isMakeBehaviourActive(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM, config.mavenSession)) {
                 if (config.buildUpstreamMode == BuildUpstreamMode.NONE) {
                     // only retain selected and downstream
-                    config.mavenSession.setProjects(config.mavenSession.getProjects().stream()  // retain order
-                            .filter(selectedAndDownstream::contains)
+                    config.mavenSession.setProjects(selectedAndDownstream.stream()
+                            .sorted(projectComparator)
                             .collect(Collectors.toList()));
                 } else {
                     // applyUpstreamModuleArgs
@@ -151,7 +154,7 @@ class UnchangedProjectsRemover {
             // handle downstream (remove downstream projects if configured)
             if (Configuration.isMakeBehaviourActive(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM, config.mavenSession)
                     && !config.buildDownstream) {
-                config.mavenSession.setProjects(config.mavenSession.getProjects().stream()  // retain order
+                config.mavenSession.setProjects(config.mavenSession.getProjects().stream()  // retain order, without projectComparator
                         .filter(proj -> selected.contains(proj) || !selectedAndDownstream.contains(proj))
                         .collect(Collectors.toList()));
             }
@@ -179,11 +182,11 @@ class UnchangedProjectsRemover {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, MavenSession mavenSession) {
+    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, LazyMavenProjectComparator projectComparator) {
         List<String> projectsToLog = impacted.isEmpty()
                 ? Collections.emptyList()
-                : mavenSession.getProjects().stream()   // write in proper order
-                        .filter(impacted::contains)
+                : impacted.stream()
+                        .sorted(projectComparator)
                         .map(proj -> proj.getBasedir().getPath())
                         .collect(Collectors.toList());
         logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
@@ -194,21 +197,23 @@ class UnchangedProjectsRemover {
         }
     }
 
-    private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted, Configuration config) {
+    private void modifyProjectList(Set<MavenProject> selected, Set<MavenProject> changed, Set<MavenProject> impacted,
+            LazyMavenProjectComparator projectComparator, Configuration config) {
         Set<MavenProject> rebuild = calculateRebuildProjects(selected, changed, impacted, config);
         if (rebuild.isEmpty()) {
-            handleNoChangesDetected(selected, config);
-        } else if (!config.forceBuildModules.isEmpty()) {
-            Set<MavenProject> forceBuildModules = config.mavenSession.getProjects().stream()
-                    .filter(proj -> !rebuild.contains(proj))
-                    .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules))
-                    .map(proj -> applyUpstreamModuleArgs(proj, config))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            config.mavenSession.setProjects(config.mavenSession.getProjects().stream()
-                    .filter(proj -> forceBuildModules.contains(proj) || rebuild.contains(proj))
-                    .collect(Collectors.toList()));
+            handleNoChangesDetected(selected, projectComparator, config);
         } else {
-            config.mavenSession.setProjects(new ArrayList<>(rebuild));
+            if (!config.forceBuildModules.isEmpty()) {
+                Set<MavenProject> forceBuildModules = config.mavenSession.getProjects().stream()
+                        .filter(proj -> !rebuild.contains(proj))
+                        .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules))
+                        .map(proj -> applyUpstreamModuleArgs(proj, config))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                rebuild.addAll(forceBuildModules);
+            }
+            config.mavenSession.setProjects(rebuild.stream()
+                    .sorted(projectComparator)
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -262,10 +267,11 @@ class UnchangedProjectsRemover {
                 .anyMatch(GOAL_TEST_JAR::equals);
     }
 
-    private void logProjects(Set<MavenProject> projects, String title, MavenSession mavenSession) {
+    private void logProjects(Set<MavenProject> projects, String title, LazyMavenProjectComparator projectComparator, MavenSession mavenSession) {
         logger.info(title);
         logger.info("");
         projects.stream()
+                .sorted(projectComparator)
                 .map(proj -> {
                     String entry = proj.getArtifactId();
                     if (!mavenSession.getProjects().contains(proj)) {
@@ -366,6 +372,39 @@ class UnchangedProjectsRemover {
                 }
             }
             return false;
+        }
+    }
+
+    /**
+     * Compares projects by their position/index in the reactor ({@link MavenSession#getProjects()}) or secondarily in {@link MavenSession#getAllProjects()}.
+     */
+    static class LazyMavenProjectComparator implements Comparator<MavenProject> {
+
+        private final MavenSession mavenSession;
+
+        private Map<MavenProject, Integer> indexMap;
+
+        public LazyMavenProjectComparator(MavenSession mavenSession) {
+            this.mavenSession = mavenSession;
+        }
+
+        @Override
+        public int compare(MavenProject proj1, MavenProject proj2) {
+            if (indexMap == null) {
+                List<MavenProject> projects = mavenSession.getProjects();
+                indexMap = IntStream.range(0, projects.size()).boxed().collect(Collectors.toMap(projects::get, i -> i));
+                // projects might be a subset of all projects (e.g. when -pl is used)
+                List<MavenProject> allProjects = mavenSession.getAllProjects();
+                if (allProjects.size() > projects.size()) {
+                    for (int i = 0; i < allProjects.size(); i++) {
+                        MavenProject proj = allProjects.get(i);
+                        if (!indexMap.containsKey(proj)) {
+                            indexMap.put(proj, i + 100_000);  // non-reactor project receives a penalty offset (sorted to the back)
+                        }
+                    }
+                }
+            }
+            return indexMap.getOrDefault(proj1, Integer.MAX_VALUE).compareTo(indexMap.getOrDefault(proj2, Integer.MAX_VALUE));
         }
     }
 

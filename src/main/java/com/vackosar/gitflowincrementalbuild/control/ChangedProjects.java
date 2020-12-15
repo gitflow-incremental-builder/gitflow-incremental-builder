@@ -39,7 +39,7 @@ public class ChangedProjects {
     private MavenProject findProject(Path diffPath, Map<Path, MavenProject> modulesPathMap) {
         Path path = diffPath;
         // Files.exist() to spot changes in non-reactor module (path will then yield a null changedReactorProject).
-        // Without this check, the changed would be wrongly mapped to the "closest" reactor module (which hasn't changed at all!).
+        // Without this check, the changed path would be wrongly mapped to the "closest" reactor module (which might not have changed at all!).
         while (path != null && !modulesPathMap.containsKey(path) && !Files.exists(path.resolve("pom.xml"))) {
             path = path.getParent();
         }

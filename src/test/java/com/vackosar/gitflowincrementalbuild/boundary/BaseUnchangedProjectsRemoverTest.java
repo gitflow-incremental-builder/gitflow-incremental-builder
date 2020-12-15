@@ -77,6 +77,11 @@ public abstract class BaseUnchangedProjectsRemoverTest {
      */
     private final List<MavenProject> projects = new ArrayList<>();
 
+    /**
+     * Value for {@code mavenSessionMock.getAllProjects()}.
+     */
+    private final List<MavenProject> allProjects = new ArrayList<>();
+
     // gibProperties to be applied to _every_ moduleMock
     // note: at regular runtime (via Maven), each module will automatically contain the properties of its parent(s),
     //       which has to be emulated here, even though this test does not (yet) have an explicit root project
@@ -93,6 +98,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(true);
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
+        when(mavenSessionMock.getAllProjects()).thenReturn(allProjects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get(any(Configuration.class))).thenReturn(changedProjects);
 
@@ -115,6 +121,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
             changedProjects.add(newModuleMock);
         }
         projects.add(newModuleMock);    // add to projects that are seen by the session, which can be changed afterwards via overrideProjects()
+        allProjects.add(newModuleMock);
 
         when(newModuleMock.getProperties()).thenReturn(new Properties());
         newModuleMock.getProperties().putAll(gibProperties);
@@ -152,6 +159,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     protected void overrideProjects(MavenProject... moduleMocks) {
         projects.clear();
         projects.addAll(Arrays.asList(moduleMocks));
+        // note: allProject always contains _all_ modules!
 
         // Maven shifts currentProject to the first(!) project (as per Maven 3.6.3 with -pl and -f)
         MavenProject firstProject = moduleMocks[0];
