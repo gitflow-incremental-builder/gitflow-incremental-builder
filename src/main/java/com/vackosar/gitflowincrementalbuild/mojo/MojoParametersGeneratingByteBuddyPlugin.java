@@ -70,9 +70,11 @@ public class MojoParametersGeneratingByteBuddyPlugin implements Plugin {
     @Override
     public Builder<?> apply(Builder<?> initialBuilder, TypeDescription typeDescription, ClassFileLocator classFileLocator) {
         Builder<?> builder = initialBuilder;
-        if (typeDescription.getActualName().equals(FakeMojo.class.getName())) {
+        if (typeDescription.getActualName().equals(FakeMojo.class.getName())
+                && typeDescription.getDeclaredFields().isEmpty()) {
             builder = transformFakeMojo(builder);
-        } else {
+        } else if (typeDescription.getActualName().equals(Property.class.getName())
+                && !typeDescription.getDeclaredAnnotations().isAnnotationPresent(Mojo.class)) {
             builder = transformPropertyEnum(builder);
         }
         return builder;
