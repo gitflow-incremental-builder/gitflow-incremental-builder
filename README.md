@@ -2,7 +2,7 @@
 [![GitHub license](https://img.shields.io/github/license/vackosar/gitflow-incremental-builder.svg)](https://github.com/vackosar/gitflow-incremental-builder/blob/master/LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/vackosar/gitflow-incremental-builder?label=latest%20release)](https://github.com/vackosar/gitflow-incremental-builder/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
-![Travis CI](https://travis-ci.com/vackosar/gitflow-incremental-builder.svg?branch=master)
+![GIB CI](https://github.com/vackosar/gitflow-incremental-builder/workflows/GIB%20CI/badge.svg)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/vackosar/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/gitflow-incremental-builder/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Coverage)
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-8--15-brightgreen.svg?logo=Java)](https://travis-ci.com/github/vackosar/gitflow-incremental-builder)
