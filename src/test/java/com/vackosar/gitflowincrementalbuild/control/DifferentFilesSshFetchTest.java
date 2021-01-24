@@ -49,7 +49,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
                 condition -> Assumptions.assumeTrue(condition.present(), testInfo.getDisplayName() + "() is only supported when running " + condition));
 
         super.before(testInfo);
-        
+
         // see GSSUtil.DEFAULT_HANDLER. Setting this to a non-empty String prevents ConsoleCallbackHandler from being used - even without a valid class name
         java.security.Security.setProperty("auth.login.defaultCallbackHandler", "simplefix");
 
@@ -85,7 +85,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     }
 
     @Test
-    @RunOnlyWhen(RunCondition.ON_TRAVIS_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on Travis-CI
+    @RunOnlyWhen(RunCondition.ON_CI_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on CI
     public void fetchWithPassphraseEncryptedKey() throws Exception {
         projectProperties.put(Property.useJschAgentProxy.name(), "true");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
@@ -144,16 +144,16 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     }
 
     enum RunCondition {
-        ON_TRAVIS_OR_FORCED {
+        ON_CI_OR_FORCED {
             @Override
             boolean present() {
-                // https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
-                return System.getenv().containsKey("TRAVIS") || Boolean.getBoolean(name());
+                // https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables
+                return System.getenv().containsKey("CI") || Boolean.getBoolean(name());
             }
 
             @Override
             public String toString() {
-                return "on Travis-CI or with -D" + name() + "=true";
+                return "on CI or with -D" + name() + "=true";
             }
         },
         ON_WINDOWS_FORCED {
