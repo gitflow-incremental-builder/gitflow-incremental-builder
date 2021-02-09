@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- The idea for this approach comes from: maven.apache.org/plugins/maven-invoker-plugin/examples/fast-use.html
-     Note: invoker-plugin itself is _not_ in use due to: https://github.com/vackosar/gitflow-incremental-builder/issues/177#issuecomment-633305232 -->
+     Note: invoker-plugin itself is _not_ in use due to: https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues/177#issuecomment-633305232 -->
 <settings>
     <localRepository>${gibIntegrationTestRepoLocal}</localRepository>
     <mirrors>

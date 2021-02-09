@@ -48,8 +48,8 @@ import net.bytebuddy.matcher.ElementMatchers;
  * <li>change/enrich the mojo description and parameter descriptions</li>
  * </ul>
  *
- * @see <a href="https://github.com/vackosar/gitflow-incremental-builder/issues/199">Issue "Plugin parameters don't show up in Eclipse editor"</a>
-  */
+ * @see <a href="https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues/199">Issue "Plugin parameters don't show up in Eclipse editor"</a>
+ */
 public class MojoParametersGeneratingByteBuddyPlugin implements Plugin {
 
     public static final String FAKE_MOJO_NAME = "config-do-not-execute";
