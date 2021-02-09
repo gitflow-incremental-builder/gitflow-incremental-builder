@@ -11,10 +11,10 @@ In case you forked this repo when it was still known as `vackosar/gitflow-increm
 [![GitHub license](https://img.shields.io/github/license/vackosar/gitflow-incremental-builder.svg)](https://github.com/vackosar/gitflow-incremental-builder/blob/master/LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/vackosar/gitflow-incremental-builder?label=latest%20release)](https://github.com/vackosar/gitflow-incremental-builder/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
-![GIB CI](https://github.com/vackosar/gitflow-incremental-builder/workflows/GIB%20CI/badge.svg)
+[![CI](https://github.com/vackosar/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/vackosar/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/32140688527a49deb3bd45b8f3be4acf)](https://www.codacy.com/app/gitflow-incremental-builder/gitflow-incremental-builder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vackosar/gitflow-incremental-builder&amp;utm_campaign=Badge_Coverage)
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-8--15-brightgreen.svg?logo=Java)](https://travis-ci.com/github/vackosar/gitflow-incremental-builder)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-8--15-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>
