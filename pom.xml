@@ -5,18 +5,18 @@
     <artifactId>gitflow-incremental-builder</artifactId>
     <version>3.12.2-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>A maven extension for incremental building of multi-module projects when using Git Flow.</description>
-    <url>https://github.com/vackosar/gitflow-incremental-builder</url>
+    <description>A Maven extension for incremental building of multi-module projects when using Git Flow (or Git in general).</description>
+    <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
 
     <issueManagement>
-        <url>https://github.com/vackosar/gitflow-incremental-builder/issues</url>
+        <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/vackosar/gitflow-incremental-builder</url>
-        <connection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</connection>
-        <developerConnection>scm:git:https://github.com/vackosar/gitflow-incremental-builder.git</developerConnection>
+        <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
+        <connection>scm:git:https://github.com/gitflow-incremental-builder/gitflow-incremental-builder.git</connection>
+        <developerConnection>scm:git:https://github.com/gitflow-incremental-builder/gitflow-incremental-builder.git</developerConnection>
       <tag>HEAD</tag>
   </scm>
 
