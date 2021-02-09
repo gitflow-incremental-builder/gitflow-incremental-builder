@@ -84,7 +84,7 @@ jobs:
     name: ${{ matrix.java-maven.name }}
 
     # don't run the secondary jobs in forks
-    if: github.repository == 'vackosar/gitflow-incremental-builder'
+    if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
 
     runs-on: ubuntu-latest
 
