@@ -1,3 +1,12 @@
+
+---
+:information_source: **This repo has moved**
+
+`gitflow-incremental-builder` has moved to its own GitHub organization to enable administration by multiple users for better maintainability. <br />
+In case you forked this repo when it was still known as `vackosar/gitflow-incremental-builder`, you might need to adjust your upstream setting to `gitflow-incremental-builder/gitflow-incremental-builder`.
+
+---
+
 # gitflow-incremental-builder (GIB)
 [![GitHub license](https://img.shields.io/github/license/vackosar/gitflow-incremental-builder.svg)](https://github.com/vackosar/gitflow-incremental-builder/blob/master/LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/vackosar/gitflow-incremental-builder?label=latest%20release)](https://github.com/vackosar/gitflow-incremental-builder/releases/latest)
