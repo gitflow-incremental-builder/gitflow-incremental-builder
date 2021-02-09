@@ -1,4 +1,4 @@
-name: GIB CI
+name: CI
 
 on:
   push:
@@ -42,6 +42,10 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+    - name: Set quickly if on fork master
+      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && endsWith(github.ref, '/master')
+      shell: bash
+      run: echo "MVN_DEFAULT_ARGS=${MVN_DEFAULT_ARGS} -Dquickly" >> $GITHUB_ENV
     - name: Maven test
       shell: bash
       # note: ssh-agent for DifferentFilesSshFetchTest must be started in same step as mvn for env vars to be picked up
@@ -53,8 +57,10 @@ jobs:
       if: always()
       shell: bash
       run: |
-        sudo apt-get install lynx -y -q || true
-        lynx -width=120 -dump target/site/jacoco/index.html || true
+        if [ -f target/site/jacoco/index.html ]; then
+          sudo apt-get install lynx -y -qq > /dev/null || true
+          lynx -width=120 -dump target/site/jacoco/index.html || true
+        fi
     - name: Maven verify
       shell: bash
       run: mvn verify -DskipUTs ${MVN_DEFAULT_ARGS}
@@ -71,10 +77,14 @@ jobs:
         if-no-files-found: ignore
         retention-days: 30
     - name: Tar Maven Repo for secondary jobs
+      # secondary jobs are not run in forks, so no use to create the repo
+      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
       shell: bash
       run: tar -I 'pigz -9' -cf maven-repo.tgz -C ~ .m2/repository
     - name: Upload Maven Repo for secondary jobs
       uses: actions/upload-artifact@v2
+      # secondary jobs are not run in forks, so no use to upload the repo
+      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
       with:
         name: maven-repo
         path: maven-repo.tgz
