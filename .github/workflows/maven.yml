@@ -6,6 +6,12 @@ on:
       - 'dependabot/**'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      runSecondary:
+        description: 'Run secondary jobs?'
+        required: true
+        default: 'no'
 
 env:
   MAVEN_OPTS: -Djansi.passthrough=true -XX:TieredStopAtLevel=1
@@ -43,7 +49,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Set quickly if on fork master
-      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && endsWith(github.ref, '/master')
+      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && endsWith(github.ref, '/master') && github.event.inputs.runSecondary != 'yes'
       shell: bash
       run: echo "MVN_DEFAULT_ARGS=${MVN_DEFAULT_ARGS} -Dquickly" >> $GITHUB_ENV
     - name: Maven test
@@ -78,13 +84,13 @@ jobs:
         retention-days: 30
     - name: Tar Maven Repo for secondary jobs
       # secondary jobs are not run in forks, so no use to create the repo
-      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
+      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder' || github.event.inputs.runSecondary == 'yes'
       shell: bash
       run: tar -I 'pigz -9' -cf maven-repo.tgz -C ~ .m2/repository
     - name: Upload Maven Repo for secondary jobs
       uses: actions/upload-artifact@v2
       # secondary jobs are not run in forks, so no use to upload the repo
-      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
+      if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder' || github.event.inputs.runSecondary == 'yes'
       with:
         name: maven-repo
         path: maven-repo.tgz
@@ -94,7 +100,7 @@ jobs:
     name: ${{ matrix.java-maven.name }}
 
     # don't run the secondary jobs in forks
-    if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder'
+    if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder' || github.event.inputs.runSecondary == 'yes'
 
     runs-on: ubuntu-latest
 
