@@ -59,13 +59,18 @@ jobs:
       run: |
         eval $(ssh-agent)
         mvn test ${MVN_DEFAULT_ARGS}
-    - name: Print coverage
+    - name: Report coverage
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       if: always()
       shell: bash
       run: |
         if [ -f target/site/jacoco/index.html ]; then
           sudo apt-get install lynx -y -qq > /dev/null || true
           lynx -width=120 -dump target/site/jacoco/index.html || true
+          if [ -n "${CODACY_PROJECT_TOKEN}" ]; then
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l Java -r target/site/jacoco/jacoco.xml || true
+          fi
         fi
     - name: Maven verify
       shell: bash
