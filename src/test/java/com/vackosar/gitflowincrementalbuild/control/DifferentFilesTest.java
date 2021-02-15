@@ -118,6 +118,23 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     }
 
     @Test
+    public void list_skipIfPathMatches_matches() throws Exception {
+        projectProperties.setProperty(Property.skipIfPathMatches.prefixedName(), ".*[/\\\\]subchild2[/\\\\].*");
+
+        Throwable thrown = catchThrowable(this::invokeUnderTest);
+
+        assertThat(thrown).isInstanceOf(SkipExecutionException.class);
+        assertThat(thrown).hasMessageEndingWith("file2");
+    }
+
+    @Test
+    public void list_skipIfPathMatches_noMatches() throws Exception {
+        projectProperties.setProperty(Property.skipIfPathMatches.prefixedName(), ".*[/\\\\]subchild999[/\\\\].*");
+
+        list();
+    }
+
+    @Test
     public void listExcluding() throws Exception {
         projectProperties.setProperty(Property.excludePathRegex.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(

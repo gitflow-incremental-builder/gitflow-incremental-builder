@@ -51,6 +51,7 @@ public class Configuration {
     public final boolean compareToMergeBase;
     public final boolean uncommitted;
     public final boolean untracked;
+    public final Optional<Predicate<String>> skipIfPathMatches;
     public final Optional<Predicate<String>> excludePathRegex;
     public final Optional<Predicate<String>> includePathRegex;
 
@@ -94,6 +95,7 @@ public class Configuration {
             compareToMergeBase = false;
             uncommitted = false;
             untracked = false;
+            skipIfPathMatches = null;
             excludePathRegex = null;
             includePathRegex = null;
 
@@ -137,6 +139,7 @@ public class Configuration {
         compareToMergeBase = Boolean.parseBoolean(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
         uncommitted = Boolean.parseBoolean(Property.uncommitted.getValue(pluginProperties, projectProperties));
         untracked = Boolean.parseBoolean(Property.untracked.getValue(pluginProperties, projectProperties));
+        skipIfPathMatches = compileOptionalPatternPredicate(Property.skipIfPathMatches, pluginProperties, projectProperties);
         excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, pluginProperties, projectProperties);
         includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, pluginProperties, projectProperties);
 
