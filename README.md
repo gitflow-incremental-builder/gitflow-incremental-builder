@@ -44,7 +44,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.compareToMergeBase](#gibcomparetomergebase)
   - [gib.uncommitted](#gibuncommitted)
   - [gib.untracked](#gibuntracked)
-  - [gib.excludePathRegex](#gibexcludePathRegex)
+  - [gib.skipIfPathMatches](#gibskipifpathmatches)
+  - [gib.excludePathRegex](#gibexcludepathregex)
   - [gib.includePathRegex](#gibincludepathregex)
   - [gib.buildAll](#gibbuildall)
   - [gib.buildAllIfNoChanges](#gibbuildallifnochanges)
@@ -333,6 +334,7 @@ Maven pom properties configuration with default values is below:
     <gib.compareToMergeBase>true</gib.compareToMergeBase>                              <!-- or -Dgib.ctmb=...  -->
     <gib.uncommitted>true</gib.uncommitted>                                            <!-- or -Dgib.uc=...    -->
     <gib.untracked>true</gib.untracked>                                                <!-- or -Dgib.ut=...    -->
+    <gib.skipIfPathMatches></gib.skipIfPathMatches>                                    <!-- or -Dgib.sipm=...  -->
     <gib.excludePathRegex></gib.excludePathRegex>                                      <!-- or -Dgib.epr=...   -->
     <gib.includePathRegex></gib.includePathRegex>                                      <!-- or -Dgib.ipr=...   -->
     <gib.buildAll>false</gib.buildAll>                                                 <!-- or -Dgib.ba=...    -->
@@ -459,6 +461,21 @@ Detects changed files that have not yet been committed. This does **not** includ
 
 Detects files that are not yet tracked by git (see `git status` manual). This does **not** include _uncommitted_ files. A new file is not _untracked_ anymore after it is added to the index.
 
+### gib.skipIfPathMatches
+
+Can be used to skip this extension on certain changes. By default, no changed file results in GIB being skipped.
+
+This property is helpful for more complex project setups in which not all submodules depend on the root module (= are not direct or indirect children of the root module).<br/>
+In such a case, GIB will assign a change to e.g. `.github/workflows/ci.yml` to the root module, building all modules that depend on the root module.<br/>
+Consequently, this will **not** include the other modules that are referenced top-down from root, but not bottom-up via `<parent>...</parent>`.<br/>
+One example of such modules are [the independent-projects of Quarkus](https://github.com/quarkusio/quarkus/tree/1.11.3.Final/independent-projects).
+
+By setting this property to e.g. `\.github[/\\].*` you can tell GIB that this path has a _global_ effect and that it's pointless to attempt an incremental build.
+
+:information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
+
+Since: 3.12.2
+
 ### gib.excludePathRegex
 
 Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build. By default, nothing is excluded.
@@ -471,6 +488,8 @@ will be excluded when using `-Dgib.excludePathRegex=blacklisted` or `-Dgib.exclu
 
 This the opposite of [gib.includePathRegex](#gibincludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
 
+:information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
+
 ### gib.includePathRegex
 
 Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build. By default, everything is included.
@@ -478,6 +497,8 @@ Can be used to include only certain changed files from being detected as changed
 This the opposite of [gib.excludePathRegex](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
 
 See [gib.excludePathRegex](#gibexcludepathregex) for general path matching rules.
+
+:information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
 
 Since: 3.10.0
 

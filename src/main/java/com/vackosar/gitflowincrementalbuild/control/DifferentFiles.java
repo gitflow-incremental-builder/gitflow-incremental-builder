@@ -229,6 +229,9 @@ public class DifferentFiles {
 
         private boolean pathIncluded(Path path) {
             final String pathString = path.toString();
+            if (configuration.skipIfPathMatches.map(pred -> pred.test(pathString)).orElse(false)) {
+                throw new SkipExecutionException("Changed path matches regex defined by skipIfPathMatches: " + pathString);
+            }
             boolean excluded = configuration.excludePathRegex.map(pred -> pred.test(pathString)).orElse(false);
             boolean included = !excluded && configuration.includePathRegex.map(pred -> pred.test(pathString)).orElse(true);
             logger.debug("included {}: {}", included, pathString);

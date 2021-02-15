@@ -74,6 +74,10 @@ public enum Property {
      */
     untracked("true", "ut", true),
     /**
+     * Can be used to skip this extension on certain changes.
+     */
+    skipIfPathMatches("", "sipm"),
+    /**
      * Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build.
      */
     excludePathRegex("", "epr"),
