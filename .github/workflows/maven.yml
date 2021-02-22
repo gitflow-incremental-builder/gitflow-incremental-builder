@@ -145,6 +145,16 @@ jobs:
             java-version: 15,
             maven-version: 3.6.3
           }
+          - {
+            name: "JDK 16 EA & Maven 3.6.3",
+            java-version: 16-ea,
+            maven-version: 3.6.3
+          }
+          - {
+            name: "JDK 17 EA & Maven 3.6.3",
+            java-version: 17-ea,
+            maven-version: 3.6.3
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -177,10 +187,10 @@ jobs:
       # see primary job notes regarding ssh-agent
       run: |
         eval $(ssh-agent)
-        mvn test -Djacoco.skip ${MVN_DEFAULT_ARGS}
+        mvn test -Denforcer.skip -Djacoco.skip ${MVN_DEFAULT_ARGS}
     - name: Maven verify
       shell: bash
-      run: mvn verify -DskipUTs ${MVN_DEFAULT_ARGS}
+      run: mvn verify -Denforcer.skip -DskipUTs -Dspotbugs.skip ${MVN_DEFAULT_ARGS}
     - name: Build test reports archive on failure
       if: failure()
       shell: bash
