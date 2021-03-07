@@ -304,20 +304,25 @@ class UnchangedProjectsRemover {
         return downstream.stream();
     }
 
+    private boolean isDownstreamModuleNotExcluded(MavenProject proj, Configuration config) {
+        return !config.excludeDownstreamModulesPackagedAs.contains(proj.getPackaging());
+    }
+
     private Set<MavenProject> findBOMDownstreamProjects(MavenProject potentialBOMProject, Set<MavenProject> downstream, Configuration config) {
-        return config.mavenSession.getProjects().stream()
+        return config.mavenSession.getAllProjects().stream()    // "All" is crucial to properly handle de-selected BOM case (with dsph)
                 .filter(proj -> !downstream.contains(proj)) // optimization
                 .filter(proj -> isDownstreamModuleNotExcluded(proj, config))
-                .filter(proj -> Optional.ofNullable(proj.getOriginalModel())    // >original< model is crucial since BOM deps are gone in effective model
-                        .map(Model::getDependencyManagement)
-                        .map(depMgtm -> depMgtm.getDependencies().stream().anyMatch(dep -> isBOMImport(dep, potentialBOMProject, proj, config)))
-                        .orElse(false))
+                .filter(proj -> importsBOM(proj, potentialBOMProject, config))
                 .flatMap(proj -> streamProjectWithDownstreamProjects(proj, config)) // (indirect) recursion!
+                .filter(config.mavenSession.getProjects()::contains)   // skip projects not part of the actual reactor (see getAllProjects() further up)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private boolean isDownstreamModuleNotExcluded(MavenProject proj, Configuration config) {
-        return !config.excludeDownstreamModulesPackagedAs.contains(proj.getPackaging());
+    private Boolean importsBOM(MavenProject project, MavenProject potentialBOMProject, Configuration config) {
+        return Optional.ofNullable(project.getOriginalModel())    // >original< model is crucial since BOM deps are gone in effective model
+                .map(Model::getDependencyManagement)
+                .map(depMgtm -> depMgtm.getDependencies().stream().anyMatch(dep -> isBOMImport(dep, potentialBOMProject, project, config)))
+                .orElse(false);
     }
 
     private boolean isBOMImport(Dependency dependency, MavenProject potentialBOMProject, MavenProject depDefiningProject, Configuration config) {

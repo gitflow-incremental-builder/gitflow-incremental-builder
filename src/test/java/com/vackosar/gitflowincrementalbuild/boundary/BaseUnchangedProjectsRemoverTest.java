@@ -187,4 +187,17 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     protected Configuration config() {
         return new Configuration(mavenSessionMock);
     }
+
+
+    // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!
+    protected void setProjectSelections(MavenProject... projectsToSelect) {
+        List<String> selection = Arrays.stream(projectsToSelect).map(p -> ":" + p.getArtifactId()).collect(Collectors.toList());
+        when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
+    }
+
+    // See "-pl !:...,!:..."
+    protected void setProjectDeSelections(MavenProject... projectsToDeSelect) {
+        List<String> selection = Arrays.stream(projectsToDeSelect).map(p -> "!:" + p.getArtifactId()).collect(Collectors.toList());
+        when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
+    }
 }
