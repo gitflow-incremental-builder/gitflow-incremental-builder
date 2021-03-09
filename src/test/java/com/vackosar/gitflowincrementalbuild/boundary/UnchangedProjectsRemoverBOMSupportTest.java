@@ -1,8 +1,10 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +24,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
+
+import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of BOMs (bill of material).
@@ -123,6 +127,87 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
         underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(changedBOMModuleMock, unchangedModuleMock2));
+    }
+
+    @Test
+    public void bomChanged_oneImport_bomNotSelected() throws GitAPIException, IOException {
+        MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
+
+        MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
+
+        installOrigModelWithDepMgmt(unchangedModuleMock)
+                .addDependency(buildBOMDependency(changedBOMModuleMock));
+
+        overrideProjects(unchangedModuleMock);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+    }
+
+    @Test
+    public void bomChanged_oneImport_bomNotSelected_transitive() throws GitAPIException, IOException {
+        MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
+
+        MavenProject unchangedModuleMockC = addModuleMock(AID_MODULE_C, false);
+
+        MavenProject unchangedModuleMockD = addModuleMock(AID_MODULE_D, false);
+
+        installOrigModelWithDepMgmt(unchangedModuleMockC)
+                .addDependency(buildBOMDependency(changedBOMModuleMock));
+
+        setDownstreamProjects(unchangedModuleMockC, unchangedModuleMockD);
+        setUpstreamProjects(unchangedModuleMockD, moduleA, unchangedModuleMockC);
+
+        setProjectDeSelections(unchangedModuleMockD);
+        overrideProjects(unchangedModuleMockD);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+    }
+
+    @Test
+    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+        MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
+
+        MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
+
+        installOrigModelWithDepMgmt(unchangedModuleMock)
+                .addDependency(buildBOMDependency(changedBOMModuleMock));
+
+        setProjectDeSelections(unchangedModuleMock);
+        overrideProjects(unchangedModuleMock);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(unchangedModuleMock));
+    }
+
+    @Test
+    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling_transitive() throws GitAPIException, IOException {
+        MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
+
+        MavenProject unchangedModuleMockC = addModuleMock(AID_MODULE_C, false);
+
+        MavenProject unchangedModuleMockD = addModuleMock(AID_MODULE_D, false);
+
+        installOrigModelWithDepMgmt(unchangedModuleMockC)
+                .addDependency(buildBOMDependency(changedBOMModuleMock));
+
+        setDownstreamProjects(unchangedModuleMockC, unchangedModuleMockD);
+        setUpstreamProjects(unchangedModuleMockD, moduleA, unchangedModuleMockC);
+
+        setProjectDeSelections(unchangedModuleMockD);
+        overrideProjects(unchangedModuleMockD);
+
+        addGibProperty(Property.disableSelectedProjectsHandling, "true");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(unchangedModuleMockD));
     }
 
     @Test

@@ -9,9 +9,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -24,6 +21,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks when "selected projects" are present ({@code mvn -pl ...}).
  *
  * @author famod
+ * @see UnchangedProjectsRemoverBOMSupportTest UnchangedProjectsRemoverBOMSupportTest also contains some "selected projects" cases
  */
 public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedProjectsRemoverTest {
 
@@ -806,17 +804,5 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
-    }
-
-    // See "-pl :...,:..." and don't forget to call overrideProjects() if any of the moduleMocks shall _not_ be in the projects list!
-    private void setProjectSelections(MavenProject... projectsToSelect) {
-        List<String> selection = Arrays.stream(projectsToSelect).map(p -> ":" + p.getArtifactId()).collect(Collectors.toList());
-        when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
-    }
-
-    // See "-pl !:...,!:..."
-    private void setProjectDeSelections(MavenProject... projectsToDeSelect) {
-        List<String> selection = Arrays.stream(projectsToDeSelect).map(p -> "!:" + p.getArtifactId()).collect(Collectors.toList());
-        when(mavenExecutionRequestMock.getSelectedProjects()).thenReturn(selection);
     }
 }

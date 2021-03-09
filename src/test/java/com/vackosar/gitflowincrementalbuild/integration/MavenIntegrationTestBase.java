@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -172,15 +173,15 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     }
 
     private static void assertBuilAllSkipTest(final String output) {
-        assertThat(output).contains(" child1")
-                .contains(" child2")
-                .contains(" subchild1")
-                .contains(" subchild42")
-                .contains(" subchild2")
-                .contains(" child3")
-                .contains(" child4")
-                .contains(" subchild41")
-                .contains(" child6")
+        assertThat(output).contains("Building child1")
+                .contains("Building child2")
+                .contains("Building subchild1")
+                .contains("Building subchild42")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41")
+                .contains("Building child6")
                 .contains(" Tests are skipped.");
     }
 
@@ -188,15 +189,15 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void buildWithAlsoMake() throws Exception {
         final String output = executeBuild("-am");
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .contains(" subchild2")
-                .contains(" child3")
-                .contains(" child4")
-                .contains(" subchild41")
-                .contains(" child6");
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41")
+                .contains("Building child6");
     }
 
     @Test
@@ -206,16 +207,16 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild(prop(Property.baseBranch, "refs/heads/develop"));
 
         assertThat(output).contains("Executing validate goal on current project only")
-                .contains(" parent")
-                .doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" subchild2")
-                .doesNotContain(" child3")
-                .doesNotContain(" child4")
-                .doesNotContain(" subchild41")
-                .doesNotContain(" child6");
+                .contains("Building parent")
+                .doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .doesNotContain("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6");
     }
 
 
@@ -223,15 +224,15 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void buildWithAlsoMakeSkip() throws Exception {
         final String output = executeBuild("-am", prop(Property.skipTestsForUpstreamModules, "true"));
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .contains(" subchild2")
-                .contains(" child3")
-                .contains(" child4")
-                .contains(" subchild41")
-                .contains(" child6")
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41")
+                .contains("Building child6")
                 .contains(" Tests are skipped.");
     }
 
@@ -239,30 +240,30 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void buildWithoutAlsoMake() throws Exception {
         final String output = executeBuild();
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" child6")
-                .contains(" subchild2")
-                .contains(" child3")
-                .contains(" child4")
-                .contains(" subchild41");
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building child6")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41");
     }
 
     @Test
     public void buildWithAlsoMakeDependents() throws Exception {
         final String output = executeBuild("-amd", prop(Property.buildDownstream, "derived"));
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" child6")
-                .contains(" subchild2")
-                .contains(" child3")
-                .contains(" child4")
-                .contains(" subchild41");
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building child6")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41");
     }
 
     @Test
@@ -271,17 +272,17 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
         final String output = executeBuild("-pl", "child2", prop(Property.disableBranchComparison, "true"));
 
-        assertThat(output).doesNotContain(" child1")
-                .contains(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" subchild2")
-                .doesNotContain(" child3")
-                .doesNotContain(" child4")
-                .doesNotContain(" subchild41")
-                .doesNotContain(" child6")
-                .doesNotContain(" testJarDependency")
-                .doesNotContain(" testJarDependent")
+        assertThat(output).doesNotContain("Building child1")
+                .contains("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .doesNotContain("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent")
                 .contains("Building explicitly selected projects");
     }
 
@@ -291,17 +292,17 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
         final String output = executeBuild("-f", "parent/child3", prop(Property.disableBranchComparison, "true"));
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" subchild2")
-                .contains(" child3")
-                .doesNotContain(" child4")
-                .doesNotContain(" subchild41")
-                .doesNotContain(" child6")
-                .doesNotContain(" testJarDependency")
-                .doesNotContain(" testJarDependent")
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .contains("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent")
                 .contains("Building single project");
     }
 
@@ -317,16 +318,16 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild("-pl", "child3", "-am", prop(Property.disableBranchComparison, "true"));
 
         assertThat(output).doesNotContain("Building child1") // "Building" prefix is required because child1 will be listed as changed
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" subchild2")
-                .contains(" child3")
-                .doesNotContain(" child4")
-                .doesNotContain(" subchild41")
-                .contains(" child6")
-                .doesNotContain(" testJarDependency")
-                .doesNotContain(" testJarDependent");
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .contains("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .contains("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent");
     }
 
     @Test
@@ -335,17 +336,17 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
         final String output = executeBuild("-pl", "child6", "-amd", prop(Property.disableBranchComparison, "true"));
 
-        assertThat(output).doesNotContain(" child1")
-                .doesNotContain(" child2")
-                .doesNotContain(" subchild1")
-                .doesNotContain(" subchild42")
-                .doesNotContain(" subchild2")
-                .contains(" child3")
-                .doesNotContain(" child4")
-                .doesNotContain(" subchild41")
-                .contains(" child6")
-                .doesNotContain(" testJarDependency")
-                .doesNotContain(" testJarDependent");
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .contains("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .contains("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent");
     }
 
     @Test
@@ -353,10 +354,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild(quarkusScenarioProps());
 
         assertThat(output).contains("Executing validate goal on current project only")
-                .contains(" parent")
-                .doesNotContain(" bom")
-                .doesNotContain(" child1")
-                .doesNotContain(" child2");
+                .contains("Building parent")
+                .doesNotContain("Building bom")
+                .doesNotContain("Building child1")
+                .doesNotContain("Building child2");
     }
 
     @Test
@@ -366,10 +367,29 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild(quarkusScenarioProps());
 
         assertThat(output)
-                .doesNotContain(" parent")
-                .contains(" bom")
-                .doesNotContain(" child1")
-                .contains(" child2");
+                .doesNotContain("Building parent")
+                .contains("Building bom")
+                .doesNotContain("Building child1")
+                .contains("Building child2")
+                .contains("Building child3");
+    }
+
+    @Test
+    public void quarkusScenario_bomChanged_notSelected() throws Exception {
+        // bug in 3.3.9: https://issues.apache.org/jira/browse/MNG-6173 "MavenSession.getAllProjects() should return all projects in the reactor"
+        assumeFalse(executeBuild(false, false, "-version").contains("Apache Maven 3.3.9"), "Test not supported on Maven 3.3 due to MNG-6173.");
+
+        Files.write(repoPath.resolve("quarkus-scenario").resolve("bom").resolve("pom.xml"), Arrays.asList("<!-- changed -->"), StandardOpenOption.APPEND);
+
+        final String output = executeBuild(quarkusScenarioProps("-pl", "child3", prop(Property.disableSelectedProjectsHandling, "true")));
+
+        assertThat(output)
+                .doesNotContain("Building parent")
+                .doesNotContain("Building bom")
+                .doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .contains("Building child3")
+                .contains("No sources to compile"); // verifies that not only validate is called
     }
 
     private void checkout(Branch branch) throws GitAPIException, CheckoutConflictException, RefAlreadyExistsException,
@@ -415,13 +435,16 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         return propString;
     }
 
-    protected static String[] quarkusScenarioProps(/* String... additional */) {
-        return new String[] {
-                QUARKUS_POMFILE_ARG,
-                prop(Property.baseBranch, Branch.QUARKUS.branchName),
-                prop(Property.disableBranchComparison, "true"),
-                prop(Property.uncommitted, "true")
-        };
+    protected static String[] quarkusScenarioProps(String... additionalArgs) {
+        List<String> argsList = new ArrayList<>();
+        argsList.add(QUARKUS_POMFILE_ARG);
+        argsList.add(prop(Property.baseBranch, Branch.QUARKUS.branchName));
+        argsList.add(prop(Property.disableBranchComparison, "true"));
+        argsList.add(prop(Property.uncommitted, "true"));
+        for (String additionalArg : additionalArgs) {
+            argsList.add(additionalArg);
+        }
+        return argsList.toArray(new String[0]);
     }
 
     private enum Branch {
