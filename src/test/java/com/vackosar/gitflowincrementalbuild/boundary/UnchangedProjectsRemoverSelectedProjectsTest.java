@@ -61,7 +61,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));
 
-        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
     }
 
 
@@ -99,7 +99,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleB));   // only B (sic!), as there can only be one "current" project
 
-        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleB, "maven.test.skip", "true");
         assertProjectPropertiesEqual(moduleC);
     }
 
@@ -651,7 +651,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         verify(mavenSessionMock).setProjects(Collections.singletonList(moduleA));
 
-        assertProjectPropertiesEqual(moduleA);
+        assertProjectPropertiesEqual(moduleA, "maven.test.skip", "true");
     }
 
     // mvn -pl !:module-B
