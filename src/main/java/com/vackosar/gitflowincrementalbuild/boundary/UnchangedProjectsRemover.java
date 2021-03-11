@@ -165,7 +165,8 @@ class UnchangedProjectsRemover {
             config.mavenSession.getProjects().stream().forEach(proj -> applyUpstreamModuleArgs(proj, config));
         } else {
             logger.info("No changed artifacts detected: Executing validate goal on current project only, skipping all submodules.");
-            config.mavenSession.setProjects(Collections.singletonList(config.currentProject));
+            config.mavenSession.setProjects(Collections.singletonList(
+                    applyUpstreamModuleArgs(config.currentProject, config)));
             config.mavenSession.getGoals().clear();
             config.mavenSession.getGoals().add("validate");
         }
