@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.maven.MavenExecutionException;
@@ -47,6 +48,9 @@ public class MavenLifecycleParticipantTest {
     private MavenSession mavenSessionMock;
 
     @Mock
+    private MavenExecutionRequest execRequestMock;
+
+    @Mock
     private UnchangedProjectsRemover unchangedProjectsRemoverMock;
 
     @Mock
@@ -63,7 +67,7 @@ public class MavenLifecycleParticipantTest {
         when(currentProjectMock.getProperties()).thenReturn(projectProperties);
         when(mavenSessionMock.getCurrentProject()).thenReturn(currentProjectMock);
 
-        when(mavenSessionMock.getRequest()).thenReturn(mock(MavenExecutionRequest.class));
+        when(mavenSessionMock.getRequest()).thenReturn(execRequestMock);
 
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(mock(ProjectDependencyGraph.class));
     }
@@ -193,5 +197,68 @@ public class MavenLifecycleParticipantTest {
     private void verifyHelpLogged(boolean logged) {
         verify(loggerSpy, logged ? Mockito.times(1) : Mockito.never())
                 .info(contains("help:"), eq(TEST_IMPL_VERSION), anyString(), anyString(), anyString());
+    }
+
+    // ////////////////////////////////////
+    // warnIfBuggyOrUnsupportedMavenVersion
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_null() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion(null, new Configuration(mavenSessionMock));
+
+        verify(loggerSpy).warn(contains("Could not get Maven version"));
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_363() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.6.3", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_354() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.5.4", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_330() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.0", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_339() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_339_withSelectedProject() {
+        when(execRequestMock.getSelectedProjects()).thenReturn(Collections.singletonList("foo"));
+
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
+
+        verify(loggerSpy).warn(contains("MNG-6173"), eq("3.3.9"));
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_339_withDisableSelectedProjectsHandling() {
+        projectProperties.setProperty(Property.disableSelectedProjectsHandling.prefixedName(), "true");
+
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
+
+        verify(loggerSpy).warn(contains("MNG-6173"), eq("3.3.9"));
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_400() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("4.0.0", new Configuration(mavenSessionMock));
+
+        verify(loggerSpy).warn(contains("not tested"), eq("4.0.0"));
     }
 }

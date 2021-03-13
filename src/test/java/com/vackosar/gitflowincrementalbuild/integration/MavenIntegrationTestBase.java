@@ -1,8 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -65,6 +63,9 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     private static final Pattern LOG_LINE_FILTER_PATTERN = Pattern.compile("^\\[.*INFO.*\\] Download(ing|ed) from local.central: .*");
 
     protected static String gibVersion;
+    // bug in 3.3.9: https://issues.apache.org/jira/browse/MNG-6173 "MavenSession.getAllProjects() should return all projects in the reactor"
+    // see also: MavenLifecycleParticipant#warnIfBuggyOrUnsupportedMavenVersion
+    protected static Boolean currentMavenAffectedByMNG6173;
 
     private static List<String> defaultArgs;
 
@@ -128,6 +129,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 executeBuild(true, false, QUARKUS_POMFILE_ARG, disableGib);
                 INITIAL_INSTALL_DONE.add(cacheKey);
             }
+        }
+        // this info is independent of the concrete test class, so no "mapped flag" required
+        if (currentMavenAffectedByMNG6173 == null) {
+            currentMavenAffectedByMNG6173 = executeBuild(false, false, "-version").contains("Apache Maven 3.3.9");
         }
     }
 
@@ -284,6 +289,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .doesNotContain("Building testJarDependency")
                 .doesNotContain("Building testJarDependent")
                 .contains("Building explicitly selected projects");
+
+        verifyMNG6173Warning(output);
     }
 
     @Test
@@ -328,6 +335,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .contains("Building child6")
                 .doesNotContain("Building testJarDependency")
                 .doesNotContain("Building testJarDependent");
+
+        verifyMNG6173Warning(output);
     }
 
     @Test
@@ -347,6 +356,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .contains("Building child6")
                 .doesNotContain("Building testJarDependency")
                 .doesNotContain("Building testJarDependent");
+
+        verifyMNG6173Warning(output);
     }
 
     @Test
@@ -376,20 +387,24 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     @Test
     public void quarkusScenario_bomChanged_notSelected() throws Exception {
-        // bug in 3.3.9: https://issues.apache.org/jira/browse/MNG-6173 "MavenSession.getAllProjects() should return all projects in the reactor"
-        assumeFalse(executeBuild(false, false, "-version").contains("Apache Maven 3.3.9"), "Test not supported on Maven 3.3 due to MNG-6173.");
 
         Files.write(repoPath.resolve("quarkus-scenario").resolve("bom").resolve("pom.xml"), Arrays.asList("<!-- changed -->"), StandardOpenOption.APPEND);
 
         final String output = executeBuild(quarkusScenarioProps("-pl", "child3", prop(Property.disableSelectedProjectsHandling, "true")));
 
-        assertThat(output)
-                .doesNotContain("Building parent")
-                .doesNotContain("Building bom")
-                .doesNotContain("Building child1")
-                .doesNotContain("Building child2")
-                .contains("Building child3")
-                .contains("No sources to compile"); // verifies that not only validate is called
+        if (currentMavenAffectedByMNG6173) {
+            assertThat(output).contains("Executing validate goal on current project only");
+        } else {
+            assertThat(output)
+                    .doesNotContain("Building parent")
+                    .doesNotContain("Building bom")
+                    .doesNotContain("Building child1")
+                    .doesNotContain("Building child2")
+                    .contains("Building child3")
+                    .contains("No sources to compile"); // verifies that not only validate is called
+        }
+
+        verifyMNG6173Warning(output);
     }
 
     private void checkout(Branch branch) throws GitAPIException, CheckoutConflictException, RefAlreadyExistsException,
@@ -445,6 +460,14 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
             argsList.add(additionalArg);
         }
         return argsList.toArray(new String[0]);
+    }
+
+    private void verifyMNG6173Warning(final String output) {
+        if (currentMavenAffectedByMNG6173) {
+            assertThat(output).contains("MNG-6173");
+        } else {
+            assertThat(output).doesNotContain("MNG-6173");
+        }
     }
 
     private enum Branch {

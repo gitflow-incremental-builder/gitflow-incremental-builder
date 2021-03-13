@@ -1,12 +1,3 @@
-
----
-:information_source: **This repo has moved**
-
-`gitflow-incremental-builder` has moved to its own GitHub organization to enable administration by multiple users for better maintainability. <br />
-In case you forked this repo when it was still known as `vackosar/gitflow-incremental-builder`, you might need to adjust your upstream setting to `gitflow-incremental-builder/gitflow-incremental-builder`.
-
----
-
 # gitflow-incremental-builder (GIB)
 [![GitHub license](https://img.shields.io/github/license/gitflow-incremental-builder/gitflow-incremental-builder.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/blob/master/LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/gitflow-incremental-builder/gitflow-incremental-builder?label=latest%20release)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/releases/latest)
@@ -23,6 +14,8 @@ Powered by [JGit](https://www.eclipse.org/jgit/).
 This extension is **not limited to Git Flow setups!** The [extensive configuration options](#configuration) provide support for many other branch setups and/or use cases. 
 
 ## Table of Contents
+
+- [Requirements](#requirements)
 
 - [Usage](#usage)
   - [Usage as a Maven extension](#usage-as-a-maven-extension)
@@ -70,7 +63,15 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [HTTP](#http)
   - [SSH](#ssh)
 
-- [Requirements](#requirements)
+## Requirements
+
+To be able to use GIB, your project must use:
+
+- **Apache Maven** build tool, version **3.6.3** is recommended
+  - GIB is also tested with Maven 3.5.4 and 3.3.9, but 3.3.9 is _not recommended_ in case you want to use `mvn -pl`/`--projects` (see [issue 324](../../issues/324) and [MNG-6173](https://issues.apache.org/jira/browse/MNG-6173))
+  - GIB _might_ work with Maven down to version 3.1.0
+
+- **Git** version control
 
 ## Usage
 
@@ -715,8 +716,3 @@ GIB then uses [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) to 
 See also [AgentProxyAwareJschConfigSessionFactory](../master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/AgentProxyAwareJschConfigSessionFactory.java).
 
 Hint: When using an agent, you don't need to put your key in a standard location, you don't need `~/.ssh/config` and your key is also _not required_ to be passphrase protected.
-
-## Requirements
-
-- Maven version 3.3.9+ is recommended (however, GIB _might_ work with Maven down to version 3.1.0)
-- Project must use Git

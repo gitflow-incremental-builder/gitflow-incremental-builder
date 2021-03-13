@@ -67,6 +67,14 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
     }
 
+    private void logHelp() {
+        logger.info("gitflow-incremental-builder {} help:\n{}\nFor more help see: {}/tree/version/{}#configuration\n",
+                implVersion,
+                Property.exemplifyAll(),
+                "https://github.com/gitflow-incremental-builder/gitflow-incremental-builder",
+                implVersion);
+    }
+
     private void perform(Configuration config) throws MavenExecutionException {
 
         try {
@@ -76,6 +84,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             }
 
             logger.info("gitflow-incremental-builder {} starting...", implVersion);
+            warnIfBuggyOrUnsupportedMavenVersion(MavenSession.class.getPackage().getImplementationVersion(), config);
             unchangedProjectsRemover.act(config);
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
@@ -99,11 +108,19 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }).orElse(false);
     }
 
-    private void logHelp() {
-        logger.info("gitflow-incremental-builder {} help:\n{}\nFor more help see: {}/tree/version/{}#configuration\n",
-                implVersion,
-                Property.exemplifyAll(),
-                "https://github.com/gitflow-incremental-builder/gitflow-incremental-builder",
-                implVersion);
+    void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion, Configuration config) {
+        if (mavenVersion == null) {
+            logger.warn("Could not get Maven version.");
+        } else if (mavenVersion.startsWith("3.6.") || mavenVersion.startsWith("3.5.")) {
+            // all is well, 3.6.3 should be the default case these days (therefore this check is up here for a "quick exit")
+        } else if (mavenVersion.startsWith("3.3.")) {
+            if (!mavenVersion.equals("3.3.0")
+                    && (config.disableSelectedProjectsHandling || !config.mavenSession.getRequest().getSelectedProjects().isEmpty())) {
+                logger.warn("Detected Maven {} is affected by https://issues.apache.org/jira/browse/MNG-6173.", mavenVersion);
+                logger.warn("More details: https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues/324");
+            }
+        } else {
+            logger.warn("Detected Maven {} was not tested with gitflow-incremental-builder.", mavenVersion);
+        }
     }
 }
