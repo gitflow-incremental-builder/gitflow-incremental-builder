@@ -116,7 +116,7 @@ public class ConfigurationTest {
         Configuration configuration = new Configuration(mavenSessionMock);
 
         assertThat(configuration.disable).isTrue();
-        assertThat(configuration.disableIfBranchRegex).isNull();
+        assertThat(configuration.disableIfBranchMatches).isNull();
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ConfigurationTest {
         Configuration configuration = new Configuration(mavenSessionMock);
 
         assertThat(configuration.disable).isTrue();
-        assertThat(configuration.disableIfBranchRegex).isNull();
+        assertThat(configuration.disableIfBranchMatches).isNull();
     }
 
     @Test
@@ -137,7 +137,7 @@ public class ConfigurationTest {
         Configuration configuration = new Configuration(mavenSessionMock);
 
         assertThat(configuration.disable).isTrue();
-        assertThat(configuration.disableIfBranchRegex).isNull();
+        assertThat(configuration.disableIfBranchMatches).isNull();
     }
 
     @Test

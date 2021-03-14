@@ -165,7 +165,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void enabledForBranch() throws Throwable {
-        projectProperties.setProperty(Property.disableIfBranchRegex.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
 
@@ -176,7 +176,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabledForBranch() throws Throwable {
-        projectProperties.setProperty(Property.disableIfBranchRegex.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
 

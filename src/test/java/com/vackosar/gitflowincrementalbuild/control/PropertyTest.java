@@ -150,14 +150,14 @@ public class PropertyTest {
 
     @Test
     public void getValueOpt_empty() {
-        Optional<String> valueOpt = Property.disableIfBranchRegex.getValueOpt(NO_PROPS, NO_PROPS);
+        Optional<String> valueOpt = Property.disableIfBranchMatches.getValueOpt(NO_PROPS, NO_PROPS);
 
         assertThat(valueOpt).isEqualTo(Optional.empty());
     }
 
     @Test
     public void getValueOpt_notEmpty() {
-        Optional<String> valueOpt = Property.disableIfBranchRegex.getValueOpt(NO_PROPS, propsWith(Property.disableIfBranchRegex.prefixedName(), "master"));
+        Optional<String> valueOpt = Property.disableIfBranchMatches.getValueOpt(NO_PROPS, propsWith(Property.disableIfBranchMatches.prefixedName(), "master"));
 
         assertThat(valueOpt).isEqualTo(Optional.of("master"));
     }
@@ -173,7 +173,7 @@ public class PropertyTest {
         System.setProperty(Property.disable.prefixedName(), "");
         System.setProperty(Property.disableBranchComparison.prefixedShortName(), "true");
 
-        Property.checkProperties(propsWith(Property.disableIfBranchRegex.name(), "master"),
+        Property.checkProperties(propsWith(Property.disableIfBranchMatches.name(), "master"),
                 propsWith(Property.buildAllIfNoChanges.prefixedName(), "true"));
         // no exception
     }
