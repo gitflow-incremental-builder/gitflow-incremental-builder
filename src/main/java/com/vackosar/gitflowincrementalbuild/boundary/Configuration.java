@@ -40,7 +40,7 @@ public class Configuration {
 
     public final boolean help;
     public final boolean disable;
-    public final Optional<Predicate<String>> disableIfBranchRegex;
+    public final Optional<Predicate<String>> disableIfBranchMatches;
 
     public final boolean disableBranchComparison;
     public final String referenceBranch;
@@ -52,8 +52,8 @@ public class Configuration {
     public final boolean uncommitted;
     public final boolean untracked;
     public final Optional<Predicate<String>> skipIfPathMatches;
-    public final Optional<Predicate<String>> excludePathRegex;
-    public final Optional<Predicate<String>> includePathRegex;
+    public final Optional<Predicate<String>> excludePathsMatching;
+    public final Optional<Predicate<String>> includePathsMatching;
 
     public final boolean buildAll;
     public final boolean buildAllIfNoChanges;
@@ -82,7 +82,7 @@ public class Configuration {
         help = Boolean.parseBoolean(Property.help.getValue(pluginProperties, projectProperties));
         disable = Boolean.parseBoolean(Property.disable.getValue(pluginProperties, projectProperties));
         if (disable) { // abort parsing any other config properties if not enabled at all
-            disableIfBranchRegex = null;
+            disableIfBranchMatches = null;
 
             // change detection config
 
@@ -96,8 +96,8 @@ public class Configuration {
             uncommitted = false;
             untracked = false;
             skipIfPathMatches = null;
-            excludePathRegex = null;
-            includePathRegex = null;
+            excludePathsMatching = null;
+            includePathsMatching = null;
 
             // build config
 
@@ -126,7 +126,7 @@ public class Configuration {
 
         Property.checkProperties(pluginProperties, projectProperties);
 
-        disableIfBranchRegex = compileOptionalPatternPredicate(Property.disableIfBranchRegex, pluginProperties, projectProperties);
+        disableIfBranchMatches = compileOptionalPatternPredicate(Property.disableIfBranchMatches, pluginProperties, projectProperties);
 
         // change detection config
 
@@ -140,8 +140,8 @@ public class Configuration {
         uncommitted = Boolean.parseBoolean(Property.uncommitted.getValue(pluginProperties, projectProperties));
         untracked = Boolean.parseBoolean(Property.untracked.getValue(pluginProperties, projectProperties));
         skipIfPathMatches = compileOptionalPatternPredicate(Property.skipIfPathMatches, pluginProperties, projectProperties);
-        excludePathRegex = compileOptionalPatternPredicate(Property.excludePathRegex, pluginProperties, projectProperties);
-        includePathRegex = compileOptionalPatternPredicate(Property.includePathRegex, pluginProperties, projectProperties);
+        excludePathsMatching = compileOptionalPatternPredicate(Property.excludePathsMatching, pluginProperties, projectProperties);
+        includePathsMatching = compileOptionalPatternPredicate(Property.includePathsMatching, pluginProperties, projectProperties);
 
         // build config
 

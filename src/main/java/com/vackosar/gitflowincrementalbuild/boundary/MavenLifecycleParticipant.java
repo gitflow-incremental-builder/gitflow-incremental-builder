@@ -99,7 +99,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     }
 
     private boolean isDisabledForBranch(Configuration config) {
-        return config.disableIfBranchRegex.map(predicate -> {
+        return config.disableIfBranchMatches.map(predicate -> {
             try {
                 return predicate.test(gitProvider.get(config).getRepository().getBranch());
             } catch (IOException e) {

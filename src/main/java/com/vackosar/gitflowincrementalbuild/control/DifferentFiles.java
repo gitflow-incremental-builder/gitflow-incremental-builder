@@ -232,8 +232,8 @@ public class DifferentFiles {
             if (configuration.skipIfPathMatches.map(pred -> pred.test(pathString)).orElse(false)) {
                 throw new SkipExecutionException("Changed path matches regex defined by skipIfPathMatches: " + pathString);
             }
-            boolean excluded = configuration.excludePathRegex.map(pred -> pred.test(pathString)).orElse(false);
-            boolean included = !excluded && configuration.includePathRegex.map(pred -> pred.test(pathString)).orElse(true);
+            boolean excluded = configuration.excludePathsMatching.map(pred -> pred.test(pathString)).orElse(false);
+            boolean included = !excluded && configuration.includePathsMatching.map(pred -> pred.test(pathString)).orElse(true);
             logger.debug("included {}: {}", included, pathString);
             return included;
         }

@@ -64,7 +64,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void listWithUncommitted_excluded() throws Exception {
         Path modifiedFilePath = modifyTrackedFile(repoPath);
         projectProperties.setProperty(Property.uncommitted.prefixedName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
+        projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), Pattern.quote(repoPath.relativize(modifiedFilePath).toString()));
 
         assertThat(invokeUnderTest().contains(modifiedFilePath)).isFalse();
     }
@@ -89,7 +89,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void listWithUntracked_excluded() throws Exception {
         Path newFilePath = createNewUntrackedFile(repoPath);
         projectProperties.setProperty(Property.untracked.prefixedName(), "true");
-        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
+        projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), Pattern.quote(repoPath.relativize(newFilePath).toString()));
 
         assertThat(invokeUnderTest().contains(newFilePath)).isFalse();
     }
@@ -136,7 +136,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listExcluding() throws Exception {
-        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), ".*file2.*");
+        projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child3/src/resources/file1"),
                 Paths.get(repoPath + "/parent/child4/pom.xml"),
@@ -148,7 +148,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listIncluding() throws Exception {
-        projectProperties.setProperty(Property.includePathRegex.prefixedName(), ".*file2.*");
+        projectProperties.setProperty(Property.includePathsMatching.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22")
@@ -159,8 +159,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     @Test
     public void listIncludingAndExcluding() throws Exception {
-        projectProperties.setProperty(Property.includePathRegex.prefixedName(), ".*file2.*");
-        projectProperties.setProperty(Property.excludePathRegex.prefixedName(), ".*file22.*");
+        projectProperties.setProperty(Property.includePathsMatching.prefixedName(), ".*file2.*");
+        projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), ".*file22.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2")
                 ));

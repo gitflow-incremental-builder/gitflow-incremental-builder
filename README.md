@@ -27,7 +27,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Configuration](#configuration)
   - [gib.help](#gibhelp)
   - [gib.disable](#gibdisable)
-  - [gib.disableIfBranchRegex](#gibdisableifbranchregex)
+  - [gib.disableIfBranchMatches](#gibdisableifbranchmatches)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.referenceBranch](#gibreferencebranch)
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
@@ -38,8 +38,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.uncommitted](#gibuncommitted)
   - [gib.untracked](#gibuntracked)
   - [gib.skipIfPathMatches](#gibskipifpathmatches)
-  - [gib.excludePathRegex](#gibexcludepathregex)
-  - [gib.includePathRegex](#gibincludepathregex)
+  - [gib.excludePathsMatching](#gibexcludepathsmatching)
+  - [gib.includePathsMatching](#gibincludepathsmatching)
   - [gib.buildAll](#gibbuildall)
   - [gib.buildAllIfNoChanges](#gibbuildallifnochanges)
   - [gib.buildDownstream](#gibbuilddownstream)
@@ -325,7 +325,7 @@ Maven pom properties configuration with default values is below:
 <properties>
     <gib.help>false</gib.help>                                                         <!-- or -Dgib.h=...     -->
     <gib.disable>false</gib.disable>                                                   <!-- or -Dgib.d=...     -->
-    <gib.disableIfBranchRegex></gib.disableIfBranchRegex>                              <!-- or -Dgib.dibr=...  -->
+    <gib.disableIfBranchMatches></gib.disableIfBranchMatches>                          <!-- or -Dgib.dibm=...  -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                   <!-- or -Dgib.dbc=...   -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>             <!-- or -Dgib.rb=...    -->
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                         <!-- or -Dgib.frb=...   -->
@@ -336,8 +336,8 @@ Maven pom properties configuration with default values is below:
     <gib.uncommitted>true</gib.uncommitted>                                            <!-- or -Dgib.uc=...    -->
     <gib.untracked>true</gib.untracked>                                                <!-- or -Dgib.ut=...    -->
     <gib.skipIfPathMatches></gib.skipIfPathMatches>                                    <!-- or -Dgib.sipm=...  -->
-    <gib.excludePathRegex></gib.excludePathRegex>                                      <!-- or -Dgib.epr=...   -->
-    <gib.includePathRegex></gib.includePathRegex>                                      <!-- or -Dgib.ipr=...   -->
+    <gib.excludePathsMatching></gib.excludePathsMatching>                              <!-- or -Dgib.epm=...   -->
+    <gib.includePathsMatching></gib.includePathsMatching>                              <!-- or -Dgib.ipm=...   -->
     <gib.buildAll>false</gib.buildAll>                                                 <!-- or -Dgib.ba=...    -->
     <gib.buildAllIfNoChanges>false</gib.buildAllIfNoChanges>                           <!-- or -Dgib.bainc=... -->
     <gib.buildDownstream>always</gib.buildDownstream>                                  <!-- or -Dgib.bd=...    -->
@@ -393,7 +393,7 @@ Can be used to disable this extension temporarily or permanently (e.g. to avoid 
 
 Since: 3.11.2 (replaces previously used `enabled` property)
 
-### gib.disableIfBranchRegex
+### gib.disableIfBranchMatches
 
 Can be used to disable this extension on certain branches (e.g. `master|develop`). By default, GIB runs on all branches.
 
@@ -477,7 +477,7 @@ By setting this property to e.g. `\.github[/\\].*` you can tell GIB that this pa
 
 Since: 3.12.2
 
-### gib.excludePathRegex
+### gib.excludePathsMatching
 
 Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build. By default, nothing is excluded.
 
@@ -485,19 +485,19 @@ The regular expression does _not_ need to describe the entire (absolute) path, b
 ```
 /tmp/repo/blacklisted/some-file.txt
 ```
-will be excluded when using `-Dgib.excludePathRegex=blacklisted` or `-Dgib.excludePathRegex=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
+will be excluded when using `-Dgib.excludePathsMatching=blacklisted` or `-Dgib.excludePathsMatching=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
 
-This the opposite of [gib.includePathRegex](#gibincludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
+This the opposite of [gib.includePathsMatching](#gibincludepathregex) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
 
 :information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
 
-### gib.includePathRegex
+### gib.includePathsMatching
 
 Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build. By default, everything is included.
 
-This the opposite of [gib.excludePathRegex](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathRegex` will take precedence.
+This the opposite of [gib.excludePathsMatching](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
 
-See [gib.excludePathRegex](#gibexcludepathregex) for general path matching rules.
+See [gib.excludePathsMatching](#gibexcludepathregex) for general path matching rules.
 
 :information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
 
