@@ -86,7 +86,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.12.2</version>
+            <version>3.13.0</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -105,7 +105,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.12.2</version>
+            <version>3.13.0</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -178,7 +178,7 @@ $ cat pom.xml
             <extension>
                 <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
             </extension>
         </extensions>
     </build>
@@ -399,6 +399,8 @@ Can be used to disable this extension on certain branches (e.g. `master|develop`
 
 Since: 3.11.0
 
+Was renamed from `disableIfBranchRegex` in 3.13.0.
+
 ### gib.disableBranchComparison
 
 Disables the comparison between `baseBranch` and `referenceBranch`. This property should be enabled if _only_ uncommitted and/or untracked files shall be detected to only build projects that have been changed since the last commit in the current branch (see `gib.uncommitted` and `gib.untracked`).
@@ -487,21 +489,25 @@ The regular expression does _not_ need to describe the entire (absolute) path, b
 ```
 will be excluded when using `-Dgib.excludePathsMatching=blacklisted` or `-Dgib.excludePathsMatching=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
 
-This the opposite of [gib.includePathsMatching](#gibincludepathregex) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
+This the opposite of [gib.includePathsMatching](#gibincludepathsmatching) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
 
 :information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
+
+Was renamed from `excludePathRegex` in 3.13.0.
 
 ### gib.includePathsMatching
 
 Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build. By default, everything is included.
 
-This the opposite of [gib.excludePathsMatching](#gibexcludepathregex) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
+This the opposite of [gib.excludePathsMatching](#gibexcludepathsmatching) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
 
-See [gib.excludePathsMatching](#gibexcludepathregex) for general path matching rules.
+See [gib.excludePathsMatching](#gibexcludepathsmatching) for general path matching rules.
 
 :information_source: Use `[/\\]` instead of just `/` to also cover Windows path separators.
 
 Since: 3.10.0
+
+Was renamed from `includePathRegex` in 3.13.0.
 
 ### gib.buildAll
 
