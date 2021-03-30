@@ -123,13 +123,8 @@ jobs:
             maven-version: 3.3.9
           }
           - {
-            name: "JDK 15 & Maven 3.6.3",
-            java-version: 15,
-            maven-version: 3.6.3
-          }
-          - {
-            name: "JDK 16 EA & Maven 3.6.3",
-            java-version: 16-ea,
+            name: "JDK 16 & Maven 3.6.3",
+            java-version: 16,
             maven-version: 3.6.3
           }
           - {
