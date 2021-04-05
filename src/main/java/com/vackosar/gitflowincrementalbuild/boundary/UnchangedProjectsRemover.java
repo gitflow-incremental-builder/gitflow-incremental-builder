@@ -59,7 +59,7 @@ class UnchangedProjectsRemover {
 
     @Inject private ChangedProjects changedProjects;
 
-    private final Map<MavenProject, Set<MavenProject>> downstreamCache = new HashMap<>();
+    private final Map<String, Set<MavenProject>> downstreamCache = new HashMap<>();
 
     void act(Configuration config) throws GitAPIException, IOException {
         try {
@@ -289,20 +289,46 @@ class UnchangedProjectsRemover {
     }
 
     private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
+        return streamProjectWithDownstreamProjects(project, false, config);
+    }
+
+    private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, boolean testJarOnly, Configuration config) {
+        final String cacheKey = project.hashCode() + "_" + testJarOnly;
         // note: not using computeIfAbsent() here since it would break recursive invocations with ConcurrentModificationException
-        Set<MavenProject> downstream = downstreamCache.get(project);
+        Set<MavenProject> downstream = downstreamCache.get(cacheKey);
         if (downstream == null) {
-            downstream = Stream
-                    .concat(Stream.of(project),
-                            config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true)
-                                    .stream().filter(proj -> isDownstreamModuleNotExcluded(proj, config)))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            downstream = new LinkedHashSet<>();
+            downstream.add(project);
+            if (testJarOnly || Boolean.TRUE.equals(project.getContextValue(ChangedProjects.CTX_TEST_ONLY))) {
+                if (projectDeclaresTestJarGoal(project)) {
+                    config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, false).stream()
+                            .flatMap(downstreamProj -> getTestJarDependencyScope(downstreamProj, project)
+                                    .map(depScope -> streamProjectWithDownstreamProjects(downstreamProj, depScope.equals("test"), config))  // recursion!
+                                    .orElseGet(Stream::empty))
+                            .filter(downstreamProj -> isDownstreamModuleNotExcluded(downstreamProj, config))
+                            .forEach(downstream::add);
+                }
+            } else {
+                config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, true).stream()
+                        .filter(downstreamProj -> isDownstreamModuleNotExcluded(downstreamProj, config))
+                        .forEach(downstream::add);
+            }
             if (PCKG_POM.equals(project.getPackaging())) {    // performance hint: bomArtifactIdRegex or similar could speed things up
                 downstream.addAll(findBOMDownstreamProjects(project, downstream, config));
             }
-            downstreamCache.put(project, downstream);
+            downstreamCache.put(cacheKey, downstream);
         }
         return downstream.stream();
+    }
+
+    private Optional<String> getTestJarDependencyScope(MavenProject project, MavenProject testJarProvidingProject) {
+        return project.getDependencies().stream()
+                .filter(dep -> dep.getType().equals(GOAL_TEST_JAR)
+                        && dep.getArtifactId().equals(testJarProvidingProject.getArtifactId())
+                        && dep.getGroupId().equals(testJarProvidingProject.getGroupId())
+                        && dep.getVersion().equals(testJarProvidingProject.getVersion()))
+                .findFirst()
+                .map(dep -> Optional.of(dep.getScope()).orElse("compile"));
     }
 
     private boolean isDownstreamModuleNotExcluded(MavenProject proj, Configuration config) {

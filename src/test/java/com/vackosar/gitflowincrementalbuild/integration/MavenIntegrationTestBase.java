@@ -361,6 +361,52 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     }
 
     @Test
+    public void testOnly_noDependent() throws Exception {
+        checkout(Branch.DEVELOP);
+
+        Path testResPath = Files.createDirectories(
+                repoPath.resolve("parent").resolve("child6").resolve("src").resolve("test").resolve("resources"));
+        Files.write(testResPath.resolve("changed.xml"), new byte[0]);
+
+        final String output = executeBuild(prop(Property.disableBranchComparison, "true"));
+
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .doesNotContain("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .contains("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent");
+    }
+
+    @Test
+    public void testOnly_withDependent() throws Exception {
+        checkout(Branch.DEVELOP);
+
+        Path testResPath = Files.createDirectories(
+                repoPath.resolve("parent").resolve("testJarDependency").resolve("src").resolve("test").resolve("resources"));
+        Files.write(testResPath.resolve("changed.xml"), new byte[0]);
+
+        final String output = executeBuild(prop(Property.disableBranchComparison, "true"));
+
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .doesNotContain("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6")
+                .contains("Building testJarDependency")
+                .contains("Building testJarDependent");
+    }
+
+    @Test
     public void quarkusScenario_noChanges() throws Exception {
         final String output = executeBuild(quarkusScenarioProps());
 

@@ -59,6 +59,10 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [mvn -f and others](#mvn--f-and-others)
   - [mvn -N](#mvn--N)
 
+- [BOM support](#bom-support)
+
+- [Test only changes](#test-only-changes)
+
 - [Authentication](#authentication)
   - [HTTP](#http)
   - [SSH](#ssh)
@@ -688,6 +692,19 @@ In contrast, a module _with_ submodules that is selected via `-f` or via `cd` is
 Since 3.10.2, GIB will _always_ build a "node module" when non-recursive build is activated via `mvn -N` (or `--non-recursive`), **regardless of being changed or not!**
 
 A "node module" is a module _with_ submodules.
+
+## BOM support
+
+Maven does not consider modules importing a BOM (bill of material) via `dependencyManagement` as downstream modules of that BOM module.
+
+This effectively means that (without GIB) you **cannot** just change e.g. a dependency version in the BOM and run `mvn -pl bom -amd` as this will only build `bom`.
+
+To close this "gap", GIB adds downstream detection for BOM modules so that your Dependabot PRs or similar can trigger a proper incremental builds.
+
+## Test only changes
+
+If a module contains changes only within `src/test`, GIB will **not** build any of its downstream modules _unless_ that module defines a
+[test-jar goal and those downstream modules are depending on that jar](https://maven.apache.org/guides/mini/guide-attached-tests.html#guide-to-using-attached-tests).
 
 ## Authentication
 

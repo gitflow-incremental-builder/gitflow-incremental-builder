@@ -147,6 +147,10 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getDownstreamProjects(module, true)).thenReturn(Arrays.asList(downstreamModules));
     }
 
+    protected void setDownstreamProjectsNonTransitive(MavenProject module, MavenProject... downstreamModules) {
+        when(projectDependencyGraphMock.getDownstreamProjects(module, false)).thenReturn(Arrays.asList(downstreamModules));
+    }
+
     protected void addGibProperty(Property property, String value) {
         gibProperties.put(property.prefixedName(), value);
         allModuleMocks.forEach(mod -> mod.getProperties().put(property.prefixedName(), value));

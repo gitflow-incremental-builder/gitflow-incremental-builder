@@ -23,6 +23,12 @@ import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 @Named
 public class ChangedProjects {
 
+    /**
+     * Key of the {@link MavenProject#setContextValue(String, Object) context value} this class sets for each returned project. A value of {@link Boolean#TRUE}
+     * means that only changes in the {@code src/test} part of the module were detected.
+     */
+    public static final String CTX_TEST_ONLY = ChangedProjects.class.getName() + "#TEST-ONLY";
+
     private Logger logger = LoggerFactory.getLogger(ChangedProjects.class);
 
     @Inject private DifferentFiles differentFiles;
@@ -53,6 +59,10 @@ public class ChangedProjects {
             return null;
         }
         logger.debug("Changed file: {}", diffPath);
+        Boolean testOnlyFlag = (Boolean) changedReactorProject.getContextValue(CTX_TEST_ONLY);
+        if (!Boolean.FALSE.equals(testOnlyFlag)) {
+            changedReactorProject.setContextValue(CTX_TEST_ONLY, diffPath.startsWith(path.resolve("src").resolve("test")));
+        }
         return changedReactorProject;
     }
 }
