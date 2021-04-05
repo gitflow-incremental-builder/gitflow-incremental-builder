@@ -19,10 +19,10 @@ env:
 
 jobs:
   primary:
-    name: JDK 11 & Maven 3.6.3
+    name: JDK 11 & Maven 3.8.1
     # workaround: there doesn't seem to be an expression for the job name (for non-matrix)
     env:
-      JOB_NAME: JDK 11 & Maven 3.6.3
+      JOB_NAME: JDK 11 & Maven 3.8.1
 
     runs-on: ubuntu-latest
 
@@ -35,7 +35,7 @@ jobs:
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4
       with:
-        maven-version: 3.6.3
+        maven-version: 3.8.1
     - name: Cache Maven Repository
       uses: actions/cache@v2
       with:
@@ -98,6 +98,11 @@ jobs:
       matrix:
         java-maven:
           - {
+            name: "JDK 11 & Maven 3.6.3",
+            java-version: 11,
+            maven-version: 3.6.3
+          }
+          - {
             name: "JDK 11 & Maven 3.5.4",
             java-version: 11,
             maven-version: 3.5.4
@@ -106,6 +111,11 @@ jobs:
             name: "JDK 11 & Maven 3.3.9",
             java-version: 11,
             maven-version: 3.3.9
+          }
+          - {
+            name: "JDK 8 & Maven 3.8.1",
+            java-version: 8,
+            maven-version: 3.8.1
           }
           - {
             name: "JDK 8 & Maven 3.6.3",
@@ -123,14 +133,14 @@ jobs:
             maven-version: 3.3.9
           }
           - {
-            name: "JDK 16 & Maven 3.6.3",
+            name: "JDK 16 & Maven 3.8.1",
             java-version: 16,
-            maven-version: 3.6.3
+            maven-version: 3.8.1
           }
           - {
-            name: "JDK 17 EA & Maven 3.6.3",
+            name: "JDK 17 EA & Maven 3.8.1",
             java-version: 17-ea,
-            maven-version: 3.6.3
+            maven-version: 3.8.1
           }
 
     steps:

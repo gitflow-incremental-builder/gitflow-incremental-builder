@@ -60,7 +60,7 @@
         <!-- Dependency versions -->
         <version.jgit>5.11.0.202103091610-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
-        <version.maven-core>3.6.3</version.maven-core>
+        <version.maven-core>3.8.1</version.maven-core>
         <version.maven-enforced>3.3.9</version.maven-enforced>
         <version.maven-plugin>3.6.0</version.maven-plugin>
         <version.slf4j>1.7.29</version.slf4j>   <!-- must match the version that is provided by maven -->
@@ -158,7 +158,7 @@
             <version>${version.maven-core}</version>
             <scope>provided</scope>
             <exclusions>
-                <!-- avoid direct usage of Guava (which is dragged in via 3.3.9, but not in 3.6.3) -->
+                <!-- avoid direct usage of Guava (which is dragged in via 3.3.9, but not in 3.8.1) -->
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>

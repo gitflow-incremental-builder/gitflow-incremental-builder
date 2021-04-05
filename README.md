@@ -67,8 +67,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 To be able to use GIB, your project must use:
 
-- **Apache Maven** build tool, version **3.6.3** is recommended
-  - GIB is also tested with Maven 3.5.4 and 3.3.9, but 3.3.9 is _not recommended_ in case you want to use `mvn -pl`/`--projects` (see [issue 324](../../issues/324) and [MNG-6173](https://issues.apache.org/jira/browse/MNG-6173))
+- **Apache Maven** build tool, version **3.8.1** is recommended
+  - GIB is also tested with Maven 3.6.3, 3.5.4 and 3.3.9, but 3.3.9 is _not recommended_ in case you want to use `mvn -pl`/`--projects` (see [issue 324](../../issues/324) and [MNG-6173](https://issues.apache.org/jira/browse/MNG-6173))
   - GIB _might_ work with Maven down to version 3.1.0
 
 - **Git** version control
@@ -92,7 +92,7 @@ Add to (root) `pom.xml`:
     <!-- ... -->
 </build>
 ```
-or use [`.mvn/extensions.xml`](https://maven.apache.org/ref/3.6.3/maven-embedder/core-extensions.html).
+or use [`.mvn/extensions.xml`](https://maven.apache.org/ref/3.8.1/maven-embedder/core-extensions.html).
 
 The [Configuration](#configuration) can then be added via project or system properties.
 
