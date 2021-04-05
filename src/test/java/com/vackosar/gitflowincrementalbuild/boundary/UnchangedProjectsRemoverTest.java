@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
@@ -19,6 +20,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
 import com.vackosar.gitflowincrementalbuild.control.Property;
 
 /**
@@ -153,18 +155,14 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_jarGoal() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_testJarGoal() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
 
-        Plugin pluginMock = mock(Plugin.class);
-        PluginExecution execMock = mock(PluginExecution.class);
-        when(execMock.getGoals()).thenReturn(Collections.singletonList("test-jar"));
-        when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));
-        when(moduleA.getBuildPlugins()).thenReturn(Collections.singletonList(pluginMock));
+        addMockedTestJarExecution(moduleA);
 
         underTest.act(config());
 
@@ -401,6 +399,123 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
+    public void singleChanged_buildDownstream_testOnly() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_overriddenByChange() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", true);    // changed, sic!
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_testJarGoal() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        addMockedTestJarExecution(changedModuleMock);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Collections.singletonList(changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        addMockedTestJarExecution(changedModuleMock);
+        Dependency dep = buildTestJarDependency(changedModuleMock);
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(dep));
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep_transitive() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        addMockedTestJarExecution(changedModuleMock);
+        Dependency dep = buildTestJarDependency(changedModuleMock);
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(dep));
+
+        addMockedTestJarExecution(dependentModuleMock);
+        Dependency depTransitive = buildTestJarDependency(dependentModuleMock);
+        when(transitiveDependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depTransitive));
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_compileDep_transitive() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        addMockedTestJarExecution(changedModuleMock);
+        Dependency dep = buildTestJarDependency(changedModuleMock);
+        dep.setScope("compile");
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(dep));
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, /* sic! */ transitiveDependentModuleMock));
+    }
+
+    @Test
     public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
@@ -567,5 +682,33 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         setDownstreamProjects(changedModuleMock, dependsOnBothModuleMock);
         setDownstreamProjects(unchangedModuleMock, dependsOnBothModuleMock);
         // downstream of moduleA are handled automatically in addModuleMock()
+    }
+
+    public void setUpAndDownstreamsForTestOnlyScenarioTests(MavenProject changedModuleMock,
+            MavenProject dependentModuleMock, MavenProject transitiveDependentModuleMock) {
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
+        setUpstreamProjects(transitiveDependentModuleMock, dependentModuleMock, changedModuleMock, moduleA);
+        setDownstreamProjects(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
+        setDownstreamProjects(dependentModuleMock, transitiveDependentModuleMock);
+        setDownstreamProjectsNonTransitive(dependentModuleMock, transitiveDependentModuleMock);
+    }
+
+    private static void addMockedTestJarExecution(MavenProject module) {
+        Plugin pluginMock = mock(Plugin.class);
+        PluginExecution execMock = mock(PluginExecution.class);
+        when(execMock.getGoals()).thenReturn(Collections.singletonList("test-jar"));
+        when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));
+        when(module.getBuildPlugins()).thenReturn(Collections.singletonList(pluginMock));
+    }
+
+    public Dependency buildTestJarDependency(MavenProject changedModuleMock) {
+        Dependency dep = new Dependency();
+        dep.setType("test-jar");
+        dep.setArtifactId(changedModuleMock.getArtifactId());
+        dep.setGroupId(changedModuleMock.getGroupId());
+        dep.setVersion(changedModuleMock.getVersion());
+        dep.setScope("test");
+        return dep;
     }
 }

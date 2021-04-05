@@ -3,15 +3,20 @@ package com.vackosar.gitflowincrementalbuild.control;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,13 +79,8 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 Paths.get("parent/testJarDependent")
         ));
 
-        final Set<Path> actual = underTest.get(config()).stream()
-                .map(MavenProject::getBasedir)
-                    .map(File::toPath)
-                    .map(localRepoMock.getRepoDir()::relativize)
-                .collect(Collectors.toSet());
-
-        assertThat(actual).isEqualTo(expected);
+        final List<MavenProject> projects = assertExpectedProjectsFound(expected);
+        assertThat(projects).noneMatch(project -> project.getContextValue(ChangedProjects.CTX_TEST_ONLY) == Boolean.TRUE);
     }
 
     @Test
@@ -95,6 +95,31 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 Paths.get("parent/testJarDependent")
         ));
 
+        final List<MavenProject> projects = assertExpectedProjectsFound(expected);
+        assertThat(projects).noneMatch(project -> project.getContextValue(ChangedProjects.CTX_TEST_ONLY) == Boolean.TRUE);
+    }
+
+    @Test
+    public void list_testOnly() throws Exception {
+        projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        Path testJavaPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/java"));
+        Files.createFile(testJavaPath.resolve("FooTest.java"));
+
+        final Set<Path> expected = new HashSet<>(Arrays.asList(Paths.get("parent/child6")));
+
+        MavenProject project = assertExpectedProjectsFound(expected).get(0);
+        assertThat(project.getContextValue(ChangedProjects.CTX_TEST_ONLY)).isSameAs(Boolean.TRUE);
+
+        Path mainJavaPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/main/java"));
+        Files.createFile(mainJavaPath.resolve("Foo.java"));
+
+        project = assertExpectedProjectsFound(expected).get(0);
+        assertThat(project.getContextValue(ChangedProjects.CTX_TEST_ONLY)).isSameAs(Boolean.FALSE);
+    }
+
+    public List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) throws GitAPIException, IOException {
+        Set<MavenProject> foundProjects = underTest.get(config());
         final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
@@ -102,6 +127,8 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 .collect(Collectors.toSet());
 
         assertThat(actual).isEqualTo(expected);
+
+        return new ArrayList<>(foundProjects);
     }
 
     protected Configuration config() {
