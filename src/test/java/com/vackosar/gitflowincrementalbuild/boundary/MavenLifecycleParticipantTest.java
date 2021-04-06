@@ -210,6 +210,13 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_381() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.1", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
     public void warnIfBuggyOrUnsupportedMavenVersion_363() {
         underTest.warnIfBuggyOrUnsupportedMavenVersion("3.6.3", new Configuration(mavenSessionMock));
 

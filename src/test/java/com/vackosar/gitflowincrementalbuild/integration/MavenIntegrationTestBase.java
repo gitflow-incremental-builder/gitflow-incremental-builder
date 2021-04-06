@@ -149,6 +149,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void logVersion() throws IOException, InterruptedException {
         final String output = executeBuild("-N");
         assertThat(output).contains("gitflow-incremental-builder " + gibVersion + " starting...");
+        assertThat(output).doesNotContain("was not tested with gitflow-incremental-builder");
     }
 
     @Test
