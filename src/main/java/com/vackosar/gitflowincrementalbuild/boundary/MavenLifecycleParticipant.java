@@ -111,8 +111,8 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion, Configuration config) {
         if (mavenVersion == null) {
             logger.warn("Could not get Maven version.");
-        } else if (mavenVersion.startsWith("3.6.") || mavenVersion.startsWith("3.5.")) {
-            // all is well, 3.6.3 should be the default case these days (therefore this check is up here for a "quick exit")
+        } else if (mavenVersion.startsWith("3.8.") || mavenVersion.startsWith("3.6.") || mavenVersion.startsWith("3.5.")) {
+            // all is well, 3.8.1 should be the default case these days (therefore this check is up here for a "quick exit")
         } else if (mavenVersion.startsWith("3.3.")) {
             if (!mavenVersion.equals("3.3.0")
                     && (config.disableSelectedProjectsHandling || !config.mavenSession.getRequest().getSelectedProjects().isEmpty())) {
