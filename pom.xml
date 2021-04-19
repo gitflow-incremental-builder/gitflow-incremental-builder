@@ -92,7 +92,7 @@
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.8.1</version.versions-maven-plugin>
-        <version.maven-release-plugin>3.0.0-M1</version.maven-release-plugin>
+        <version.maven-release-plugin>3.0.0-M4</version.maven-release-plugin>
         <version.spotbugs-maven-plugin>4.2.3</version.spotbugs-maven-plugin>
         <version.spotbugs>4.2.3</version.spotbugs>
 
