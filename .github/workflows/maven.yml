@@ -17,6 +17,10 @@ env:
   MAVEN_OPTS: -Djansi.passthrough=true -XX:TieredStopAtLevel=1
   MVN_DEFAULT_ARGS: -e -B -Dstyle.color=always
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   primary:
     name: JDK 11 & Maven 3.8.1
