@@ -78,8 +78,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     private void perform(Configuration config) throws MavenExecutionException {
 
         try {
-            if (isDisabledForBranch(config)) {
-                logger.info("gitflow-incremental-builder is disabled for this branch.");
+            if (isDisabledForReferenceBranch(config) || isDisabledForCurrentBranch(config)) {
                 return;
             }
 
@@ -98,10 +97,23 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         logger.info("gitflow-incremental-builder exiting...");
     }
 
-    private boolean isDisabledForBranch(Configuration config) {
+    private boolean isDisabledForReferenceBranch(Configuration config) {
+        boolean matches = config.disableIfReferenceBranchMatches.map(predicate -> predicate.test(config.referenceBranch)).orElse(false);
+        if (matches) {
+            logger.info("gitflow-incremental-builder is disabled for reference branch: {}", config.referenceBranch);
+        }
+        return matches;
+    }
+
+    private boolean isDisabledForCurrentBranch(Configuration config) {
         return config.disableIfBranchMatches.map(predicate -> {
             try {
-                return predicate.test(gitProvider.get(config).getRepository().getBranch());
+                String branch = gitProvider.get(config).getRepository().getBranch();
+                boolean matches = predicate.test(branch);
+                if (matches) {
+                    logger.info("gitflow-incremental-builder is disabled for the current branch: {}", branch);
+                }
+                return matches;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
