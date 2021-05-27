@@ -6,8 +6,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +44,8 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
  */
 @ExtendWith(MockitoExtension.class)
 public abstract class BaseUnchangedProjectsRemoverTest {
+
+    protected static final Path PSEUDO_PROJECT_ROOT = Paths.get(".").toAbsolutePath();
 
     protected static final String AID_MODULE_A = "module-A";
     protected static final String AID_MODULE_B = "module-B";
@@ -115,7 +118,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
         when(newModuleMock.getGroupId()).thenReturn("com.vackosar.gitflowincrementalbuild");
         when(newModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
         when(newModuleMock.getVersion()).thenReturn("0.0.1");
-        when(newModuleMock.getBasedir()).thenReturn(new File(moduleArtifactId));
+        when(newModuleMock.getBasedir()).thenReturn(PSEUDO_PROJECT_ROOT.resolve(moduleArtifactId).toFile());
         when(newModuleMock.getPackaging()).thenReturn(packaging);
         if (addToChanged) {
             changedProjects.add(newModuleMock);
