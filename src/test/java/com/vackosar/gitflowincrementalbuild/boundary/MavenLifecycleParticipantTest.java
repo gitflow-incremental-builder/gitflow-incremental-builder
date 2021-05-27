@@ -164,7 +164,30 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForBranch() throws Throwable {
+    public void enabledForReferenceBranch() throws Throwable {
+        projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
+
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "feature/group-effort");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(unchangedProjectsRemoverMock).act(any(Configuration.class));
+    }
+
+    @Test
+    public void disabledForReferenceBranch() throws Throwable {
+        projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
+
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "origin/1.13");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(loggerSpy).info("gitflow-incremental-builder is disabled for reference branch: {}", "origin/1.13");
+        verifyNoInteractions(unchangedProjectsRemoverMock);
+    }
+
+    @Test
+    public void enabledForCurrentBranch() throws Throwable {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
@@ -175,14 +198,14 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabledForBranch() throws Throwable {
+    public void disabledForCurrentBranch() throws Throwable {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
 
         underTest.afterProjectsRead(mavenSessionMock);
 
-        verify(loggerSpy).info("gitflow-incremental-builder is disabled for this branch.");
+        verify(loggerSpy).info("gitflow-incremental-builder is disabled for the current branch: {}", "develop");
         verifyNoInteractions(unchangedProjectsRemoverMock);
     }
 

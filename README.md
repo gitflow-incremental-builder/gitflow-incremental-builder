@@ -28,6 +28,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.help](#gibhelp)
   - [gib.disable](#gibdisable)
   - [gib.disableIfBranchMatches](#gibdisableifbranchmatches)
+  - [gib.disableIfReferenceBranchMatches](#gibdisableifreferencebranchmatches)
   - [gib.disableBranchComparison](#gibdisablebranchcomparison)
   - [gib.referenceBranch](#gibreferencebranch)
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
@@ -330,6 +331,7 @@ Maven pom properties configuration with default values is below:
     <gib.help>false</gib.help>                                                         <!-- or -Dgib.h=...     -->
     <gib.disable>false</gib.disable>                                                   <!-- or -Dgib.d=...     -->
     <gib.disableIfBranchMatches></gib.disableIfBranchMatches>                          <!-- or -Dgib.dibm=...  -->
+    <gib.disableIfReferenceBranchMatches></gib.disableIfReferenceBranchMatches>        <!-- or -Dgib.dirbm=... -->
     <gib.disableBranchComparison>false</gib.disableBranchComparison>                   <!-- or -Dgib.dbc=...   -->
     <gib.referenceBranch>refs/remotes/origin/develop</gib.referenceBranch>             <!-- or -Dgib.rb=...    -->
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                         <!-- or -Dgib.frb=...   -->
@@ -404,6 +406,14 @@ Can be used to disable this extension on certain branches (e.g. `master|develop`
 Since: 3.11.0
 
 Was renamed from `disableIfBranchRegex` in 3.13.0.
+
+### gib.disableIfReferenceBranchMatches
+
+Can be used to disable this extension on certain _reference_ branches (e.g. `master|develop`). By default, GIB runs for all reference branches.
+
+See also: [gib.referenceBranch](#gibreferencebranch)
+
+Since: 3.14.2
 
 ### gib.disableBranchComparison
 

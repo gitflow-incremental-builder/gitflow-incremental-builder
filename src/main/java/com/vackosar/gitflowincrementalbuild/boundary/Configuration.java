@@ -41,6 +41,7 @@ public class Configuration {
     public final boolean help;
     public final boolean disable;
     public final Optional<Predicate<String>> disableIfBranchMatches;
+    public final Optional<Predicate<String>> disableIfReferenceBranchMatches;
 
     public final boolean disableBranchComparison;
     public final String referenceBranch;
@@ -83,6 +84,7 @@ public class Configuration {
         disable = Boolean.parseBoolean(Property.disable.getValue(pluginProperties, projectProperties));
         if (disable) { // abort parsing any other config properties if not enabled at all
             disableIfBranchMatches = null;
+            disableIfReferenceBranchMatches = null;
 
             // change detection config
 
@@ -127,6 +129,7 @@ public class Configuration {
         Property.checkProperties(pluginProperties, projectProperties);
 
         disableIfBranchMatches = compileOptionalPatternPredicate(Property.disableIfBranchMatches, pluginProperties, projectProperties);
+        disableIfReferenceBranchMatches = compileOptionalPatternPredicate(Property.disableIfReferenceBranchMatches, pluginProperties, projectProperties);
 
         // change detection config
 

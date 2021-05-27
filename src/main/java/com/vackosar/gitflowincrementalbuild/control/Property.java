@@ -41,7 +41,10 @@ public enum Property {
             return Optional.of("disableIfBranchRegex");
         }
     },
-
+    /**
+     * Can be used to disable this extension for certain reference branches.
+     */
+    disableIfReferenceBranchMatches("", "dirbm"),
     /**
      * Disables the comparison between baseBranch and referenceBranch.
      */
