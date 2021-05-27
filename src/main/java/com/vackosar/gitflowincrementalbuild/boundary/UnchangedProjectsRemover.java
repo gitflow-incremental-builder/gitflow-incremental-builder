@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration.BuildUpstreamMode;
 import com.vackosar.gitflowincrementalbuild.control.ChangedProjects;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 
 @Singleton
 @Named
@@ -59,6 +60,8 @@ class UnchangedProjectsRemover {
 
     @Inject private ChangedProjects changedProjects;
 
+    @Inject private GitProvider gitProvider;
+
     private final Map<String, Set<MavenProject>> downstreamCache = new HashMap<>();
 
     void act(Configuration config) throws GitAPIException, IOException {
@@ -73,7 +76,7 @@ class UnchangedProjectsRemover {
     private void doAct(Configuration config) throws GitAPIException, IOException {
         LazyMavenProjectComparator projectComparator = new LazyMavenProjectComparator(config.mavenSession);
         // ensure to write logfile for impaced (even if just empty)
-        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator, config));
 
         final Set<MavenProject> selected;
         if (config.disableSelectedProjectsHandling) {
@@ -110,7 +113,7 @@ class UnchangedProjectsRemover {
 
         final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed, config);
 
-        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, projectComparator));
+        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, projectComparator, config));
 
         if (!config.buildAll) {
             modifyProjectList(selected, changed, impacted, projectComparator, config);
@@ -183,13 +186,17 @@ class UnchangedProjectsRemover {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, LazyMavenProjectComparator projectComparator) {
-        List<String> projectsToLog = impacted.isEmpty()
-                ? Collections.emptyList()
-                : impacted.stream()
-                        .sorted(projectComparator)
-                        .map(proj -> proj.getBasedir().getPath())
-                        .collect(Collectors.toList());
+    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, LazyMavenProjectComparator projectComparator, Configuration config) {
+        List<String> projectsToLog;
+        if (impacted.isEmpty()) {
+            projectsToLog = Collections.emptyList();
+        } else {
+            Path projectRootDir = gitProvider.get(config).getRepository().getDirectory().toPath().getParent();
+            projectsToLog = impacted.stream()
+                    .sorted(projectComparator)
+                    .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())
+                    .collect(Collectors.toList());
+        }
         logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
         try {
             Files.write(logFilePath, projectsToLog, StandardCharsets.UTF_8, StandardOpenOption.CREATE);

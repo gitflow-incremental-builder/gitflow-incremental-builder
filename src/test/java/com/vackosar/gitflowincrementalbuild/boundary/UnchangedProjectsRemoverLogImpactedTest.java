@@ -1,6 +1,9 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,8 +15,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Answers;
+import org.mockito.Mock;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
+import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#logImpactedTo}.
@@ -25,12 +31,18 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     @TempDir
     Path tempDir;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private GitProvider gitProviderMock;
+
     private Path logFilePath;
 
     @BeforeEach
     void beforeThis() throws GitAPIException, IOException {
         logFilePath = tempDir.resolve("impacted.log");
         addGibProperty(Property.logImpactedTo, logFilePath.toAbsolutePath().toString());
+
+        when(gitProviderMock.get(any(Configuration.class)).getRepository().getDirectory())
+                .thenReturn(PSEUDO_PROJECT_ROOT.resolve(".git").toFile());
     }
 
     @Test
@@ -83,6 +95,6 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
                 .isTrue();
         assertThat(Files.readAllLines(logFilePath))
                 .as("Unexpected content of " + logFilePath)
-                .isEqualTo(Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getPath()).collect(Collectors.toList()));
+                .isEqualTo(Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getName()).collect(Collectors.toList()));
     }
 }
