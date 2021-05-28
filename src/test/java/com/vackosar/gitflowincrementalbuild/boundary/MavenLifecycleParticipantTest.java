@@ -164,7 +164,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForReferenceBranch() throws Throwable {
+    public void enabledForReferenceBranch() throws Exception {
         projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
 
         projectProperties.setProperty(Property.referenceBranch.prefixedName(), "feature/group-effort");
@@ -175,7 +175,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabledForReferenceBranch() throws Throwable {
+    public void disabledForReferenceBranch() throws Exception {
         projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
 
         projectProperties.setProperty(Property.referenceBranch.prefixedName(), "origin/1.13");
@@ -187,7 +187,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForCurrentBranch() throws Throwable {
+    public void enabledForCurrentBranch() throws Exception {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
@@ -198,7 +198,18 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabledForCurrentBranch() throws Throwable {
+    public void enabledForCurrentBranch_quarkusStyle() throws Exception {
+        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|\\d+\\.\\d+|.*backport.*");
+
+        mockCurrentBranch("bump-xyz-to-1.1");
+
+        underTest.afterProjectsRead(mavenSessionMock);
+
+        verify(unchangedProjectsRemoverMock).act(any(Configuration.class));
+    }
+
+    @Test
+    public void disabledForCurrentBranch() throws Exception {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
