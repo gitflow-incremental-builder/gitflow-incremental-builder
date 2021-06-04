@@ -69,7 +69,7 @@
         <version.bytebuddy>1.11.1</version.bytebuddy>
         <version.junit>5.7.2</version.junit>
         <version.assertj>3.19.0</version.assertj>
-        <version.mockito>3.10.0</version.mockito>
+        <version.mockito>3.11.0</version.mockito>
         <version.jetty>9.4.41.v20210516</version.jetty>
 
         <!-- Plugin versions -->
