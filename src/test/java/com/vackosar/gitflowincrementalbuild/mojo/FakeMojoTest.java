@@ -25,7 +25,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.api.Condition;
-import org.assertj.core.api.ProxyableListAssert;
+import org.assertj.core.api.ListAssert;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -202,7 +202,7 @@ public class FakeMojoTest {
                 .collect(Collectors.toList());
     }
 
-    private void check(String asTextFormat, ImmutablePair<List<String>, List<String>> nodeTexts, Consumer<ProxyableListAssert<String>> assertionConsumer) {
+    private void check(String asTextFormat, ImmutablePair<List<String>, List<String>> nodeTexts, Consumer<ListAssert<String>> assertionConsumer) {
         SoftAssertions softly = new SoftAssertions();
         assertionConsumer.accept(softly.assertThat(nodeTexts.left).as(asTextFormat, "plugin.xml"));
         assertionConsumer.accept(softly.assertThat(nodeTexts.right).as(asTextFormat, "plugin-help.xml"));
