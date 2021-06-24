@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,7 +107,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
         Path testJavaPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/java"));
         Files.createFile(testJavaPath.resolve("FooTest.java"));
 
-        final Set<Path> expected = new HashSet<>(Arrays.asList(Paths.get("parent/child6")));
+        final Set<Path> expected = Collections.singleton(Paths.get("parent/child6"));
 
         MavenProject project = assertExpectedProjectsFound(expected).get(0);
         assertThat(project.getContextValue(ChangedProjects.CTX_TEST_ONLY)).isSameAs(Boolean.TRUE);
@@ -116,6 +117,18 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
         project = assertExpectedProjectsFound(expected).get(0);
         assertThat(project.getContextValue(ChangedProjects.CTX_TEST_ONLY)).isSameAs(Boolean.FALSE);
+    }
+
+    @Test
+    public void embeddedTestMavenProject() throws Exception {
+        projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        Path testProjectPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/resources/project"));
+        Files.createFile(testProjectPath.resolve("pom.xml"));
+
+        final Set<Path> expected = Collections.singleton(Paths.get("parent/child6"));
+
+        assertExpectedProjectsFound(expected);
     }
 
     public List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) throws GitAPIException, IOException {
