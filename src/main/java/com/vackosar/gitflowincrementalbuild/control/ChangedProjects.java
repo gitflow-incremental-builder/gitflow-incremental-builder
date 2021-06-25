@@ -3,8 +3,9 @@ package com.vackosar.gitflowincrementalbuild.control;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,14 +38,13 @@ public class ChangedProjects {
     @Inject private Modules modules;
 
     public Set<MavenProject> get(Configuration config) throws GitAPIException, IOException {
-        Map<Path, MavenProject> modulesPathMap = modules.createPathMap(config.mavenSession);
+        Map<Path, List<MavenProject>> modulesPathMap = modules.createPathMap(config.mavenSession);
         return differentFiles.get(config).stream()
-                .map(path -> findProject(path, modulesPathMap))
-                .filter(Objects::nonNull)
+                .flatMap(path -> findProject(path, modulesPathMap).stream())
                 .collect(Collectors.toSet());
     }
 
-    private MavenProject findProject(Path diffPath, Map<Path, MavenProject> modulesPathMap) {
+    private List<MavenProject> findProject(Path diffPath, Map<Path, List<MavenProject>> modulesPathMap) {
         // Strip src/* subpath (if present) to make sure that embedded (test) projects contribute
         // to the "change state" of containing reactor module instead of considering them as separate (non-reactor) modules.
         Path path = stripSrcSubpath(diffPath);
@@ -55,19 +55,21 @@ public class ChangedProjects {
         }
         if (path == null) {
             logger.warn("Ignoring changed file outside build project: {}", diffPath);
-            return null;
+            return Collections.emptyList();
         }
-        MavenProject changedReactorProject = modulesPathMap.get(path);
-        if (changedReactorProject == null) {
+        List<MavenProject> changedReactorProjects = modulesPathMap.get(path);
+        if (changedReactorProjects == null) {
             logger.warn("Ignoring changed file in non-reactor module: {}", diffPath);
-            return null;
+            return Collections.emptyList();
         }
         logger.debug("Changed file: {}", diffPath);
-        Boolean testOnlyFlag = (Boolean) changedReactorProject.getContextValue(CTX_TEST_ONLY);
-        if (!Boolean.FALSE.equals(testOnlyFlag)) {
-            changedReactorProject.setContextValue(CTX_TEST_ONLY, diffPath.startsWith(path.resolve("src").resolve("test")));
+        for (MavenProject changedReactorProject : changedReactorProjects) {
+            Boolean testOnlyFlag = (Boolean) changedReactorProject.getContextValue(CTX_TEST_ONLY);
+            if (!Boolean.FALSE.equals(testOnlyFlag)) {
+                changedReactorProject.setContextValue(CTX_TEST_ONLY, diffPath.startsWith(path.resolve("src").resolve("test")));
+            }
         }
-        return changedReactorProject;
+        return changedReactorProjects;
     }
 
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
