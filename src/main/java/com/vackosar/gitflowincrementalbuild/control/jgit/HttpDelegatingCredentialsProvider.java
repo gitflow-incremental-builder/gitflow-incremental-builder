@@ -46,7 +46,7 @@ public class HttpDelegatingCredentialsProvider extends CredentialsProvider {
 
     public HttpDelegatingCredentialsProvider(Path projectDir, Map<String, String> additionalNativeGitEnvironment) {
         this.projectDir = projectDir;
-        this.additionalNativeGitEnvironment = additionalNativeGitEnvironment;
+        this.additionalNativeGitEnvironment = new HashMap<>(additionalNativeGitEnvironment);
     }
 
     @Override
