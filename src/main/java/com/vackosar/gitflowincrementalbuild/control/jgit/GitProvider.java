@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Singleton
 @Named
 public class GitProvider {
@@ -34,6 +36,7 @@ public class GitProvider {
      * @param config the configuration
      * @return a {@link Git} instance
      */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Makes no sense to wrap 'git', it's only for internal use anyway.")
     public Git get(Configuration config) {
         if (git == null) {
             try {
