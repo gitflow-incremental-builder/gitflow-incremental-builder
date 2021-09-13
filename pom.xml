@@ -58,7 +58,7 @@
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
 
         <!-- Dependency versions -->
-        <version.jgit>5.12.0.202106070339-r</version.jgit>
+        <version.jgit>5.13.0.202109080827-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.8.1</version.maven-core>
         <version.maven-enforced>3.3.9</version.maven-enforced>
