@@ -20,6 +20,9 @@ public class Modules {
     /**
      * Returns all projects of the given session, mapped by their project base directory.
      * In very special setups, multiple modules can exists in the same directory and so the mapping value is a list of projects.
+     *
+     * @param session the Maven session
+     * @return project(s) mapped by path
      */
     public Map<Path, List<MavenProject>> createPathMap(MavenSession session) {
         return session.getAllProjects().stream().collect(
