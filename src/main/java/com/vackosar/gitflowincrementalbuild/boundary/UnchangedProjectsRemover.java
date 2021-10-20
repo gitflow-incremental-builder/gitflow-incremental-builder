@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -181,6 +182,9 @@ class UnchangedProjectsRemover {
         if (config.buildAll || config.buildDownstream) {
             impacted = impacted.flatMap(proj -> streamProjectWithDownstreamProjects(proj, config));
         }
+        if (config.prerequisiteModules != null) {
+          impacted = impacted.flatMap(proj -> streamProjectWithPreRequisiteProjects(proj, config));
+        }
         return impacted
                 .filter(config.mavenSession.getProjects()::contains)   // not deselected
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -297,6 +301,17 @@ class UnchangedProjectsRemover {
 
     private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
         return streamProjectWithDownstreamProjects(project, false, config);
+    }
+
+    private Stream<MavenProject> streamProjectWithPreRequisiteProjects(MavenProject project, Configuration config) {
+      String prerequisites = config.prerequisiteModules.get(project.getArtifactId());
+      if (prerequisites != null) {
+        List<String> dependentArtifactIds = Arrays.asList(prerequisites.split(","));
+        return Stream.concat(Stream.of(project),
+          config.mavenSession.getProjects().stream()
+          .filter(proj -> dependentArtifactIds.contains(proj.getArtifactId())));
+      }
+      return Stream.of(project);
     }
 
     private Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, boolean testJarOnly, Configuration config) {

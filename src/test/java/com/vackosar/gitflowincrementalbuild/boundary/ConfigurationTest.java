@@ -153,6 +153,18 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void prerequisiteModules() {
+        System.setProperty(Property.prerequisiteModules.prefixedName(), "module1=module3,module4 module2=module3,module5");
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("module1", "module3,module4");
+        expected.put("module2", "module3,module5");
+        assertThat(configuration.prerequisiteModules).isEqualTo(expected);
+    }
+
+    @Test
     public void excludeDownstreamModulesPackagedAs() {
         System.setProperty(Property.excludeDownstreamModulesPackagedAs.prefixedName(), "ear,war");
 

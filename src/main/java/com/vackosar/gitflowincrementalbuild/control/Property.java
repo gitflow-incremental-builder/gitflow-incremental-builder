@@ -129,9 +129,14 @@ public enum Property {
      */
     skipTestsForUpstreamModules("false", "stfum", true),
     /**
-     * This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead.
+     * This property allows adding arbitrary arguments/properties for upstream modules to further reduce overhead.
      */
     argsForUpstreamModules("", "afum"),
+    /**
+     * This property allows downstream modules to be included when as a pre-requisite when the other modules are in the reactor.
+     * Format: dependentModuleX=prerequisiteModule1,prerequisiteModule2 dependentModuleY=prerequisiteModule3,prerequisiteModule4
+     */
+    prerequisiteModules("", "prqm"),
     /**
      * Defines artifact ids of modules to build forcibly.
      */

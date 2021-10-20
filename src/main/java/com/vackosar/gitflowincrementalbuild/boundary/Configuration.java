@@ -62,6 +62,7 @@ public class Configuration {
     public final BuildUpstreamMode buildUpstreamMode;
     public final boolean skipTestsForUpstreamModules;
     public final Map<String, String> argsForUpstreamModules;
+    public final Map<String, String> prerequisiteModules;
     public final List<Pattern> forceBuildModules;
     public final List<String> excludeDownstreamModulesPackagedAs;
     public final boolean disableSelectedProjectsHandling;
@@ -110,6 +111,7 @@ public class Configuration {
             skipTestsForUpstreamModules = false;
 
             argsForUpstreamModules = null;
+            prerequisiteModules = null;
 
             forceBuildModules = null;
 
@@ -158,6 +160,10 @@ public class Configuration {
         argsForUpstreamModules = parseDelimited(Property.argsForUpstreamModules.getValue(pluginProperties, projectProperties), " ")
                 .map(Configuration::keyValueStringToEntry)
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
+
+        prerequisiteModules = parseDelimited(Property.prerequisiteModules.getValue(pluginProperties, projectProperties), " ")
+            .map(Configuration::keyValueStringToEntry)
+            .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
 
         forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(pluginProperties, projectProperties), ",")
                 .map(str -> compilePattern(str, Property.forceBuildModules))
