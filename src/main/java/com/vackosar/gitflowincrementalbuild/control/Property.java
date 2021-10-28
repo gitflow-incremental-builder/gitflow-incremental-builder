@@ -129,7 +129,7 @@ public enum Property {
      */
     skipTestsForUpstreamModules("false", "stfum", true),
     /**
-     * This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead.
+     * This property allows adding arbitrary arguments/properties for upstream modules to further reduce overhead.
      */
     argsForUpstreamModules("", "afum"),
     /**

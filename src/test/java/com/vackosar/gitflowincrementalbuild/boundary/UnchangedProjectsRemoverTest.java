@@ -527,6 +527,28 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
+    public void singleChanged_forceBuildModules_conditionalMatches() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+        addGibProperty(Property.forceBuildModules, changedModuleMock.getArtifactId() + "=" + moduleA.getArtifactId());
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(moduleA, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_conditionalMatchesNot() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+        addGibProperty(Property.forceBuildModules, changedModuleMock.getArtifactId() + "=X");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock));
+    }
+
+    @Test
     public void singleChanged_forceBuildModules_two() throws GitAPIException, IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
@@ -558,6 +580,32 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject unchangedModuleMock = addModuleMock("module-C", false);
 
         addGibProperty(Property.forceBuildModules, AID_MODULE_A +  ".*,.*-C");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(
+                Arrays.asList(moduleA, changedModuleMock, unchangedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_twoWildcards_secondMatchesNot() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        addModuleMock("module-C", false);
+
+        addGibProperty(Property.forceBuildModules, AID_MODULE_A +  ".*,.*-X");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(
+                Arrays.asList(moduleA, changedModuleMock));
+    }
+
+    @Test
+    public void singleChanged_forceBuildModules_mixWithConditional() throws GitAPIException, IOException {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject unchangedModuleMock = addModuleMock("module-C", false);
+
+        addGibProperty(Property.forceBuildModules, AID_MODULE_A +  ".*,.*B=.*-C");
 
         underTest.act(config());
 

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -63,6 +64,7 @@ public class Configuration {
     public final boolean skipTestsForUpstreamModules;
     public final Map<String, String> argsForUpstreamModules;
     public final List<Pattern> forceBuildModules;
+    public final Map<Pattern, Pattern> forceBuildModulesConditionally;
     public final List<String> excludeDownstreamModulesPackagedAs;
     public final boolean disableSelectedProjectsHandling;
 
@@ -112,6 +114,7 @@ public class Configuration {
             argsForUpstreamModules = null;
 
             forceBuildModules = null;
+            forceBuildModulesConditionally = null;
 
             excludeDownstreamModulesPackagedAs = null;
 
@@ -159,9 +162,20 @@ public class Configuration {
                 .map(Configuration::keyValueStringToEntry)
                 .collect(collectingAndThen(toLinkedMap(), Collections::unmodifiableMap));
 
-        forceBuildModules = parseDelimited(Property.forceBuildModules.getValue(pluginProperties, projectProperties), ",")
-                .map(str -> compilePattern(str, Property.forceBuildModules))
+        Map<String, String> forceBuildModulesMap = parseDelimited(Property.forceBuildModules.getValue(pluginProperties, projectProperties), ",")
+                .map(Configuration::keyValueStringToEntry)
+                .collect(toLinkedMap());
+        forceBuildModules = forceBuildModulesMap.entrySet().stream()
+                .filter(entry -> entry.getValue().isEmpty())
+                .map(entry -> compilePattern(entry.getKey(), Property.forceBuildModules))
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+        forceBuildModulesConditionally = forceBuildModulesMap.entrySet().stream()
+                .filter(entry -> !entry.getValue().isEmpty())
+                .collect(collectingAndThen(
+                        toLinkedMap(
+                                entry -> compilePattern(entry.getKey(), Property.forceBuildModules),
+                                entry -> compilePattern(entry.getValue(), Property.forceBuildModules)),
+                        Collections::unmodifiableMap));
 
         excludeDownstreamModulesPackagedAs = parseDelimited(Property.excludeDownstreamModulesPackagedAs.getValue(pluginProperties, projectProperties), ",")
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
@@ -267,7 +281,12 @@ public class Configuration {
     }
 
     private static Collector<Entry<String, String>, ?, LinkedHashMap<String, String>> toLinkedMap() {
-        return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new);
+        return toLinkedMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    private static <IN, OUT> Collector<Entry<IN, IN>, ?, LinkedHashMap<OUT, OUT>> toLinkedMap(
+            Function<Entry<IN, IN>, OUT> keyMapper, Function<Entry<IN, IN>, OUT> valueMapper) {
+        return Collectors.toMap(keyMapper, valueMapper, (a, b) -> a, LinkedHashMap::new);
     }
 
     private static Pattern compilePattern(String patternString, Property property) {
