@@ -138,13 +138,13 @@ jobs:
             maven-version: 3.3.9
           }
           - {
-            name: "JDK 16 & Maven 3.8.1",
-            java-version: 16,
+            name: "JDK 17 & Maven 3.8.1",
+            java-version: 17,
             maven-version: 3.8.1
           }
           - {
-            name: "JDK 17 EA & Maven 3.8.1",
-            java-version: 17-ea,
+            name: "JDK 18 EA & Maven 3.8.1",
+            java-version: 18-ea,
             maven-version: 3.8.1
           }
 
@@ -153,7 +153,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v2
       with:
-        distribution: temurin
+        distribution: ${{ endsWith(matrix.java-maven.java-version, '-ea') && 'zulu' || 'temurin' }}
         java-version: ${{ matrix.java-maven.java-version }}
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4
