@@ -620,6 +620,22 @@ Each of these modules is subject to `argsForUpstreamModules` and `skipTestsForUp
 
 This property has no effect in case `buildAll` is enabled.
 
+Additionally (since 3.14.4), forced modules can be defined _conditionally_, e.g.:
+
+```
+changed-module=unchanged-module-1|unchanged-module-2
+```
+
+will build `unchanged-module-1` _and_ `unchanged-module-2` only if `changed-module` was changed (or depends on changed modules).
+
+There can be multiple such key=value pairs, fully supporting regular expressions and you can mix both flavors, e.g.:
+
+```
+another-module, changed-module=unchanged-module-1|unchanged-module-2, .*-core-module=lib-.*-module, test-.*
+```
+
+Note: `,` and `=` are reserved delimiters and can therefore _not_ be used in artifact id strings/patterns.
+
 ### gib.excludeDownstreamModulesPackagedAs
 
 Defines the packaging (e.g. `jar`) of modules that depend on changed modules but shall not be built.

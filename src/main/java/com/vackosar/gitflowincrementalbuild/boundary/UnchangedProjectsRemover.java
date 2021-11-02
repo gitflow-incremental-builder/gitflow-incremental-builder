@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -211,10 +212,18 @@ class UnchangedProjectsRemover {
         if (rebuild.isEmpty()) {
             handleNoChangesDetected(selected, projectComparator, config);
         } else {
-            if (!config.forceBuildModules.isEmpty()) {
+            if (!config.forceBuildModules.isEmpty() || !config.forceBuildModulesConditionally.isEmpty()) {
+
+                List<Pattern> conditionalPatterns = config.forceBuildModulesConditionally.entrySet().stream()
+                        .filter(entry -> impacted.stream()
+                                .anyMatch(proj -> entry.getKey().matcher(proj.getArtifactId()).matches()))
+                        .map(Entry::getValue)
+                        .collect(Collectors.toList());
+
                 Set<MavenProject> forceBuildModules = config.mavenSession.getProjects().stream()
                         .filter(proj -> !rebuild.contains(proj))
-                        .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules))
+                        .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules)
+                                || matchesAny(proj.getArtifactId(), conditionalPatterns))
                         .map(proj -> applyUpstreamModuleArgs(proj, config))
                         .collect(Collectors.toCollection(LinkedHashSet::new));
                 rebuild.addAll(forceBuildModules);
@@ -373,7 +382,7 @@ class UnchangedProjectsRemover {
     }
 
     private boolean matchesAny(final String str, Collection<Pattern> patterns) {
-        return patterns.stream().anyMatch(pattern -> pattern.matcher(str).matches());
+        return !patterns.isEmpty() && patterns.stream().anyMatch(pattern -> pattern.matcher(str).matches());
     }
 
     private static class ProjectSelectionUtil {

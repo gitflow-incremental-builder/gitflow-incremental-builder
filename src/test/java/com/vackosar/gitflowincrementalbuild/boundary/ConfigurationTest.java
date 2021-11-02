@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -168,11 +169,13 @@ public class ConfigurationTest {
 
         Configuration configuration = new Configuration(mavenSessionMock);
 
-        assertThat(configuration.forceBuildModules).as("Field forceBuildModules is null").isNotNull();
-        assertThat(configuration.forceBuildModules).as("Unexpected number of Patterns in forceBuildModules").hasSize(1);
+        assertThat(configuration.forceBuildModules).as("Field forceBuildModules").isNotNull();
+        assertThat(configuration.forceBuildModules).as("Number of Patterns in forceBuildModules").hasSize(1);
         Pattern pattern = configuration.forceBuildModules.get(0);
-        assertThat(pattern).as("Pattern form forceBuildModules is null").isNotNull();
-        assertThat(pattern.pattern()).as("Unexpected pattern string of Pattern from forceBuildModules").isEqualTo(expectedPatternString);
+        assertThat(pattern).as("Pattern from forceBuildModules").isNotNull();
+        assertThat(pattern.pattern()).as("String of Pattern from forceBuildModules").isEqualTo(expectedPatternString);
+
+        assertThat(configuration.forceBuildModulesConditionally).isEmpty();
     }
 
     @Test
@@ -182,6 +185,48 @@ public class ConfigurationTest {
         assertThatIllegalArgumentException().isThrownBy(() -> new Configuration(mavenSessionMock))
                 .withMessageContaining(Property.forceBuildModules.prefixedName())
                 .withCauseExactlyInstanceOf(PatternSyntaxException.class);
+    }
+
+    @Test
+    public void forceBuildModules_withConditionals() {
+        System.setProperty(Property.forceBuildModules.prefixedName(), "A, X=B|C, D, .*M, E.*=F|G.*");
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.forceBuildModules).as("Field forceBuildModules").isNotNull();
+        assertThat(configuration.forceBuildModules)
+                .as("Pattern strings of forceBuildModules")
+                .extracting(Pattern::pattern)
+                .containsExactly("A", "D", ".*M");
+
+        assertThat(configuration.forceBuildModulesConditionally).as("Field forceBuildModulesConditionally").isNotNull();
+        assertThat(configuration.forceBuildModulesConditionally)
+                .as("LHS pattern strings of forceBuildModulesConditionally")
+                .extractingFromEntries(e -> Optional.ofNullable(e.getKey()).map(Pattern::pattern).orElse(null))
+                .containsExactly("X", "E.*");
+        assertThat(configuration.forceBuildModulesConditionally)
+                .as("RHS pattern strings of forceBuildModulesConditionally")
+                .extractingFromEntries(e -> Optional.ofNullable(e.getValue()).map(Pattern::pattern).orElse(null))
+                .containsExactly("B|C", "F|G.*");
+    }
+
+    @Test
+    public void forceBuildModules_onlyConditionals() {
+        System.setProperty(Property.forceBuildModules.prefixedName(), "X=B|C");
+
+        Configuration configuration = new Configuration(mavenSessionMock);
+
+        assertThat(configuration.forceBuildModules).isEmpty();
+
+        assertThat(configuration.forceBuildModulesConditionally).as("Field forceBuildModulesConditionally").isNotNull();
+        assertThat(configuration.forceBuildModulesConditionally)
+                .as("LHS pattern strings of forceBuildModulesConditionally")
+                .extractingFromEntries(e -> Optional.ofNullable(e.getKey()).map(Pattern::pattern).orElse(null))
+                .containsExactly("X");
+        assertThat(configuration.forceBuildModulesConditionally)
+                .as("RHS pattern strings of forceBuildModulesConditionally")
+                .extractingFromEntries(e -> Optional.ofNullable(e.getValue()).map(Pattern::pattern).orElse(null))
+                .containsExactly("B|C");
     }
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
