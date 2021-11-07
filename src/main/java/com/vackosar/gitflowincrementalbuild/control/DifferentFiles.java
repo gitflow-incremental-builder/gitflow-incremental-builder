@@ -99,39 +99,38 @@ public class DifferentFiles {
         }
 
         private Set<Path> getBranchDiff() throws IOException {
-            RevCommit base = getBranchCommit(configuration.baseBranch);
-            final TreeWalk treeWalk = new TreeWalk(git.getRepository());
-            try {
+            RevCommit base = getBranchCommit(configuration.baseBranch, false);
+            try (final TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
                 treeWalk.addTree(base.getTree());
                 treeWalk.addTree(resolveReference(base).getTree());
                 treeWalk.setFilter(TreeFilter.ANY_DIFF);
                 treeWalk.setRecursive(true);
                 return getDiff(treeWalk, workTree);
-            } finally {
-                treeWalk.close();
             }
         }
 
         private void checkout() throws IOException, GitAPIException {
             if (! (HEAD.equals(configuration.baseBranch) || configuration.baseBranch.startsWith("worktrees/")) && ! git.getRepository().getFullBranch().equals(configuration.baseBranch)) {
-                logger.info("Checking out base branch " + configuration.baseBranch + "...");
+                logger.info("Checking out base branch " + configuration.baseBranch);
                 git.checkout().setName(configuration.baseBranch).call();
             }
         }
 
         private void fetch() throws GitAPIException {
             if (!configuration.disableBranchComparison && configuration.fetchReferenceBranch) {
-                fetch(configuration.referenceBranch);
+                fetch(configuration.referenceBranch, true);
             }
             if (configuration.fetchBaseBranch) {
-                fetch(configuration.baseBranch);
+                fetch(configuration.baseBranch, false);
             }
         }
 
-        private void fetch(String branchName) throws GitAPIException {
+        private void fetch(String branchName, boolean reference) throws GitAPIException {
             logger.info("Fetching branch " + branchName);
             if (!branchName.startsWith(REFS_REMOTES)) {
-                throw new IllegalArgumentException("Branch name '" + branchName + "' is not tracking branch name since it does not start " + REFS_REMOTES);
+                throw new IllegalArgumentException("Cannot fetch local " + (reference ? "reference" : "base") + " branch '" + branchName + "'. "
+                        + "Only remote tracking branches can be fetched, meaning branches starting with '" + REFS_REMOTES + "'. "
+                        + "Make sure to not confuse remote tracking branches with local branches, 'git branch -a' is your friend!");
             }
             String remoteName = extractRemoteName(branchName);
             String shortName = extractShortName(remoteName, branchName);
@@ -158,14 +157,15 @@ public class DifferentFiles {
         }
 
         private RevCommit getMergeBase(RevCommit baseCommit, RevCommit referenceHeadCommit) throws IOException {
-            RevWalk walk = new RevWalk(git.getRepository());
-            walk.setRevFilter(RevFilter.MERGE_BASE);
-            walk.markStart(walk.lookupCommit(baseCommit));
-            walk.markStart(walk.lookupCommit(referenceHeadCommit));
-            RevCommit commit = walk.next();
-            walk.close();
-            logger.info("Using merge base of id: " + commit.getId());
-            return commit;
+            try (final RevWalk walk = new RevWalk(git.getRepository())) {
+                walk.setRevFilter(RevFilter.MERGE_BASE);
+                walk.markStart(walk.lookupCommit(baseCommit));
+                walk.markStart(walk.lookupCommit(referenceHeadCommit));
+                RevCommit commit = walk.next();
+                walk.close();
+                logger.info("Using merge base of id: " + commit.getId());
+                return commit;
+            }
         }
 
         private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {
@@ -179,26 +179,34 @@ public class DifferentFiles {
             return paths;
         }
 
-        private RevCommit getBranchCommit(String branchName) throws IOException {
+        private RevCommit getBranchCommit(String branchName, boolean reference) throws IOException {
             Repository repository = git.getRepository();
             ObjectId objectId = repository.resolve(branchName);
 
+            boolean isRemoteTrackingBranch = branchName.startsWith(REFS_REMOTES);
+            String branchDesc = String.format("%s %s branch '%s'",
+                    isRemoteTrackingBranch ? "remote tracking" : "local",
+                    reference ? "reference" : "base",
+                    branchName);
             if (objectId == null) {
                 if (repository.simplify(branchName) != null) {
-                    throw new SkipExecutionException("Could not get Git ObjectId for branch of name '" + branchName
-                            + "'. Is this repository empty (no commits yet)?");
+                    throw new SkipExecutionException("Could not get Git ObjectId for " + branchDesc
+                            + ". Is this repository empty (no commits yet)?");
                 }
-                if (branchName.startsWith(REFS_REMOTES) && repository.getRemoteNames().isEmpty()) {
-                    throw new SkipExecutionException("Could not get Git ObjectId for branch of name '" + branchName
-                            + "'. No remotes found at all, push still pending?");
+                if (isRemoteTrackingBranch && repository.getRemoteNames().isEmpty()) {
+                    throw new SkipExecutionException("Could not get Git ObjectId for " + branchDesc
+                            + ". No remotes found at all, push still pending?");
                 }
-                throw new IllegalArgumentException("Git branch of name '" + branchName + "' not found.");
+                throw new IllegalArgumentException("Git " + branchDesc + " not found. "
+                        + "Make sure it exists by creating it explicitly via 'git branch/checkout/switch ...' "
+                        + "or by fetching it from the remote repository via 'git fetch <remote> <branch>:<branch>' (or just 'git fetch <branch>'). "
+                        + "Also make sure to not confuse remote tracking branches (refs/remotes/...) with local branches, 'git branch -a' is your friend!");
             }
-            final RevWalk walk = new RevWalk(repository);
-            RevCommit commit = walk.parseCommit(objectId);
-            walk.close();
-            logger.info("Reference commit of branch " + branchName + " is commit of id: " + commit.getId());
-            return commit;
+            try (final RevWalk walk = new RevWalk(repository)) {
+                RevCommit commit = walk.parseCommit(objectId);
+                logger.info("Reference commit of " + branchDesc + " has id: " + commit.getId());
+                return commit;
+            }
         }
 
         private Set<Path> getChangesFromStatus() throws GitAPIException {
@@ -219,7 +227,7 @@ public class DifferentFiles {
         }
 
         private RevCommit resolveReference(RevCommit base) throws IOException {
-            RevCommit refHead = getBranchCommit(configuration.referenceBranch);
+            RevCommit refHead = getBranchCommit(configuration.referenceBranch, true);
             if (configuration.compareToMergeBase) {
                 return getMergeBase(base, refHead);
             } else {

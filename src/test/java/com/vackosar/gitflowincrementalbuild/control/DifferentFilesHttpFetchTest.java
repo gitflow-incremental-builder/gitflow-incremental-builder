@@ -1,7 +1,6 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType;
@@ -20,9 +19,17 @@ public class DifferentFilesHttpFetchTest extends BaseDifferentFilesTest {
 
         invokeUnderTest();
 
-        Git localGit = localRepoMock.getGit();
-        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(REMOTE_DEVELOP).call();
-        assertCommitExists(FETCH_FILE, localGit);
+        assertFetchFileCommitExistsInDevelop();
+    }
+
+    @Test
+    public void fetch_invalidLocalBranch() throws Exception {
+        addCommitToRemoteRepo(FETCH_FILE);
+        projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "develop");
+
+        Assertions.assertThatThrownBy(this::invokeUnderTest)
+                .isExactlyInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot fetch local reference branch 'develop'");
     }
 }
