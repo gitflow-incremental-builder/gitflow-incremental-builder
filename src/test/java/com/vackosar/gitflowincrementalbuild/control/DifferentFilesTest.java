@@ -210,10 +210,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
         invokeUnderTest();
 
-        Git localGit = localRepoMock.getGit();
-        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(REMOTE_DEVELOP).call();
-        assertCommitExists(FETCH_FILE, localGit);
+        assertFetchFileCommitExistsInDevelop();
     }
 
     @Test
@@ -227,9 +224,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
         invokeUnderTest();
 
-        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(REMOTE_DEVELOP).call();
-        assertCommitExists(FETCH_FILE, localGit);
+        assertFetchFileCommitExistsInDevelop();
     }
 
     @Test
@@ -239,7 +234,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         Throwable thrown = catchThrowable(() -> invokeUnderTest());
 
         assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
-        assertThat(thrown).hasMessage("Git branch of name 'FOO' not found.");
+        assertThat(thrown).hasMessageStartingWith("Git local reference branch 'FOO' not found.");
     }
 
     @Test

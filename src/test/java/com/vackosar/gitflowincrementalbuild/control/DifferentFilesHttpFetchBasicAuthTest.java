@@ -5,8 +5,6 @@ import static com.vackosar.gitflowincrementalbuild.mocks.server.TestServerType.H
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,10 +37,7 @@ public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest
 
         invokeUnderTest();
 
-        Git localGit = localRepoMock.getGit();
-        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(REMOTE_DEVELOP).call();
-        assertCommitExists(FETCH_FILE, localGit);
+        assertFetchFileCommitExistsInDevelop();
     }
 
     private String buildCredentialsFileContent() {

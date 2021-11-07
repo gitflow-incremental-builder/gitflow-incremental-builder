@@ -15,8 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
@@ -122,10 +120,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
         invokeUnderTest();
 
-        Git localGit = localRepoMock.getGit();
-        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
-        localGit.checkout().setName(REMOTE_DEVELOP).call();
-        assertCommitExists(FETCH_FILE, localGit);
+        assertFetchFileCommitExistsInDevelop();
     }
 
     private Path writePrivateKey(String fileName, String key) throws IOException {

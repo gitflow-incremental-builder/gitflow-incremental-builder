@@ -91,7 +91,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
                 logger.info("gitflow-incremental-builder execution skipped: {}", (isSkipExecException ? e.getMessage() : e.toString()));
                 logger.debug("Full exception:", e);
             } else {
-                throw new MavenExecutionException("Exception during gitflow-incremental-builder execution occurred.", e);
+                throw new MavenExecutionException("Failed to execute gitflow-incremental-builder.", e);
             }
         }
         logger.info("gitflow-incremental-builder exiting...");

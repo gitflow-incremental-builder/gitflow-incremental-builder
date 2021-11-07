@@ -87,6 +87,17 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         assertThat(git.log().setMaxCount(1).call().iterator().next().getFullMessage()).isEqualTo(message);
     }
 
+    protected void assertFetchFileCommitExistsInDevelop() throws Exception {
+        assertFetchFileCommitExistsInDevelop(true);
+    }
+
+    protected void assertFetchFileCommitExistsInDevelop(boolean remoteDevelop) throws Exception {
+        Git localGit = localRepoMock.getGit();
+        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        localGit.checkout().setName(remoteDevelop ? REMOTE_DEVELOP : DEVELOP).call();
+        assertCommitExists(FETCH_FILE, localGit);
+    }
+
     protected Set<Path> invokeUnderTest() throws Exception {
         return invokeUnderTest(getMavenSessionMock());
     }
