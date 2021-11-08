@@ -7,6 +7,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-8--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 
+<a href="https://foojay.io/today/works-with-openjdk"><img align="left" src="https://github.com/foojayio/badges/raw/main/works_with_openjdk/Works-with-OpenJDK.png" width="100"></a>
+<br><br>
+----
+
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>
 Powered by [JGit](https://www.eclipse.org/jgit/).
@@ -91,7 +95,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.14.3</version>
+            <version>3.14.4</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -110,7 +114,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.14.3</version>
+            <version>3.14.4</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -183,7 +187,7 @@ $ cat pom.xml
             <extension>
                 <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>3.14.3</version>
+                <version>3.14.4</version>
             </extension>
         </extensions>
     </build>
