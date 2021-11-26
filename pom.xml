@@ -60,11 +60,11 @@
         <!-- Dependency versions -->
         <version.jgit>5.13.0.202109080827-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
-        <version.maven-core>3.8.1</version.maven-core>
+        <version.maven-core>3.8.4</version.maven-core>
         <version.maven-enforced>3.3.9</version.maven-enforced>
         <version.maven-plugin>3.6.1</version.maven-plugin>
-        <version.slf4j>1.7.29</version.slf4j>   <!-- must match the version that is provided by maven -->
-        <version.logback>1.2.3</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
+        <version.slf4j>1.7.32</version.slf4j>   <!-- must match the version that is provided by maven -->
+        <version.logback>1.2.7</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
         <version.bytebuddy>1.11.22</version.bytebuddy>
         <version.junit>5.8.1</version.junit>
