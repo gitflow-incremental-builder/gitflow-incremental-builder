@@ -1,11 +1,11 @@
 # gitflow-incremental-builder (GIB)
 [![GitHub license](https://img.shields.io/github/license/gitflow-incremental-builder/gitflow-incremental-builder.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/blob/master/LICENSE)
-[![Latest Release](https://img.shields.io/github/v/release/gitflow-incremental-builder/gitflow-incremental-builder?label=latest%20release)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
 [![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gitflow-incremental-builder/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-8--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
+![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)
 
 <a href="https://foojay.io/today/works-with-openjdk"><img align="left" src="https://github.com/foojayio/badges/raw/main/works_with_openjdk/Works-with-OpenJDK.png" width="100"></a>
 <br><br>
