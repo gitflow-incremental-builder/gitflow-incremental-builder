@@ -15,7 +15,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Answers;
 import org.mockito.Mock;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
@@ -31,7 +30,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     @TempDir
     Path tempDir;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock(lenient = true)
     private GitProvider gitProviderMock;
 
     private Path logFilePath;
@@ -41,8 +40,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         logFilePath = tempDir.resolve("impacted.log");
         addGibProperty(Property.logImpactedTo, logFilePath.toAbsolutePath().toString());
 
-        when(gitProviderMock.get(any(Configuration.class)).getRepository().getDirectory())
-                .thenReturn(PSEUDO_PROJECT_ROOT.resolve(".git").toFile());
+        when(gitProviderMock.getProjectRoot(any(Configuration.class))).thenReturn(PSEUDO_PROJECT_ROOT);
     }
 
     @Test

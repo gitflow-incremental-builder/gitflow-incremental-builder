@@ -48,6 +48,10 @@ public class GitProvider {
         return git;
     }
 
+    public Path getProjectRoot(Configuration config) {
+        return get(config).getRepository().getDirectory().toPath().getParent();
+    }
+
     public void close() {
         if (git != null) {
             git.close();

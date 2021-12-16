@@ -21,6 +21,7 @@ public abstract class BaseRepoTest {
     /** The project properties for the top-level project of {@link #getMavenSessionMock() MavenSessionMock} for config init. */
     protected final Properties projectProperties = new Properties();
     private final boolean useSymLinkedFolder;
+    private final String additionalRepoPathSubDir;
     private final TestServerType remoteRepoServerType;
 
     protected LocalRepoMock localRepoMock;
@@ -31,16 +32,30 @@ public abstract class BaseRepoTest {
     protected Path repoBaseDir;
 
     public BaseRepoTest() {
-        this(false, null);
+        this.useSymLinkedFolder = false;
+        this.additionalRepoPathSubDir = null;
+        this.remoteRepoServerType = null;
     }
 
-    public BaseRepoTest(boolean useSymLinkedFolder, TestServerType remoteRepoServerType) {
+    public BaseRepoTest(boolean useSymLinkedFolder, String additionalRepoPathSubDir) {
         this.useSymLinkedFolder = useSymLinkedFolder;
+        this.additionalRepoPathSubDir = additionalRepoPathSubDir;
+        this.remoteRepoServerType = null;
+    }
+
+    public BaseRepoTest(TestServerType remoteRepoServerType) {
+        this.useSymLinkedFolder = false;
+        this.additionalRepoPathSubDir = null;
         this.remoteRepoServerType = remoteRepoServerType;
     }
+    
 
     @BeforeEach
     protected void before(TestInfo testInfo) throws Exception {
+        if (additionalRepoPathSubDir != null) {
+            repoBaseDir = Files.createDirectory(repoBaseDir.resolve(additionalRepoPathSubDir));
+        }
+
         init();
 
         // place repo in a sym-linked folder if requested by the concrete test class

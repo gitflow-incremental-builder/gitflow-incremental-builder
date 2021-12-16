@@ -192,7 +192,7 @@ class UnchangedProjectsRemover {
         if (impacted.isEmpty()) {
             projectsToLog = Collections.emptyList();
         } else {
-            Path projectRootDir = gitProvider.get(config).getRepository().getDirectory().toPath().getParent();
+            Path projectRootDir = gitProvider.getProjectRoot(config);
             projectsToLog = impacted.stream()
                     .sorted(projectComparator)
                     .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())

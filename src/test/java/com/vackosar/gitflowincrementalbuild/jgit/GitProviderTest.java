@@ -69,4 +69,13 @@ public class GitProviderTest {
         assertThatExceptionOfType(SkipExecutionException.class)
                 .isThrownBy(() -> underTest.get(new Configuration(mavenSessionMock)));
     }
+
+    @Test
+    public void getProjectRoot() throws IOException, URISyntaxException, GitAPIException {
+        EmptyLocalRepoMock.withBasicPom(tempDir, emptyLocalRepoMock -> {
+            when(currentProjectMock.getBasedir()).thenReturn(emptyLocalRepoMock.getRepoDir().toFile());
+
+            assertThat(underTest.getProjectRoot(new Configuration(mavenSessionMock))).isEqualTo(emptyLocalRepoMock.getRepoDir());
+        });
+    }
 }
