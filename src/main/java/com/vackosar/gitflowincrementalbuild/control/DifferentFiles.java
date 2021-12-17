@@ -162,7 +162,11 @@ public class DifferentFiles {
                 walk.markStart(walk.lookupCommit(baseCommit));
                 walk.markStart(walk.lookupCommit(referenceHeadCommit));
                 RevCommit commit = walk.next();
-                walk.close();
+                if (commit == null) {
+                    throw new IllegalStateException(String.format(
+                            "Cannot find merge base, try fetching more history.%n\tbase: %s%n\treference: %s",
+                            baseCommit, referenceHeadCommit));
+                }
                 logger.info("Using merge base of id: " + commit.getId());
                 return commit;
             }
