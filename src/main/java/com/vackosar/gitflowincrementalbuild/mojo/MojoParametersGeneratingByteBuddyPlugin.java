@@ -63,6 +63,9 @@ public class MojoParametersGeneratingByteBuddyPlugin implements Plugin {
 
     @Override
     public boolean matches(TypeDescription target) {
+        if (target == null) {
+            return false;
+        }
         String actualName = target.getActualName();
         return actualName.equals(FakeMojo.class.getName()) || actualName.equals(Property.class.getName());
     }
