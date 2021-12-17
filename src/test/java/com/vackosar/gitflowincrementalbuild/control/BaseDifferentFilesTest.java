@@ -46,7 +46,7 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
     private File jGitUserHomeBackup;
 
     public BaseDifferentFilesTest(TestServerType remoteRepoServerType) {
-        super(false, remoteRepoServerType);
+        super(remoteRepoServerType);
     }
 
     @Override
