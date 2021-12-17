@@ -7,8 +7,6 @@
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-8--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
-<a href="https://foojay.io/today/works-with-openjdk"><img align="left" src="https://github.com/foojayio/badges/raw/main/works_with_openjdk/Works-with-OpenJDK.png" width="100"></a>
-<br><br>
 ----
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
