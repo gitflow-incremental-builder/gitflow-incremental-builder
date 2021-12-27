@@ -128,7 +128,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v2
       with:
-        distribution: ${{ endsWith(matrix.java-maven.java-version, '-ea') && 'zulu' || 'temurin' }}
+        distribution: temurin
         java-version: ${{ matrix.java-maven.java-version }}
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4

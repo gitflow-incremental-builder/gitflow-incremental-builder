@@ -78,7 +78,7 @@
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.7</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
         <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
-        <version.plexus-component-metadata>2.1.0</version.plexus-component-metadata>
+        <version.plexus-component-metadata>2.1.1</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.2.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
@@ -87,7 +87,7 @@
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
         <version.maven-help-plugin>3.2.0</version.maven-help-plugin>
         <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
-        <version.maven-site-plugin>3.9.1</version.maven-site-plugin>
+        <version.maven-site-plugin>3.10.0</version.maven-site-plugin>
         <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
         <version.maven-deploy-plugin>3.0.0-M1</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
