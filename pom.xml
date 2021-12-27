@@ -54,8 +54,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <!-- workaround until https://github.com/raphw/byte-buddy/pull/1181 is available -->
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
 
         <!-- Dependency versions -->
         <version.jgit>5.13.0.202109080827-r</version.jgit>
@@ -70,7 +71,7 @@
         <version.junit>5.8.2</version.junit>
         <version.assertj>3.21.0</version.assertj>
         <version.mockito>4.2.0</version.mockito>
-        <version.jetty>9.4.44.v20210927</version.jetty>
+        <version.jetty>10.0.7</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0</version.maven-enforcer-plugin>
@@ -746,16 +747,6 @@
         </plugins>
     </build>
     <profiles>
-        <!-- verify that only JDK8 APIs are used -->
-        <profile>
-            <id>jdk9+</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.release>8</maven.compiler.release>
-            </properties>
-        </profile>
         <profile>
             <id>quick-build</id>
             <activation>

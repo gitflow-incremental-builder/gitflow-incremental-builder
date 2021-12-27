@@ -21,10 +21,10 @@ updates:
     - dependency-name: org.slf4j:slf4j-api
       versions:
       - ">= 0"
-    # https://webtide.com/jetty-10-and-11-have-arrived/ (Java 8 support still needed)
+    # https://webtide.com/jetty-10-and-11-have-arrived/ (javax support still needed for JGit GitServlet)
     - dependency-name: org.eclipse.jetty:jetty-server
       versions:
-      - ">= 10.0.0"
+      - ">= 11.0.0"
     - dependency-name: org.eclipse.jetty:jetty-servlet
       versions:
-      - ">= 10.0.0"
+      - ">= 11.0.0"

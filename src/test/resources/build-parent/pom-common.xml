@@ -13,6 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>${maven.compiler.release}</maven.compiler.release>
         <!-- These properties are needed by pom.xml files within template.zip: -->
         <version.jgit>${version.jgit}</version.jgit>
     </properties>
