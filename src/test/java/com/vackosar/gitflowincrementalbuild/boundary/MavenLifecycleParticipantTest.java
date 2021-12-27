@@ -244,6 +244,13 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_384() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.4", new Configuration(mavenSessionMock));
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
     public void warnIfBuggyOrUnsupportedMavenVersion_381() {
         underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.1", new Configuration(mavenSessionMock));
 
@@ -258,42 +265,24 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_354() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.5.4", new Configuration(mavenSessionMock));
+    public void warnIfBuggyOrUnsupportedMavenVersion_362() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.6.2", new Configuration(mavenSessionMock));
 
-        verifyNoInteractions(loggerSpy);
+        verify(loggerSpy).warn(contains("not tested"), eq("3.6.2"));
     }
 
     @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_330() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.0", new Configuration(mavenSessionMock));
+    public void warnIfBuggyOrUnsupportedMavenVersion_354() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.5.4", new Configuration(mavenSessionMock));
 
-        verifyNoInteractions(loggerSpy);
+        verify(loggerSpy).warn(contains("not tested"), eq("3.5.4"));
     }
 
     @Test
     public void warnIfBuggyOrUnsupportedMavenVersion_339() {
         underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
 
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_339_withSelectedProject() {
-        when(execRequestMock.getSelectedProjects()).thenReturn(Collections.singletonList("foo"));
-
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
-
-        verify(loggerSpy).warn(contains("MNG-6173"), eq("3.3.9"));
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_339_withDisableSelectedProjectsHandling() {
-        projectProperties.setProperty(Property.disableSelectedProjectsHandling.prefixedName(), "true");
-
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9", new Configuration(mavenSessionMock));
-
-        verify(loggerSpy).warn(contains("MNG-6173"), eq("3.3.9"));
+        verify(loggerSpy).warn(contains("not tested"), eq("3.3.9"));
     }
 
     @Test

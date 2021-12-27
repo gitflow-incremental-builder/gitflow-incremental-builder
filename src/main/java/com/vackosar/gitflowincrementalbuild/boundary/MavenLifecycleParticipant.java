@@ -123,15 +123,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion, Configuration config) {
         if (mavenVersion == null) {
             logger.warn("Could not get Maven version.");
-        } else if (mavenVersion.startsWith("3.8.") || mavenVersion.startsWith("3.6.") || mavenVersion.startsWith("3.5.")) {
-            // all is well, 3.8.1 should be the default case these days (therefore this check is up here for a "quick exit")
-        } else if (mavenVersion.startsWith("3.3.")) {
-            if (!mavenVersion.equals("3.3.0")
-                    && (config.disableSelectedProjectsHandling || !config.mavenSession.getRequest().getSelectedProjects().isEmpty())) {
-                logger.warn("Detected Maven {} is affected by https://issues.apache.org/jira/browse/MNG-6173.", mavenVersion);
-                logger.warn("More details: https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues/324");
-            }
-        } else {
+        } else if (!mavenVersion.startsWith("3.8.") && !mavenVersion.equals("3.6.3")) {
             logger.warn("Detected Maven {} was not tested with gitflow-incremental-builder.", mavenVersion);
         }
     }

@@ -108,16 +108,6 @@ jobs:
             maven-version: 3.6.3
           }
           - {
-            name: "JDK 11 & Maven 3.5.4",
-            java-version: 11,
-            maven-version: 3.5.4
-          }
-          - {
-            name: "JDK 11 & Maven 3.3.9",
-            java-version: 11,
-            maven-version: 3.3.9
-          }
-          - {
             name: "JDK 17 & Maven 3.8.4",
             java-version: 17,
             maven-version: 3.8.4
@@ -126,16 +116,6 @@ jobs:
             name: "JDK 17 & Maven 3.6.3",
             java-version: 17,
             maven-version: 3.6.3
-          }
-          - {
-            name: "JDK 17 & Maven 3.5.4",
-            java-version: 17,
-            maven-version: 3.5.4
-          }
-          - {
-            name: "JDK 17 & Maven 3.3.9",
-            java-version: 17,
-            maven-version: 3.3.9
           }
           - {
             name: "JDK 18 EA & Maven 3.8.4",
