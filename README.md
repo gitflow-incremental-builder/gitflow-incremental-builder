@@ -4,7 +4,7 @@
 [![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gitflow-incremental-builder/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-8--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-11--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 ----
@@ -75,8 +75,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 To be able to use GIB, your project must use:
 
 - **Apache Maven** build tool, version **3.8.4** is recommended
-  - GIB is also tested with Maven 3.6.3, 3.5.4 and 3.3.9, but 3.3.9 is _not recommended_ in case you want to use `mvn -pl`/`--projects` (see [issue 324](../../issues/324) and [MNG-6173](https://issues.apache.org/jira/browse/MNG-6173))
-  - GIB _might_ work with Maven down to version 3.1.0
+  - The minimum Maven version is 3.6.3 due to [MNG-6580](https://issues.apache.org/jira/browse/MNG-6580)
 
 - **Git** version control
 

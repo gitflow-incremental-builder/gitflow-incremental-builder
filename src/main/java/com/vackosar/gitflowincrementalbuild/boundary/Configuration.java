@@ -301,12 +301,7 @@ public class Configuration {
     private static Optional<Predicate<String>> compileOptionalPatternPredicate(Property property, Properties pluginProperties, Properties projectProperties) {
         return property.getValueOpt(pluginProperties, projectProperties)
                 .map(patternString -> compilePattern(patternString, property))
-                .map(Configuration::asMatchPredicate);
-    }
-
-    // for Java 8-10 compatibility, Java 11 has Pattern.asMatchPredicate() OOTB
-    private static Predicate<String> asMatchPredicate(Pattern pattern) {
-        return s -> pattern.matcher(s).matches();
+                .map(Pattern::asMatchPredicate);
     }
 
     public static enum BuildUpstreamMode {
