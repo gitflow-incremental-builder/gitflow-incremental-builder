@@ -34,7 +34,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginCont
 
 public class Configuration {
 
-    public static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
+    public static final String PLUGIN_KEY = "io.github.gitflow-incremental-builder:gitflow-incremental-builder";
 
     public final MavenSession mavenSession;
     public final MavenProject currentProject;
