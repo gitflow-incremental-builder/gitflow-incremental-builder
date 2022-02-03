@@ -83,6 +83,10 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         assertCommitExists(newFileNameAndMessage, remoteGit);
     }
 
+    protected void tagRemoteWith(String tagName) throws Exception {
+        localRepoMock.getRemoteRepo().getGit().tag().setName(tagName).call();
+    }
+
     protected void assertCommitExists(String message, Git git) throws Exception {
         assertThat(git.log().setMaxCount(1).call().iterator().next().getFullMessage()).isEqualTo(message);
     }
@@ -95,6 +99,13 @@ public abstract class BaseDifferentFilesTest extends BaseRepoTest {
         Git localGit = localRepoMock.getGit();
         localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         localGit.checkout().setName(remoteDevelop ? REMOTE_DEVELOP : DEVELOP).call();
+        assertCommitExists(FETCH_FILE, localGit);
+    }
+
+    protected void assertFetchFileCommitExistsIn(String ref) throws Exception {
+        Git localGit = localRepoMock.getGit();
+        localGit.reset().setMode(ResetCommand.ResetType.HARD).call();
+        localGit.checkout().setName(ref).call();
         assertCommitExists(FETCH_FILE, localGit);
     }
 

@@ -438,7 +438,7 @@ Fetches the `referenceBranch` from the remote repository.
 
 You _must_ use the prefix `refs/remotes/<remoteName>/`, e.g. `refs/remotes/origin/develop`, so that GIB can determine the remote repo name.
 
-Fetching tags is not (yet) supported.
+Alternatively, since 3.15.0, you can also fetch tags via `refs/tags/<tagName>`.
 
 See also: [Authentication](#authentication)
 
