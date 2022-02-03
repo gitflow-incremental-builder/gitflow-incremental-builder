@@ -55,8 +55,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
-        <!-- workaround until https://github.com/raphw/byte-buddy/pull/1181 is available -->
-        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
 
         <!-- Dependency versions -->
         <version.jgit>6.0.0.202111291000-r</version.jgit>
