@@ -23,6 +23,18 @@ public class DifferentFilesHttpFetchTest extends BaseDifferentFilesTest {
     }
 
     @Test
+    public void fetch_tag() throws Exception {
+        addCommitToRemoteRepo(FETCH_FILE);
+        tagRemoteWith("fetch_tag");
+        projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
+        projectProperties.setProperty(Property.referenceBranch.prefixedName(), "refs/tags/fetch_tag");
+
+        invokeUnderTest();
+
+        assertFetchFileCommitExistsIn("fetch_tag");
+    }
+
+    @Test
     public void fetch_invalidLocalBranch() throws Exception {
         addCommitToRemoteRepo(FETCH_FILE);
         projectProperties.setProperty(Property.fetchReferenceBranch.prefixedName(), "true");
