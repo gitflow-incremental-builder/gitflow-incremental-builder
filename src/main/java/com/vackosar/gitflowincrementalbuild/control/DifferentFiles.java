@@ -17,6 +17,7 @@ import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -44,6 +45,7 @@ public class DifferentFiles {
     private static final String HEAD = "HEAD";
     private static final String REFS_REMOTES = "refs/remotes/";
     private static final String REFS_HEADS = "refs/heads/";
+    private static final String REFS_TAGS = "refs/tags/";
 
     private Logger logger = LoggerFactory.getLogger(DifferentFiles.class);
 
@@ -126,18 +128,24 @@ public class DifferentFiles {
         }
 
         private void fetch(String branchName, boolean reference) throws GitAPIException {
-            logger.info("Fetching branch " + branchName);
-            if (!branchName.startsWith(REFS_REMOTES)) {
+            logger.info("Fetching " + branchName);
+            final String remoteName;
+            final String spec;
+            if (branchName.startsWith(REFS_TAGS)) {
+                remoteName = getSingleRemoteName();
+                spec = branchName + ":" + branchName;
+            } else if (!branchName.startsWith(REFS_REMOTES)) {
                 throw new IllegalArgumentException("Cannot fetch local " + (reference ? "reference" : "base") + " branch '" + branchName + "'. "
                         + "Only remote tracking branches can be fetched, meaning branches starting with '" + REFS_REMOTES + "'. "
                         + "Make sure to not confuse remote tracking branches with local branches, 'git branch -a' is your friend!");
+            } else {
+                remoteName = extractRemoteName(branchName);
+                spec = REFS_HEADS + extractShortName(remoteName, branchName) + ":" + branchName;
             }
-            String remoteName = extractRemoteName(branchName);
-            String shortName = extractShortName(remoteName, branchName);
             FetchCommand fetchCommand = git.fetch()
                     .setCredentialsProvider(credentialsProvider)
                     .setRemote(remoteName)
-                    .setRefSpecs(new RefSpec(REFS_HEADS + shortName + ":" + branchName));
+                    .setRefSpecs(new RefSpec(spec));
             if (configuration.useJschAgentProxy) {
                 fetchCommand.setTransportConfigCallback(transport -> {
                     if (transport instanceof SshTransport) {
@@ -146,6 +154,11 @@ public class DifferentFiles {
                 });
             }
             fetchCommand.call();
+        }
+
+        private String getSingleRemoteName() {
+            Set<String> remoteNames = git.getRepository().getRemoteNames();
+            return remoteNames.size() == 1 ? remoteNames.iterator().next() : Constants.DEFAULT_REMOTE_NAME;
         }
 
         private String extractRemoteName(String branchName) {
