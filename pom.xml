@@ -104,6 +104,8 @@
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
 
+        <jacoco.skip.test>${jacoco.skip}</jacoco.skip.test>
+
         <!-- See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html for empty argLine -->
         <argLine />
     </properties>
@@ -627,6 +629,7 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
+                            <skip>${jacoco.skip.test}</skip>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
@@ -796,6 +799,17 @@
             </activation>
             <properties>
                 <jacoco.skip>true</jacoco.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>jacoco-skip-specificTest</id>
+            <activation>
+                <property>
+                    <name>test</name>
+                </property>
+            </activation>
+            <properties>
+                <jacoco.skip.test>true</jacoco.skip.test>
             </properties>
         </profile>
         <profile>
