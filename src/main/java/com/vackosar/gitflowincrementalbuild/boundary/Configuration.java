@@ -49,7 +49,6 @@ public class Configuration {
     public final boolean fetchReferenceBranch;
     public final String baseBranch;
     public final boolean fetchBaseBranch;
-    public final boolean useJschAgentProxy;
     public final boolean compareToMergeBase;
     public final boolean uncommitted;
     public final boolean untracked;
@@ -95,7 +94,6 @@ public class Configuration {
             fetchReferenceBranch = false;
             baseBranch = null;
             fetchBaseBranch = false;
-            useJschAgentProxy = false;
             compareToMergeBase = false;
             uncommitted = false;
             untracked = false;
@@ -141,7 +139,6 @@ public class Configuration {
         fetchReferenceBranch = Boolean.parseBoolean(Property.fetchReferenceBranch.getValue(pluginProperties, projectProperties));
         baseBranch = Property.baseBranch.getValue(pluginProperties, projectProperties);
         fetchBaseBranch = Boolean.parseBoolean(Property.fetchBaseBranch.getValue(pluginProperties, projectProperties));
-        useJschAgentProxy = Boolean.parseBoolean(Property.useJschAgentProxy.getValue(pluginProperties, projectProperties));
         compareToMergeBase = Boolean.parseBoolean(Property.compareToMergeBase.getValue(pluginProperties, projectProperties));
         uncommitted = Boolean.parseBoolean(Property.uncommitted.getValue(pluginProperties, projectProperties));
         untracked = Boolean.parseBoolean(Property.untracked.getValue(pluginProperties, projectProperties));

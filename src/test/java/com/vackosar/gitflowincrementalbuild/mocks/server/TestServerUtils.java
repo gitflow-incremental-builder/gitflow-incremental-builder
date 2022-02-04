@@ -20,7 +20,7 @@ public class TestServerUtils {
     }
 
     static URI buildRepoUrl(String protocol, String user, int port) {
-        return toURI(String.format("%s://%s@127.0.0.1:%s/repo.git", protocol, user, port));
+        return toURI(String.format("%s://%s@localhost:%s/repo.git", protocol, user, port));
     }
 
     private static URI toURI(String spec) {

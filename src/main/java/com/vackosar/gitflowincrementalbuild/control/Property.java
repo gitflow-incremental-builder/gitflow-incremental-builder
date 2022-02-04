@@ -66,10 +66,6 @@ public enum Property {
      */
     fetchBaseBranch("false", "fbb", true),
     /**
-     * Can be used to disable the usage of jsch-agent-proxy when fetching via SSH.
-     */
-    useJschAgentProxy("true", "ujap"),
-    /**
      * Controls whether or not to the merge-base mechanism to compare the branches.
      */
     compareToMergeBase("true", "ctmb", true),

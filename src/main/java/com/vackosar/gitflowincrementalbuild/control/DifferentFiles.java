@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -24,14 +23,12 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
-import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConfigSessionFactory;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
@@ -142,18 +139,11 @@ public class DifferentFiles {
                 remoteName = extractRemoteName(branchName);
                 spec = REFS_HEADS + extractShortName(remoteName, branchName) + ":" + branchName;
             }
-            FetchCommand fetchCommand = git.fetch()
+            git.fetch()
                     .setCredentialsProvider(credentialsProvider)
                     .setRemote(remoteName)
-                    .setRefSpecs(new RefSpec(spec));
-            if (configuration.useJschAgentProxy) {
-                fetchCommand.setTransportConfigCallback(transport -> {
-                    if (transport instanceof SshTransport) {
-                        ((SshTransport) transport).setSshSessionFactory(new AgentProxyAwareJschConfigSessionFactory());
-                    }
-                });
-            }
-            fetchCommand.call();
+                    .setRefSpecs(new RefSpec(spec))
+                    .call();
         }
 
         private String getSingleRemoteName() {
