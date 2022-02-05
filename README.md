@@ -36,7 +36,6 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
   - [gib.baseBranch](#gibbasebranch)
   - [gib.fetchBaseBranch](#gibfetchbasebranch)
-  - [gib.useJschAgentProxy](#gibusejschagentproxy)
   - [gib.compareToMergeBase](#gibcomparetomergebase)
   - [gib.uncommitted](#gibuncommitted)
   - [gib.untracked](#gibuntracked)
@@ -338,7 +337,6 @@ Maven pom properties configuration with default values is below:
     <gib.fetchReferenceBranch>false</gib.fetchReferenceBranch>                         <!-- or -Dgib.frb=...   -->
     <gib.baseBranch>HEAD</gib.baseBranch>                                              <!-- or -Dgib.bb=...    -->
     <gib.fetchBaseBranch>false</gib.fetchBaseBranch>                                   <!-- or -Dgib.fbb=...   -->
-    <gib.useJschAgentProxy>true</gib.useJschAgentProxy>                                <!-- or -Dgib.ujap=...  -->
     <gib.compareToMergeBase>true</gib.compareToMergeBase>                              <!-- or -Dgib.ctmb=...  -->
     <gib.uncommitted>true</gib.uncommitted>                                            <!-- or -Dgib.uc=...    -->
     <gib.untracked>true</gib.untracked>                                                <!-- or -Dgib.ut=...    -->
@@ -456,16 +454,6 @@ See also:
 
 - [Authentication](#authentication)
 - [gib.fetchReferenceBranch](#gibfetchreferencebranch)
-
-### gib.useJschAgentProxy
-
-Can be used to disable the usage of [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) when fetching via SSH.
-
-This might reduce overhead in case you don't use an agent at all (like `ssh-agent` or `pageant` from `PuTTY`).
-
-See also: [SSH](#ssh) in the [Authentication](#authentication) section
-
-Since: 3.9.1
 
 ### gib.compareToMergeBase
 
@@ -762,7 +750,6 @@ Host git.somedomain.org
 
 If your key is protected by a **passphrase**, you will have to use a SSH agent (`ssh-agent` on Linux or `pageant` from `PuTTY` on Windows) and add your key(s) to it.
 
-GIB then uses [`jsch-agent-proxy`](https://github.com/ymnk/jsch-agent-proxy) to get the unencrypted keys from the running agent. Please note that although `jsch-agent-proxy` also provides _write_ access, GIB will only _read_ keys/identities.<br/>
-See also [AgentProxyAwareJschConfigSessionFactory](../master/src/main/java/com/vackosar/gitflowincrementalbuild/control/jgit/AgentProxyAwareJschConfigSessionFactory.java).
+GIB relies on [SSH Agent Support as provided by JGit 6.0+](https://wiki.eclipse.org/JGit/New_and_Noteworthy/6.0#SSH_Agent_Support).
 
 Hint: When using an agent, you don't need to put your key in a standard location, you don't need `~/.ssh/config` and your key is also _not required_ to be passphrase protected.

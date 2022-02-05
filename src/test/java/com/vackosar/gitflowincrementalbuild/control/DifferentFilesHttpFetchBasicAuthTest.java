@@ -40,6 +40,7 @@ public class DifferentFilesHttpFetchBasicAuthTest extends BaseDifferentFilesTest
         assertFetchFileCommitExistsInDevelop();
     }
 
+    @SuppressWarnings("resource")
     private String buildCredentialsFileContent() {
         String usrPass = HTTP_PROTOCOL_BASIC_AUTH.getUserName() + ":" + HTTP_PROTOCOL_BASIC_AUTH.getUserSecret() + "@";
         return localRepoMock.getRemoteRepo().repoUri.toString().replace("://", "://" + usrPass);

@@ -58,7 +58,6 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.0.0.202111291000-r</version.jgit>
-        <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.8.4</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.6.4</version.maven-plugin>
@@ -123,7 +122,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit.ssh.jsch</artifactId>
+            <artifactId>org.eclipse.jgit.ssh.apache.agent</artifactId>
             <version>${version.jgit}</version>
             <exclusions>
                 <!-- we use a version that matches the one that is provided by maven (and has to be compatible with jgit) -->
@@ -132,26 +131,6 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.connector-factory</artifactId>
-            <version>${version.jsch.agentproxy}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.jsch</artifactId>
-            <version>${version.jsch.agentproxy}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.pageant</artifactId>
-            <version>${version.jsch.agentproxy}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch.agentproxy.sshagent</artifactId>
-            <version>${version.jsch.agentproxy}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

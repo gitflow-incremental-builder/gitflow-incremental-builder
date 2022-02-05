@@ -41,6 +41,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     // need to override before() so that setup is skipped if @RunOnlyWhen does not apply
     @Override
     @BeforeEach
+    @SuppressWarnings("resource")
     protected void before(final TestInfo testInfo) throws Exception {
         // check @RunOnlyWhen
         testInfo.getTestMethod().map(meth -> meth.getAnnotation(RunOnlyWhen.class)).map(RunOnlyWhen::value).ifPresent(
@@ -65,7 +66,6 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
     @Test
     public void fetchWithDefaultKeyLocation() throws Exception {
-        projectProperties.put(Property.useJschAgentProxy.name(), "false");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecret());
 
         test();
@@ -73,7 +73,6 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
     @Test
     public void fetchWithCustomKeyLocation() throws Exception {
-        projectProperties.put(Property.useJschAgentProxy.name(), "false");
         Path privateKeyPath = writePrivateKey("my_key", TestServerType.SSH_PROTOCOL.getUserSecret());
         // add .ssh/config pointing to custom key
         String sshConfigEntry = String.format("Host %s\n  IdentityFile %s", repoUri.getHost(), privateKeyPath);
@@ -85,7 +84,6 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     @Test
     @RunOnlyWhen(RunCondition.ON_CI_OR_FORCED)    // "pollutes" ssh-agent, default execution is only safe on CI
     public void fetchWithPassphraseEncryptedKey() throws Exception {
-        projectProperties.put(Property.useJschAgentProxy.name(), "true");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
         Path unencryptedPrivateKeyPath = writePrivateKey("id_rsa_unencrypted", TestServerType.SSH_PROTOCOL.getUserSecret());
         ProcessUtils.startAndWaitForProcess("ssh-add", unencryptedPrivateKeyPath.toAbsolutePath().toString());
@@ -97,7 +95,6 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
     @Test
     @RunOnlyWhen(RunCondition.ON_WINDOWS_FORCED)    // expects putty on PATH, requires user interaction and "pollutes" pageant
     public void fetchWithPassphraseEncryptedKey_manualWindowsTest() throws Exception {
-        projectProperties.put(Property.useJschAgentProxy.name(), "true");
         writePrivateKey("id_rsa", TestServerType.SSH_PROTOCOL.getUserSecretEncrypted());
         Path unencryptedPrivateKeyPath = writePrivateKey("id_rsa_unencrypted", TestServerType.SSH_PROTOCOL.getUserSecret()).toAbsolutePath();
         Path ppkPath = unencryptedPrivateKeyPath.resolveSibling("key.ppk").toAbsolutePath();
