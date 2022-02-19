@@ -475,7 +475,7 @@
                         <configuration>
                             <transformations>
                                 <transformation>
-                                    <plugin>com.vackosar.gitflowincrementalbuild.mojo.MojoParametersGeneratingByteBuddyPlugin</plugin>
+                                    <plugin>io.github.gitflowincrementalbuilder.mojo.MojoParametersGeneratingByteBuddyPlugin</plugin>
                                 </transformation>
                             </transformations>
                         </configuration>
@@ -510,7 +510,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- replace in plugin.xml and plugin-help.xml all com.vackosar.gitflowincrementalbuild.control.Property types with java.lang.String or boolean -->
+            <!-- replace in plugin.xml and plugin-help.xml all io.github.gitflowincrementalbuilder.control.Property types with java.lang.String or boolean -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
@@ -519,14 +519,14 @@
                         <replacement>
                             <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/implementation/text()</xpath>
                             <token>^.*$</token>
-                            <value>com.vackosar.gitflowincrementalbuild.mojo.FakeMojo</value>
+                            <value>io.github.gitflowincrementalbuilder.mojo.FakeMojo</value>
                         </replacement>
                         <replacement>
                             <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/description/text()</xpath>
                             <token>(?s)^.*$</token>
                             <value>This fake goal only exposes the general config properties/parameters. DO NOT EXECUTE!</value>
                         </replacement>
-                        <!-- set proper parameter types (instead of com.vackosar.gitflowincrementalbuild.control.Property) -->
+                        <!-- set proper parameter types (instead of io.github.gitflowincrementalbuilder.control.Property) -->
                         <replacement>
                             <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*/@implementation</xpath>
                             <token>^.*$</token>
