@@ -85,7 +85,7 @@ public class LocalRepoMock implements AutoCloseable {
         return remoteRepo;
     }
 
-    public Path getRepoDir() throws IOException {
+    public Path getRepoDir() {
         return repoDir;
     }
 }
