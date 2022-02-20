@@ -1,10 +1,10 @@
 # gitflow-incremental-builder (GIB)
-[![GitHub license](https://img.shields.io/github/license/gitflow-incremental-builder/gitflow-incremental-builder.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/gitflow-incremental-builder/gitflow-incremental-builder.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/blob/main/LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.gitflow-incremental-builder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/io.github.gitflow-incremental-builder/gitflow-incremental-builder)
-[![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
+[![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gitflow-incremental-builder/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-11--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amaster)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-11--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 ----
@@ -400,7 +400,7 @@ Since: 3.11.2 (replaces previously used `enabled` property)
 
 ### gib.disableIfBranchMatches
 
-Can be used to disable this extension on certain branches (e.g. `master|develop`). By default, GIB runs on all branches.
+Can be used to disable this extension on certain branches (e.g. `main|develop`). By default, GIB runs on all branches.
 
 Since: 3.11.0
 
@@ -408,7 +408,7 @@ Was renamed from `disableIfBranchRegex` in 3.13.0.
 
 ### gib.disableIfReferenceBranchMatches
 
-Can be used to disable this extension on certain _reference_ branches (e.g. `master|develop`). By default, GIB runs for all reference branches.
+Can be used to disable this extension on certain _reference_ branches (e.g. `main|develop`). By default, GIB runs for all reference branches.
 
 See also: [gib.referenceBranch](#gibreferencebranch)
 
@@ -729,7 +729,7 @@ When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides bas
 
 For HTTP(S), GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
 These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
-See also [HttpDelegatingCredentialsProvider](../master/src/main/java/io/github/gitflowincrementalbuilder/jgit/HttpDelegatingCredentialsProvider.java).
+See also [HttpDelegatingCredentialsProvider](../main/src/main/java/io/github/gitflowincrementalbuilder/jgit/HttpDelegatingCredentialsProvider.java).
 
 Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
 This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!

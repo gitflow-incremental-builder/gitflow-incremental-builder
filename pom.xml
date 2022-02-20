@@ -64,7 +64,7 @@
         <version.slf4j>1.7.32</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.10</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
-        <version.bytebuddy>1.12.7</version.bytebuddy>
+        <version.bytebuddy>1.12.8</version.bytebuddy>
         <version.junit>5.8.2</version.junit>
         <version.archunit>0.23.0</version.archunit>
         <version.assertj>3.22.0</version.assertj>
@@ -78,18 +78,18 @@
         <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.plexus-component-metadata>2.1.1</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.2.0</version.maven-resources-plugin>
-        <version.maven-compiler-plugin>3.9.0</version.maven-compiler-plugin>
+        <version.maven-compiler-plugin>3.10.0</version.maven-compiler-plugin>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
-        <version.maven-javadoc-plugin>3.3.1</version.maven-javadoc-plugin>
+        <version.maven-javadoc-plugin>3.3.2</version.maven-javadoc-plugin>
         <version.maven-jar-plugin>3.2.2</version.maven-jar-plugin>
         <version.maven-help-plugin>3.2.0</version.maven-help-plugin>
         <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
-        <version.maven-site-plugin>3.10.0</version.maven-site-plugin>
+        <version.maven-site-plugin>3.11.0</version.maven-site-plugin>
         <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
         <version.maven-deploy-plugin>3.0.0-M2</version.maven-deploy-plugin>
         <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
-        <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
+        <version.nexus-staging-maven-plugin>1.6.11</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.9.0</version.versions-maven-plugin>
         <version.maven-release-plugin>3.0.0-M5</version.maven-release-plugin>
         <version.spotbugs-maven-plugin>4.5.3.0</version.spotbugs-maven-plugin>
