@@ -2,7 +2,7 @@
 
 A brief description of how to release/deploy GIB.
 
-Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin).
+Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](https://github.com/sonatype/nexus-maven-plugins).
 
 ## Prerequisites
 

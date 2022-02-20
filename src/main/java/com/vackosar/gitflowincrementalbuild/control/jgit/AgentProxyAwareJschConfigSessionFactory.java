@@ -29,7 +29,7 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
  * </p>
  * <p>
  * Design note: This factory does <b>not</b> simply set {@link RemoteIdentityRepository} via {@link JSch#setIdentityRepository(IdentityRepository)} as
- * <a href="https://github.com/ymnk/jsch-agent-proxy/blob/master/examples/src/main/java/com/jcraft/jsch/agentproxy/examples/JSchWithAgentProxy.java#L32">
+ * <a href="https://github.com/ymnk/jsch-agent-proxy/blob/main/examples/src/main/java/com/jcraft/jsch/agentproxy/examples/JSchWithAgentProxy.java#L32">
  * advertised</a> by {@code jsch-agent-proxy}. The reason for that is the following special handling of default {@code Identites} (like {@code ~/.ssh/id_rsa})
  * <i>in case those {@code Identites} are encrypted</i> (which is typically the case when agent access is needed):
  * <ul>

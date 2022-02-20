@@ -44,6 +44,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${version.maven-jar-plugin}</version>
+                    <configuration>
+                        <!-- get's rid of "[WARNING] JAR will be empty - no content was marked for inclusion!" -->
+                        <forceCreation>true</forceCreation>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
