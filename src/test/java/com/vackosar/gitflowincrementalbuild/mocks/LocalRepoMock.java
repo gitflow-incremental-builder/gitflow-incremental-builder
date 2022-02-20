@@ -50,8 +50,8 @@ public class LocalRepoMock implements AutoCloseable {
         config.clear();
         config.setString("remote", "origin" ,"fetch", "+refs/heads/*:refs/remotes/origin/*");
         config.setString("remote", "origin" ,"push", "+refs/heads/*:refs/remotes/origin/*");
-        config.setString("branch", "master", "remote", "origin");
-        config.setString("baseBranch", "master", "merge", "refs/heads/master");
+        config.setString("branch", "main", "remote", "origin");
+        config.setString("baseBranch", "main", "merge", "refs/heads/main");
         config.setString("push", null, "default", "current");
 
         // disable all gc
@@ -63,8 +63,8 @@ public class LocalRepoMock implements AutoCloseable {
         RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
         URIish uri = new URIish(repoUrl);
         remoteConfig.addURI(uri);
-        remoteConfig.addFetchRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
-        remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
+        remoteConfig.addFetchRefSpec(new RefSpec("refs/heads/main:refs/heads/main"));
+        remoteConfig.addPushRefSpec(new RefSpec("refs/heads/main:refs/heads/main"));
         remoteConfig.update(config);
 
         config.save();
