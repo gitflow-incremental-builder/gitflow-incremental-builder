@@ -158,9 +158,9 @@ public class PropertyTest {
 
     @Test
     public void getValueOpt_notEmpty() {
-        Optional<String> valueOpt = Property.disableIfBranchMatches.getValueOpt(NO_PROPS, propsWith(Property.disableIfBranchMatches.prefixedName(), "master"));
+        Optional<String> valueOpt = Property.disableIfBranchMatches.getValueOpt(NO_PROPS, propsWith(Property.disableIfBranchMatches.prefixedName(), "main"));
 
-        assertThat(valueOpt).isEqualTo(Optional.of("master"));
+        assertThat(valueOpt).isEqualTo(Optional.of("main"));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class PropertyTest {
         System.setProperty(Property.disable.prefixedName(), "");
         System.setProperty(Property.disableBranchComparison.prefixedShortName(), "true");
 
-        Property.checkProperties(propsWith(Property.disableIfBranchMatches.name(), "master"),
+        Property.checkProperties(propsWith(Property.disableIfBranchMatches.name(), "main"),
                 propsWith(Property.buildAllIfNoChanges.prefixedName(), "true"));
         // no exception
     }
@@ -185,7 +185,7 @@ public class PropertyTest {
         System.setProperty(Property.PREFIX + "bar", "true");
 
         assertThatIllegalArgumentException().isThrownBy(() -> Property.checkProperties(
-                propsWith("baz", "master"),
+                propsWith("baz", "main"),
                 propsWith(Property.PREFIX + "bing", "true")))
                 .withMessageContaining("foo")
                 .withMessageContaining("bar")

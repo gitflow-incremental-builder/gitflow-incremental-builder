@@ -184,7 +184,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void enabledForCurrentBranch() throws MavenExecutionException {
-        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
 
@@ -206,7 +206,7 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void disabledForCurrentBranch() throws MavenExecutionException {
-        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "master|develop|(release/.+)|(hotfix/.+)");
+        projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
 

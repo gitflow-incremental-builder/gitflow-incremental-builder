@@ -48,8 +48,8 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    - name: Set quickly if on fork master
-      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && endsWith(github.ref, '/master') && github.event.inputs.runSecondary != 'yes'
+    - name: Set quickly if on fork main
+      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && (endsWith(github.ref, '/main') || endsWith(github.ref, '/3.x')) && github.event.inputs.runSecondary != 'yes'
       shell: bash
       run: echo "MVN_DEFAULT_ARGS=${MVN_DEFAULT_ARGS} -Dquickly" >> $GITHUB_ENV
     - name: Maven test
