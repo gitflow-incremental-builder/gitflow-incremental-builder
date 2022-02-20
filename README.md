@@ -8,6 +8,9 @@
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 ----
+> ### :warning: `groupId` has changed! :warning:
+> As of GIB 4.0.0, the `groupId` has changed from `com.vackosar.gitflowincrementalbuilder` to `io.github.gitflow-incremental-builder`.
+----
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>

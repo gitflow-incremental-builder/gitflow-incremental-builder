@@ -65,7 +65,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     }
 
     private void logHelp() {
-        logger.info("gitflow-incremental-builder {} help:\n{}\nFor more help see: {}/tree/version/{}#configuration\n",
+        logger.info("gitflow-incremental-builder {} help:\n{}\nFor more help see: {}/tree/v{}#configuration\n",
                 implVersion,
                 Property.exemplifyAll(),
                 "https://github.com/gitflow-incremental-builder/gitflow-incremental-builder",

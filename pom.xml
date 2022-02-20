@@ -413,7 +413,7 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>${version.maven-release-plugin}</version>
                     <configuration>
-                        <tagNameFormat>version/@{project.version}</tagNameFormat>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
                         <goals>deploy</goals>
                         <scmCommentPrefix>[skip ci] </scmCommentPrefix>
                     </configuration>
