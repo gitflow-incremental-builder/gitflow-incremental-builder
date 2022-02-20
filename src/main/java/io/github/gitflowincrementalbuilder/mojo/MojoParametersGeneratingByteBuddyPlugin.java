@@ -10,8 +10,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import io.github.gitflowincrementalbuilder.control.Property;
-
+import io.github.gitflowincrementalbuilder.config.Property;
 import net.bytebuddy.build.BuildLogger;
 import net.bytebuddy.build.Plugin;
 import net.bytebuddy.description.type.TypeDescription;

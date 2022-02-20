@@ -10,8 +10,6 @@ import java.nio.file.StandardCopyOption;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
-import io.github.gitflowincrementalbuilder.control.DifferentFilesTest;
-
 public class EmptyLocalRepoMock implements AutoCloseable {
 
     static {
@@ -45,7 +43,7 @@ public class EmptyLocalRepoMock implements AutoCloseable {
     }
 
     public static void withBasicPom(Path allReposBaseDir, Callback callback) throws IOException, URISyntaxException, GitAPIException {
-        try (InputStream basicPomData = DifferentFilesTest.class.getResourceAsStream("/pom-basic.xml");
+        try (InputStream basicPomData = EmptyLocalRepoMock.class.getResourceAsStream("/pom-basic.xml");
                 EmptyLocalRepoMock emptyLocalRepoMock = new EmptyLocalRepoMock(allReposBaseDir)) {
             Files.copy(basicPomData, emptyLocalRepoMock.repoDir.resolve("pom.xml"), StandardCopyOption.REPLACE_EXISTING);
 

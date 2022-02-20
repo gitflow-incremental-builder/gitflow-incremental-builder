@@ -729,7 +729,7 @@ When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides bas
 
 For HTTP(S), GIB will query the credentials from the local native Git executable via [`git credential fill`](https://git-scm.com/docs/git-credential).<br/>
 These credentials are then forwarded to JGit and are not persisted in any way. GIB will only cache the credentials _transiently_ for a very short time and will actively remove them as soon as possible.<br/>
-See also [HttpDelegatingCredentialsProvider](../master/src/main/java/io/github/gitflowincrementalbuilder/control/jgit/HttpDelegatingCredentialsProvider.java).
+See also [HttpDelegatingCredentialsProvider](../master/src/main/java/io/github/gitflowincrementalbuilder/jgit/HttpDelegatingCredentialsProvider.java).
 
 Since `git credential fill` will trigger all configured [credential helpers](https://git-scm.com/docs/gitcredentials) (if any), you _might_ see a popup dialog box asking for credentials.<br/>
 This only happens in case the respective helper was _not_ able to provide the credentials. Such a dialog box is _not_ created by GIB, instead it is spawned by a configured credential helper!

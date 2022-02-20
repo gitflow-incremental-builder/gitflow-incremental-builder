@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import io.github.gitflowincrementalbuilder.boundary.Configuration;
-import io.github.gitflowincrementalbuilder.control.Property;
+import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.mojo.MojoParametersGeneratingByteBuddyPlugin;
 
 /**

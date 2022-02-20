@@ -1,6 +1,7 @@
 package io.github.gitflowincrementalbuilder.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -35,9 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.BaseRepoTest;
-import io.github.gitflowincrementalbuilder.ProcessUtils;
-import io.github.gitflowincrementalbuilder.control.DifferentFiles;
-import io.github.gitflowincrementalbuilder.control.Property;
+import io.github.gitflowincrementalbuilder.config.Property;
+import io.github.gitflowincrementalbuilder.util.ProcessUtils;
 
 /**
  * Integration test base running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
@@ -61,6 +61,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     private static final String QUARKUS_POMFILE_ARG = "--file=quarkus-scenario/pom.xml";
 
     private static final Pattern LOG_LINE_FILTER_PATTERN = Pattern.compile("^\\[.*INFO.*\\] Download(ing|ed) from local.central: .*");
+    
+    private static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
     protected static String gibVersion;
     // bug in 3.3.9: https://issues.apache.org/jira/browse/MNG-6173 "MavenSession.getAllProjects() should return all projects in the reactor"
@@ -155,7 +157,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     @Test
     public void worktreeFails() throws Exception {
         final String output = executeBuild("--file=wrkf2/parent/pom.xml");
-        assertThat(output).contains(DifferentFiles.UNSUPPORTED_WORKTREE);
+        assertThat(output).contains(UNSUPPORTED_WORKTREE);
     }
 
     @Test

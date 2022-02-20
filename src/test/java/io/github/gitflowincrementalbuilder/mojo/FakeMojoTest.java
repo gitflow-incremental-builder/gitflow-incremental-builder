@@ -33,8 +33,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import io.github.gitflowincrementalbuilder.boundary.Configuration;
-import io.github.gitflowincrementalbuilder.control.Property;
+import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Tests in the broader context of {@link FakeMojo}.

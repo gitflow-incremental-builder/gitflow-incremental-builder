@@ -11,10 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 
-import io.github.gitflowincrementalbuilder.control.Property;
+import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.mocks.LocalRepoMock;
 import io.github.gitflowincrementalbuilder.mocks.MavenSessionMock;
 import io.github.gitflowincrementalbuilder.mocks.server.TestServerType;
+import io.github.gitflowincrementalbuilder.util.ProcessUtils;
 
 public abstract class BaseRepoTest {
 

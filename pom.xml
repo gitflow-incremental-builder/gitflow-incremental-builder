@@ -66,6 +66,7 @@
         <version.javax.inject>1</version.javax.inject>
         <version.bytebuddy>1.12.7</version.bytebuddy>
         <version.junit>5.8.2</version.junit>
+        <version.archunit>0.23.0</version.archunit>
         <version.assertj>3.22.0</version.assertj>
         <version.mockito>4.3.1</version.mockito>
         <version.jetty>10.0.7</version.jetty>
@@ -204,6 +205,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${version.mockito}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${version.archunit}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -510,7 +517,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- replace in plugin.xml and plugin-help.xml all io.github.gitflowincrementalbuilder.control.Property types with java.lang.String or boolean -->
+            <!-- replace in plugin.xml and plugin-help.xml all io.github.gitflowincrementalbuilder.config.Property types with java.lang.String or boolean -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
@@ -526,7 +533,7 @@
                             <token>(?s)^.*$</token>
                             <value>This fake goal only exposes the general config properties/parameters. DO NOT EXECUTE!</value>
                         </replacement>
-                        <!-- set proper parameter types (instead of io.github.gitflowincrementalbuilder.control.Property) -->
+                        <!-- set proper parameter types (instead of io.github.gitflowincrementalbuilder.config.Property) -->
                         <replacement>
                             <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*/@implementation</xpath>
                             <token>^.*$</token>

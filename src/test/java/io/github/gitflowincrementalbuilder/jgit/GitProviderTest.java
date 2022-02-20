@@ -20,10 +20,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.github.gitflowincrementalbuilder.boundary.Configuration;
-import io.github.gitflowincrementalbuilder.control.Property;
-import io.github.gitflowincrementalbuilder.control.jgit.GitProvider;
-import io.github.gitflowincrementalbuilder.entity.SkipExecutionException;
+import io.github.gitflowincrementalbuilder.SkipExecutionException;
+import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.mocks.EmptyLocalRepoMock;
 
 @ExtendWith(MockitoExtension.class)
