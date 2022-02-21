@@ -3,13 +3,45 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A Maven extension for incremental building of multi-module projects when using Git Flow (or Git in general).</description>
+    <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
+
+    <packaging>pom</packaging>
+
+    <scm>
+        <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
+        <connection>scm:git:https://github.com/gitflow-incremental-builder/gitflow-incremental-builder.git</connection>
+        <developerConnection>scm:git:https://github.com/gitflow-incremental-builder/gitflow-incremental-builder.git</developerConnection>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Vaclav Kosar</name>
+            <url>https://github.com/vackosar</url>
+            <id>vackosar</id>
+        </developer>
+        <developer>
+            <name>Falko Modler</name>
+            <url>https://github.com/famod</url>
+            <id>famod</id>
+        </developer>
+    </developers>
 
     <distributionManagement>
         <relocation>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
+            <version>4.0.0</version>
             <message>
                 From version 4 onwards, ${project.groupId}:${project.artifactId} was relocated to io.github.gitflow-incremental-builder:${project.artifactId}. Please update its groupId in the extensions or plugins declaration in your project configuration. For more information about this change please refer to https://github.com/gitflow-incremental-builder/gitflow-incremental-builder
             </message>
@@ -22,6 +54,32 @@
         deploy SNAPSHOT:
             mvn -Prelease,ossrh deploy:deploy-file -Dfile=relocation/pom.xml -DpomFile=relocation/pom.xml -DrepositoryId=ossrh -Durl=https://oss.sonatype.org/content/repositories/snapshots
         deploy:
-            mvn -Prelease,ossrh deploy:deploy-file -Dfile=relocation/pom.xml -DpomFile=relocation/pom.xml -DrepositoryId=ossrh -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
+            mvn -Prelease,ossrh gpg:sign-and-deploy-file -Dfile=relocation/pom.xml -DpomFile=relocation/pom.xml -DrepositoryId=ossrh -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
+            (might actually be better to do deploy instead of gpg:sign-and-deploy-file to leverage nexus-staging-plugin features)
     -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.0.1</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
