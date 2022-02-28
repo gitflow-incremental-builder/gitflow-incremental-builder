@@ -21,8 +21,6 @@
 
     <!-- filter "Detected Java version 17.0.1" -->
     <logger name="com.tngtech.archunit.core.PluginLoader" level="WARN" />
-    <!-- https://github.com/TNG/ArchUnit/issues/802 -->
-    <logger name="com.tngtech.archunit.core.importer.DependencyResolutionProcess" level="WARN" />
 
     <root level="DEBUG">
         <appender-ref ref="CONSOLE" />
