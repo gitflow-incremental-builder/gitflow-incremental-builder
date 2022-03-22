@@ -6,15 +6,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -240,8 +243,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         setUpstreamProjects(dependsOnIntermediateModuleMock, unchangedIntermediateModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
-        setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, unchangedIntermediateModuleMock);
+        setDownstreamProjectsNonTransitive(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
 
         addGibProperty(Property.buildUpstreamMode, "changed");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
@@ -312,8 +315,8 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
 
         setUpstreamProjects(dependsOnIntermediateModuleMock, unchangedIntermediateModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
-        setDownstreamProjects(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, unchangedIntermediateModuleMock);
+        setDownstreamProjectsNonTransitive(unchangedIntermediateModuleMock, dependsOnIntermediateModuleMock);
 
         addGibProperty(Property.buildUpstreamMode, "impacted");
         addGibProperty(Property.argsForUpstreamModules, "foo=bar");
@@ -350,7 +353,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -365,7 +368,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
 
         addGibProperty(Property.buildDownstream, "false");
 
@@ -380,7 +383,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
 
         addGibProperty(Property.buildDownstream, "false");
         addGibProperty(Property.buildAll, "true");
@@ -401,11 +404,12 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
         when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        // changedModuleMock <- dependentModuleMock (scope compile) is set up already
 
         underTest.act(config());
 
@@ -418,7 +422,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", true);    // changed, sic!
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -435,7 +439,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -453,7 +457,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -461,6 +465,9 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         addMockedTestJarExecution(changedModuleMock);
         Dependency dep = buildTestJarDependency(changedModuleMock);
         when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(dep));
+
+        Dependency depTransitive = buildTestJarDependency(dependentModuleMock);
+        when(transitiveDependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depTransitive));
 
         underTest.act(config());
 
@@ -473,7 +480,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -497,7 +504,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
 
-        setUpAndDownstreamsForTestOnlyScenarioTests(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
 
         // buildDownstream is enabled by default!
 
@@ -510,6 +517,93 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         underTest.act(config());
 
         verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, /* sic! */ transitiveDependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testDep() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        Dependency depToChangedModuleMock = buildDependency(changedModuleMock, "test");
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depToChangedModuleMock));
+        // depToDependentModuleMock <- transitiveDependentModuleMock (scope compile) is set up already
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testDep_minimal() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        Dependency depToChangedModuleMock = buildDependency(changedModuleMock, "test");
+        depToChangedModuleMock.setType("pom");
+        Exclusion exclusion = new Exclusion();
+        exclusion.setGroupId("*");
+        exclusion.setArtifactId("*");
+        depToChangedModuleMock.setExclusions(Collections.singletonList(exclusion));
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depToChangedModuleMock));
+        // depToDependentModuleMock <- transitiveDependentModuleMock (scope compile) is set up already
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_parent() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.emptyList());
+        when(changedModuleMock.getPackaging()).thenReturn("pom");
+        when(dependentModuleMock.getParent()).thenReturn(changedModuleMock);
+        // depToDependentModuleMock <- transitiveDependentModuleMock (scope compile) is set up already
+
+        Mockito.clearInvocations(dependentModuleMock);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+        verify(dependentModuleMock, never()).getDependencies();
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_noDep() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.emptyList());
+        // depToDependentModuleMock <- transitiveDependentModuleMock (scope compile) is set up already
+
+        Mockito.clearInvocations(dependentModuleMock);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+        verify(dependentModuleMock).getDependencies();
     }
 
     @Test
@@ -615,7 +709,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
-        setDownstreamProjects(changedProjectMock, dependentWar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
@@ -631,7 +725,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentJar = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
-        setDownstreamProjects(changedProjectMock, dependentWar, dependentJar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar, dependentJar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
@@ -647,7 +741,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentEar = addModuleMock(AID_MODULE_B + "-dependent-ear", false, "ear");
 
-        setDownstreamProjects(changedProjectMock, dependentWar, dependentEar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar, dependentEar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war,ear");
 
@@ -662,7 +756,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
-        setDownstreamProjects(changedProjectMock, dependentWar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
         addGibProperty(Property.buildAll, "true");
@@ -678,7 +772,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
-        setDownstreamProjects(changedProjectMock, dependentWar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
         addGibProperty(Property.forceBuildModules, dependentWar.getArtifactId());
@@ -710,7 +804,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, true, "war");
 
         // war module is changed, must be retained - even if depending on changedProjectMock!
-        setDownstreamProjects(changedProjectMock, dependentWar);
+        setDownstreamProjectsNonTransitive(changedProjectMock, dependentWar);
 
         addGibProperty(Property.excludeDownstreamModulesPackagedAs, "war");
 
@@ -724,36 +818,32 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
             MavenProject dependsOnBothModuleMock) {
         // dependsOnBothModuleMock directly depends on both changedModuleMock & unchangedModuleMock + transitively on moduleA
         setUpstreamProjects(dependsOnBothModuleMock, changedModuleMock, unchangedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependsOnBothModuleMock);
-        setDownstreamProjects(unchangedModuleMock, dependsOnBothModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependsOnBothModuleMock);
+        setDownstreamProjectsNonTransitive(unchangedModuleMock, dependsOnBothModuleMock);
         // downstream of moduleA are handled automatically in addModuleMock()
     }
 
-    public void setUpAndDownstreamsForTestOnlyScenarioTests(MavenProject changedModuleMock,
+    private void setUpAndDownstreamsForThreeChainedModules(MavenProject changedModuleMock,
             MavenProject dependentModuleMock, MavenProject transitiveDependentModuleMock) {
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
         setUpstreamProjects(transitiveDependentModuleMock, dependentModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
         setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
-        setDownstreamProjects(dependentModuleMock, transitiveDependentModuleMock);
         setDownstreamProjectsNonTransitive(dependentModuleMock, transitiveDependentModuleMock);
     }
 
     private static void addMockedTestJarExecution(MavenProject module) {
-        Plugin pluginMock = mock(Plugin.class);
-        PluginExecution execMock = mock(PluginExecution.class);
+        Plugin pluginMock = mock(Plugin.class, withSettings().lenient());
+        when(pluginMock.getArtifactId()).thenReturn("maven-jar-plugin");
+        PluginExecution execMock = mock(PluginExecution.class, withSettings().lenient());
         when(execMock.getGoals()).thenReturn(Collections.singletonList("test-jar"));
+        when(execMock.getConfiguration()).thenReturn(mock(Xpp3Dom.class));  // omit explicit classifier here
         when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));
         when(module.getBuildPlugins()).thenReturn(Collections.singletonList(pluginMock));
     }
 
-    public Dependency buildTestJarDependency(MavenProject changedModuleMock) {
-        Dependency dep = new Dependency();
+    private Dependency buildTestJarDependency(MavenProject changedModuleMock) {
+        Dependency dep = buildDependency(changedModuleMock, "test");
         dep.setType("test-jar");
-        dep.setArtifactId(changedModuleMock.getArtifactId());
-        dep.setGroupId(changedModuleMock.getGroupId());
-        dep.setVersion(changedModuleMock.getVersion());
-        dep.setScope("test");
         return dep;
     }
 }

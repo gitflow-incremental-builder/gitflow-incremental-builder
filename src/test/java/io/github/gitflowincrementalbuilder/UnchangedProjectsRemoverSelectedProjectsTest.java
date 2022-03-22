@@ -144,8 +144,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
         overrideProjects(moduleB, moduleC);
@@ -169,8 +169,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
         overrideProjects(moduleB, moduleC);
@@ -196,14 +196,14 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         MavenProject moduleD = addModuleMock(AID_MODULE_D, false);
         MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
         setUpstreamProjects(moduleE, moduleD, moduleA);
-        setDownstreamProjects(moduleD, moduleE);
-        setDownstreamProjects(moduleA, moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleA, moduleD);
 
         setProjectSelections(moduleB, moduleD);
         overrideProjects(moduleB, moduleC, moduleD, moduleE);
@@ -228,8 +228,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
 
@@ -320,8 +320,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     public void moduleAChanged_makeUpstream_moduleCSelected() {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
-        setDownstreamProjects(moduleB, moduleC);
         setUpstreamProjects(moduleC, moduleA, moduleB);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
 
         setProjectSelections(moduleC);
 
@@ -345,8 +345,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
 
@@ -369,8 +369,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
 
@@ -394,8 +394,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
 
@@ -419,8 +419,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
         overrideProjects(moduleA, moduleB);
@@ -444,8 +444,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleA);
         overrideProjects(moduleB, moduleC);
@@ -463,8 +463,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleA);
         overrideProjects(moduleB, moduleC);
@@ -484,8 +484,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleA);
         overrideProjects(moduleB, moduleC);
@@ -600,8 +600,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectSelections(moduleB);
 
@@ -621,8 +621,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
@@ -638,8 +638,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
@@ -659,8 +659,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
@@ -682,8 +682,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
@@ -704,8 +704,8 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         setProjectDeSelections(moduleB);
         overrideProjects(moduleA, moduleC);
@@ -728,14 +728,14 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         MavenProject moduleD = addModuleMock(AID_MODULE_D, true);
         MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
         setUpstreamProjects(moduleE, moduleD, moduleA);
-        setDownstreamProjects(moduleD, moduleE);
-        setDownstreamProjects(moduleA, moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleA, moduleD);
 
         setProjectSelections(moduleC, moduleE);
 
@@ -762,14 +762,14 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
-        setDownstreamProjects(moduleB, moduleC);
-        setDownstreamProjects(moduleA, moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleB, moduleC);
+        setDownstreamProjectsNonTransitive(moduleA, moduleB);
 
         MavenProject moduleD = addModuleMock(AID_MODULE_D, true);
         MavenProject moduleE = addModuleMock(AID_MODULE_E, false);
         setUpstreamProjects(moduleE, moduleD, moduleA);
-        setDownstreamProjects(moduleD, moduleE);
-        setDownstreamProjects(moduleA, moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleD, moduleE);
+        setDownstreamProjectsNonTransitive(moduleA, moduleD);
 
         setProjectSelections(moduleC, moduleE);
 
