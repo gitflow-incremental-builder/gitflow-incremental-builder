@@ -70,7 +70,7 @@
         <version.archunit>0.23.1</version.archunit>
         <version.assertj>3.22.0</version.assertj>
         <version.mockito>4.3.1</version.mockito>
-        <version.jetty>10.0.8</version.jetty>
+        <version.jetty>10.0.9</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-enforcer-plugin>3.0.0</version.maven-enforcer-plugin>
