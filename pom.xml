@@ -58,7 +58,6 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.1.0.202203080745-r</version.jgit>
-        <version.plexus-utils>3.4.1</version.plexus-utils>
         <version.maven-core>3.8.4</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.6.4</version.maven-plugin>
@@ -133,12 +132,6 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>${version.plexus-utils}</version>
-            <!-- *not* provided, otherwise ITs will fail -->
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
