@@ -62,7 +62,7 @@ public class DifferentFiles {
                 paths.addAll(worker.getChangesFromStatus());
             }
         } catch (GitAPIException | IOException e) {
-            throw new RuntimeException("Failed to get file differences", e);
+            throw new IllegalStateException("Failed to get file differences", e);
         } finally {
             if (worker != null) {
                 worker.credentialsProvider.resetAll();
