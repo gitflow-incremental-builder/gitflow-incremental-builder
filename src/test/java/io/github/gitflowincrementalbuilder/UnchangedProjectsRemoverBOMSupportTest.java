@@ -154,7 +154,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
         installOrigModelWithDepMgmt(unchangedModuleMockC)
                 .addDependency(buildBOMDependency(changedBOMModuleMock));
 
-        setDownstreamProjects(unchangedModuleMockC, unchangedModuleMockD);
+        setDownstreamProjectsNonTransitive(unchangedModuleMockC, unchangedModuleMockD);
         setUpstreamProjects(unchangedModuleMockD, moduleA, unchangedModuleMockC);
 
         setProjectDeSelections(unchangedModuleMockD);
@@ -195,7 +195,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
         installOrigModelWithDepMgmt(unchangedModuleMockC)
                 .addDependency(buildBOMDependency(changedBOMModuleMock));
 
-        setDownstreamProjects(unchangedModuleMockC, unchangedModuleMockD);
+        setDownstreamProjectsNonTransitive(unchangedModuleMockC, unchangedModuleMockD);
         setUpstreamProjects(unchangedModuleMockD, moduleA, unchangedModuleMockC);
 
         setProjectDeSelections(unchangedModuleMockD);

@@ -24,12 +24,14 @@ import org.apache.commons.lang3.Validate;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
@@ -67,6 +69,9 @@ abstract class BaseUnchangedProjectsRemoverTest {
 
     @Mock(lenient = true)
     protected ChangedProjects changedProjectsMock;
+
+    @Spy
+    protected DownstreamCalculator downstreamCalculator;
 
     @InjectMocks
     protected UnchangedProjectsRemover underTest;
@@ -132,9 +137,9 @@ abstract class BaseUnchangedProjectsRemoverTest {
         if (moduleA != null) {  // support the creation of module-A itself via this method
             setUpstreamProjects(newModuleMock, moduleA);
             // update downstream of module-A
-            Set<MavenProject> downstreamOfModuleA = new LinkedHashSet<>(projectDependencyGraphMock.getDownstreamProjects(moduleA, true));
+            Set<MavenProject> downstreamOfModuleA = new LinkedHashSet<>(projectDependencyGraphMock.getDownstreamProjects(moduleA, false));
             downstreamOfModuleA.add(newModuleMock);
-            setDownstreamProjects(moduleA, downstreamOfModuleA.toArray(new MavenProject[0]));
+            setDownstreamProjectsNonTransitive(moduleA, downstreamOfModuleA.toArray(new MavenProject[0]));
         }
 
         return newModuleMock;
@@ -144,12 +149,24 @@ abstract class BaseUnchangedProjectsRemoverTest {
         when(projectDependencyGraphMock.getUpstreamProjects(module, true)).thenReturn(Arrays.asList(upstreamModules));
     }
 
-    protected void setDownstreamProjects(MavenProject module, MavenProject... downstreamModules) {
-        when(projectDependencyGraphMock.getDownstreamProjects(module, true)).thenReturn(Arrays.asList(downstreamModules));
-    }
-
     protected void setDownstreamProjectsNonTransitive(MavenProject module, MavenProject... downstreamModules) {
         when(projectDependencyGraphMock.getDownstreamProjects(module, false)).thenReturn(Arrays.asList(downstreamModules));
+        Dependency dep = buildDependency(module, "compile");
+        for (MavenProject downstreamModule : downstreamModules) {
+            List<Dependency> deps = new ArrayList<>();
+            deps.addAll(downstreamModule.getDependencies());
+            deps.add(dep);
+            when(downstreamModule.getDependencies()).thenReturn(Collections.unmodifiableList(deps));
+        }
+    }
+
+    protected Dependency buildDependency(MavenProject module, String scope) {
+        Dependency dep = new Dependency();
+        dep.setArtifactId(module.getArtifactId());
+        dep.setGroupId(module.getGroupId());
+        dep.setVersion(module.getVersion());
+        dep.setScope(scope);
+        return dep;
     }
 
     protected void addGibProperty(Property property, String value) {

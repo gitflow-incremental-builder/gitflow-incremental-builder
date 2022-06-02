@@ -68,7 +68,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         MavenProject independentModuleMock = addModuleMock(AID_MODULE_D, false);
 
         setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
-        setDownstreamProjects(changedModuleMock, dependentModuleMock);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
         setUpstreamProjects(independentModuleMock, moduleA);
 
         underTest.act(config());
