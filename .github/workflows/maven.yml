@@ -118,8 +118,13 @@ jobs:
             maven-version: 3.6.3
           }
           - {
-            name: "JDK 18 EA & Maven 3.8.6",
-            java-version: 18-ea,
+            name: "JDK 18 & Maven 3.8.6",
+            java-version: 18,
+            maven-version: 3.8.6
+          }
+          - {
+            name: "JDK 19 EA & Maven 3.8.6",
+            java-version: 19-ea,
             maven-version: 3.8.6
           }
 
