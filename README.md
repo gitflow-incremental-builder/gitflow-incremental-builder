@@ -4,7 +4,7 @@
 [![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gitflow-incremental-builder/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://www.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-11--17-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-11_17_18_19--ea-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 ----
@@ -98,7 +98,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.1.0</version>
+            <version>4.1.1</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -117,7 +117,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.1.0</version>
+            <version>4.1.1</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -190,7 +190,7 @@ $ cat pom.xml
             <extension>
                 <groupId>io.github.gitflow-incremental-builder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>4.1.0</version>
+                <version>4.1.1</version>
             </extension>
         </extensions>
     </build>
