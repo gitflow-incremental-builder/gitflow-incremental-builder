@@ -57,7 +57,7 @@
         <maven.compiler.release>11</maven.compiler.release>
 
         <!-- Dependency versions -->
-        <version.jgit>6.2.0.202206071550-r</version.jgit>
+        <version.jgit>6.3.0.202209071007-r</version.jgit>
         <version.maven-core>3.8.6</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.6.4</version.maven-plugin>
