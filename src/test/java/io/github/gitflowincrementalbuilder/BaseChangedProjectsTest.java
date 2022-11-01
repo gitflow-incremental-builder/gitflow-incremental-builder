@@ -131,7 +131,19 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
         assertExpectedProjectsFound(expected);
     }
 
-    public List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) {
+    @Test
+    public void foo() throws Exception {
+        projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        Path testProjectPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("src/java"));
+        Files.createFile(testProjectPath.resolve("pom.xml"));
+
+        final Set<Path> expected = Collections.emptySet();
+
+        assertExpectedProjectsFound(expected);
+    }
+
+    private List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) {
         Set<MavenProject> foundProjects = underTest.get(config());
         final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)
