@@ -29,7 +29,7 @@ public class ArchitectureTest {
                     .and().areNotAssignableTo(MojoParametersGeneratingByteBuddyPlugin.class)
                     .and(new DescribedPredicate<JavaClass>("are only called from classes that reside in same package") {
                             @Override
-                            public boolean apply(final JavaClass cls) {
+                            public boolean test(final JavaClass cls) {
                                 return cls.getAccessesToSelf()
                                     .stream()
                                     .map(JavaAccess::getOriginOwner)
