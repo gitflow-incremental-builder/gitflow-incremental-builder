@@ -415,7 +415,7 @@ Was renamed from `disableIfBranchRegex` in 3.13.0.
 
 ### gib.disableIfReferenceBranchMatches
 
-Can be used to disable this extension on certain _reference_ branches (e.g. `main|develop`). By default, GIB runs for all reference branches.
+Can be used to disable this extension on certain _reference_ branches (e.g. `origin/(main|develop)`). By default, GIB runs for all reference branches.
 
 See also: [gib.referenceBranch](#gibreferencebranch)
 
@@ -495,9 +495,9 @@ Can be used to exclude certain changed files from being detected as changed, red
 
 The regular expression does _not_ need to describe the entire (absolute) path, but only the relevant part _inside_ the git repository context. Example:
 ```
-/tmp/repo/blacklisted/some-file.txt
+/tmp/repo/excluded/some-file.txt
 ```
-will be excluded when using `-Dgib.excludePathsMatching=blacklisted` or `-Dgib.excludePathsMatching=some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
+will be excluded when using `-Dgib.excludePathsMatching=.*excluded.*` or `-Dgib.excludePathsMatching=.*some-file\..*` etc., but is _not_ excluded when adding to the regular expression anything _outside_ of the git repository context like `/tmp/repo` or `repo`.
 
 This the opposite of [gib.includePathsMatching](#gibincludepathsmatching) which can be combined with this property, but `gib.excludePathsMatching` will take precedence.
 
