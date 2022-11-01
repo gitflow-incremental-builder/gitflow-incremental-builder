@@ -343,6 +343,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${version.maven-javadoc-plugin}</version>
                     <configuration>
+                        <!-- exclude 'missing' from doclint for now (avoids 'warning: no comment' spam), see also:
+                             https://docs.oracle.com/en/java/javase/17/docs/specs/man/javadoc.html#additional-options-provided-by-the-standard-doclet -->
+                        <doclint>accessibility,html,reference,syntax</doclint>
                         <source>${maven.compiler.source}</source>
                     </configuration>
                 </plugin>
