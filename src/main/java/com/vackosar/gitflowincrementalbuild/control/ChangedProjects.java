@@ -51,7 +51,7 @@ public class ChangedProjects {
         Path path = stripSrcSubpath(diffPath, projectRoot);
         // Files.exist() to spot changes in non-reactor module (path will then yield a null changedReactorProject).
         // Without this check, the changed path would be wrongly mapped to the "closest" reactor module (which might not have changed at all!).
-        while (path != null && !modulesPathMap.containsKey(path) && !Files.exists(path.resolve("pom.xml"))) {
+        while (path != null && !modulesPathMap.containsKey(path) && !pomXmlExistsIn(path)) {
             path = path.getParent();
         }
         if (path == null) {
@@ -81,11 +81,19 @@ public class ChangedProjects {
         for (Path element : relativePath) {
             // note: just "src" is good enough for 99.9% of projects,
             // for the rest we'd need to evaluate (test) compile source roots and resources of the "closest" module
-            if (element.getFileName().toString().equals("src")) {
-                return projectRoot.resolve(relativePath.subpath(0, elementIndex));
+            if (relativePath.getParent() != null && element.getFileName().toString().equals("src")) {
+                Path shortenedPath = elementIndex == 0 ? projectRoot : projectRoot.resolve(relativePath.subpath(0, elementIndex));
+                // if there is no pom.xml next to src we must not consider it a "Maven src" folder
+                if (pomXmlExistsIn(shortenedPath)) {
+                    return shortenedPath;
+                }
             }
             elementIndex++;
         }
         return path;
+    }
+
+    private boolean pomXmlExistsIn(Path path) {
+        return Files.exists(path.resolve("pom.xml"));
     }
 }
