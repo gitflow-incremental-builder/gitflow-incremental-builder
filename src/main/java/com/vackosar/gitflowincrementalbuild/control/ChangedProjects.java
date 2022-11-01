@@ -57,12 +57,12 @@ public class ChangedProjects {
             path = path.getParent();
         }
         if (path == null) {
-            logger.warn("Ignoring changed file outside build project: {}", diffPath);
+            logger.debug("Ignoring changed file outside build project: {}", diffPath);
             return Collections.emptyList();
         }
         List<MavenProject> changedReactorProjects = modulesPathMap.get(path);
         if (changedReactorProjects == null) {
-            logger.warn("Ignoring changed file in non-reactor module: {}", diffPath);
+            logger.debug("Ignoring changed file in non-reactor module: {}", diffPath);
             return Collections.emptyList();
         }
         logger.debug("Changed file: {}", diffPath);
