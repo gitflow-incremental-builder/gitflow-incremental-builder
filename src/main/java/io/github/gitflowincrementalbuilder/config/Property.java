@@ -129,6 +129,10 @@ public enum Property {
      */
     argsForUpstreamModules("", "afum"),
     /**
+     * This property allows adding arbitrary arguments/properties for downstream modules to further reduce overhead.
+     */
+    argsForDownstreamModules("", "afdm"),
+    /**
      * Defines artifact ids of modules to build forcibly.
      */
     forceBuildModules("", "fbm"),

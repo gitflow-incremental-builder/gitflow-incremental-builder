@@ -52,6 +52,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.buildUpstreamMode](#gibbuildupstreammode)
   - [gib.skipTestsForUpstreamModules](#gibskiptestsforupstreammodules)
   - [gib.argsForUpstreamModules](#gibargsforupstreammodules)
+  - [gib.argsForDownstreamModules](#gibargsfordownstreammodules)
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
   - [gib.disableSelectedProjectsHandling](#gibdisableselectedprojectshandling)
@@ -357,6 +358,7 @@ Maven pom properties configuration with default values is below:
     <gib.buildUpstreamMode>changed</gib.buildUpstreamMode>                             <!-- or -Dgib.bum=...   -->
     <gib.skipTestsForUpstreamModules>false</gib.skipTestsForUpstreamModules>           <!-- or -Dgib.stfum=... -->
     <gib.argsForUpstreamModules></gib.argsForUpstreamModules>                          <!-- or -Dgib.afum=...  -->
+    <gib.argsForDownstreamModules></gib.argsForDownstreamModules>                      <!-- or -Dgib.afdm=...  -->
     <gib.forceBuildModules></gib.forceBuildModules>                                    <!-- or -Dgib.fbm=...   -->
     <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>  <!-- or -Dgib.edmpa=... -->
     <gib.disableSelectedProjectsHandling>false</gib.disableSelectedProjectsHandling>   <!-- or -Dgib.dsph=...  -->
@@ -591,12 +593,27 @@ This property allows adding arbitrary arguments/properties for upstream modules 
 Arguments have to be sparated with a single space character and values are optional. Example:
 
 ```
-mvn clean install -am -Dgib.argsForUpstreamModules='-Denforcer.skip -Dcheckstyle.skip=true'
+mvn clean install -am -Dgib.argsForUpstreamModules='enforcer.skip checkstyle.skip=true'
 ```
+(notice the missing `-D`)
 
 See `gib.buildUpstream` or `gib.buildAll` to learn when upstream modules are built.
 
 Can be combined with `gib.skipTestsForUpstreamModules`.
+
+### gib.argsForDownstreamModules
+
+This property allows adding arbitrary arguments/properties for downstream modules to e.g. run them with a smaller testset than the directly changed modules.
+Arguments have to be sparated with a single space character and values are optional. Example:
+
+```
+mvn clean install -am -Dgib.argsForDownstreamModules='testprofile=small'
+```
+(notice the missing `-D`)
+
+See `gib.buildDownstream` or `gib.buildAll` to learn when upstream modules are built.
+
+Since: 4.2.0
 
 ### gib.forceBuildModules
 
