@@ -20,6 +20,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.quality.Strictness;
 
 import io.github.gitflowincrementalbuilder.config.Property;
 
@@ -832,9 +833,9 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     private static void addMockedTestJarExecution(MavenProject module) {
-        Plugin pluginMock = mock(Plugin.class, withSettings().lenient());
+        Plugin pluginMock = mock(Plugin.class, withSettings().strictness(Strictness.LENIENT));
         when(pluginMock.getArtifactId()).thenReturn("maven-jar-plugin");
-        PluginExecution execMock = mock(PluginExecution.class, withSettings().lenient());
+        PluginExecution execMock = mock(PluginExecution.class, withSettings().strictness(Strictness.LENIENT));
         when(execMock.getGoals()).thenReturn(Collections.singletonList("test-jar"));
         when(execMock.getConfiguration()).thenReturn(mock(Xpp3Dom.class));  // omit explicit classifier here
         when(pluginMock.getExecutions()).thenReturn(Collections.singletonList(execMock));

@@ -104,6 +104,7 @@ public class MojoParametersGeneratingByteBuddyPlugin implements Plugin {
         return builder;
     }
 
+    @SuppressWarnings("deprecation")
     private static Annotation buildMojoAnnotation() {
         return new Mojo() {
 
