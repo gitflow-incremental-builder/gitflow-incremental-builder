@@ -584,7 +584,7 @@ Both strategies can and usually should be combined with `gib.skipTestsForUpstrea
 
 This property is ignored when [explicitly selected projects](#explicitly-selected-projects) are involved.
 
-Note: _Before_ 3.8, GIB did non have this property and was implicity applying the `impacted` strategy, see also [issue 44](../../issues/44).
+Note: _Before_ 3.8, GIB did non have this property and was implicitly applying the `impacted` strategy, see also [issue 44](../../issues/44).
 
 Since: 3.8
 
@@ -598,7 +598,7 @@ Can be combined with `gib.argsForUpstreamModules`.
 
 ### gib.argsForUpstreamModules
 
-This property allows adding arbitrary arguments/properties for upstream modules to futher reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
+This property allows adding arbitrary arguments/properties for upstream modules to further reduce overhead, e.g. skip Checkstyle or Enforcer plugin.
 Arguments have to be sparated with a single space character and values are optional. Example:
 
 ```
@@ -652,7 +652,7 @@ which are needed to (hot-)deploy the changes via `mvn` on the command line.
 In this scenario, by defining `-Dgib.excludeDownstreamModulesPackagedAs=jar,pom`, only the directly changed `jar` modules and the dependent `war` and/or `ear`
 deployment modules will be built.
 
-This property has no effect in case `buildAll` is enabled and an exclusion might be overriden by `gib.forceBuildModules`.
+This property has no effect in case `buildAll` is enabled and an exclusion might be overridden by `gib.forceBuildModules`.
 
 ### gib.disableSelectedProjectsHandling
 
@@ -692,13 +692,13 @@ Since: 3.10.1
 
 ## Explicitly selected projects
 
-By default, GIB tries not to interfere with any projects/modules that have been selected explicitely by the user.
+By default, GIB tries not to interfere with any projects/modules that have been selected explicitly by the user.
 
 The details are described in the following subsections. This special handling can be disabled via [gib.disableSelectedProjectsHandling](#gibdisableselectedprojectshandling).
 
 ### mvn -pl
 
-Since 3.10.0, special rules appy when `mvn -pl ...` (or `--projects ...`) is used:
+Since 3.10.0, special rules apply when `mvn -pl ...` (or `--projects ...`) is used:
 
 - _Every_ such "preselected" project is _always_ built, including tests etc., **regardless of being changed or not!**
 
