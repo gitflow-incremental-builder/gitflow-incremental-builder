@@ -33,6 +33,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
 import io.github.gitflowincrementalbuilder.config.Property;
@@ -116,7 +117,7 @@ abstract class BaseUnchangedProjectsRemoverTest {
     }
 
     protected MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged, final String packaging) {
-        MavenProject newModuleMock = mock(MavenProject.class, withSettings().name(moduleArtifactId).lenient());
+        MavenProject newModuleMock = mock(MavenProject.class, withSettings().name(moduleArtifactId).strictness(Strictness.LENIENT));
         allModuleMocks.add(newModuleMock);
         when(newModuleMock.getGroupId()).thenReturn("io.github.gitflow-incremental-builder");
         when(newModuleMock.getArtifactId()).thenReturn(moduleArtifactId);
