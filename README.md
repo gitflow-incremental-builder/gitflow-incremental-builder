@@ -598,7 +598,7 @@ Can be combined with `gib.skipTestsForUpstreamModules`.
 
 ### gib.argsForDownstreamModules
 
-This property allows adding arbitrary arguments/properties for downstream modules to e.g. run them with a smaller testset than the directly changed modules.
+This property allows adding arbitrary arguments/properties for downstream modules to e.g. run them with a smaller testset than the directly changed modules. Only _unchanged_ downstream modules are affected by this setting.
 Arguments have to be sparated with a single space character and values are optional. Example:
 
 ```
