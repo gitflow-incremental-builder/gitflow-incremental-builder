@@ -28,3 +28,8 @@ updates:
     - dependency-name: org.eclipse.jetty:jetty-servlet
       versions:
       - ">= 11.0.0"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every week
+      interval: "weekly"
