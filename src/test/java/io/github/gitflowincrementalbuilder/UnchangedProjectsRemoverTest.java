@@ -608,6 +608,25 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
+    public void singleChanged_buildDownstream_argsForDownstreamModules() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+
+        setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
+        setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
+
+        // buildDownstream is enabled by default!
+        addGibProperty(Property.argsForDownstreamModules, "foo=bar baz=bing");
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+        assertProjectPropertiesEqual(moduleA);
+        assertProjectPropertiesEqual(changedModuleMock);
+        assertProjectPropertiesEqual(dependentModuleMock, "foo", "bar", "baz", "bing");
+    }
+
+    @Test
     public void singleChanged_forceBuildModules() {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 

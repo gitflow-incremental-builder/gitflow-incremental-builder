@@ -1,5 +1,7 @@
 package io.github.gitflowincrementalbuilder;
 
+import static java.util.function.Predicate.not;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -100,6 +102,11 @@ class UnchangedProjectsRemover {
         logProjects(changed, "Changed Artifacts:", projectComparator, config.mavenSession);
 
         final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed, config);
+        if (!config.argsForDownstreamModules.isEmpty()) {
+            impacted.stream()
+                    .filter(not(changed::contains))
+                    .forEach(proj -> config.argsForDownstreamModules.forEach(proj.getProperties()::setProperty));
+        }
 
         config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, projectComparator, config));
 
