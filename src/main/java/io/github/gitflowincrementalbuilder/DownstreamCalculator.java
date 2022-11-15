@@ -171,7 +171,10 @@ class DownstreamCalculator {
                 .filter(p -> "maven-jar-plugin".equals(p.getArtifactId()))
                 .flatMap(p -> p.getExecutions().stream().filter(e -> e.getGoals().contains(TEST_JAR)))
                 .map(e -> (Xpp3Dom) e.getConfiguration())
-                .map(d -> Optional.ofNullable(d.getChild("classifier")).map(Xpp3Dom::getValue).orElse(TEST_JAR_DEFAULT_CLASSIFIER))
+                .map(d -> Optional.ofNullable(d)
+		                .map(xpp3Dom -> xpp3Dom.getChild("classifier"))
+		                .map(Xpp3Dom::getValue)
+		                .orElse(TEST_JAR_DEFAULT_CLASSIFIER))
                 .collect(Collectors.toUnmodifiableSet()));
     }
 
