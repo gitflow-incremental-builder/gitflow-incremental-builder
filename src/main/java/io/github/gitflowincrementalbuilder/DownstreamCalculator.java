@@ -17,15 +17,18 @@ import javax.inject.Singleton;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.TypeAwareExpressionEvaluator;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +46,29 @@ class DownstreamCalculator {
 
     private final Map<String, Set<MavenProject>> downstreamCache = new HashMap<>();
     private final Map<String, Set<String>> testJarClassifiersCache = new HashMap<>();
+    private ProjectDependencyGraph graph;
 
     private Logger logger = LoggerFactory.getLogger(DownstreamCalculator.class);
 
     public Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
+        if (graph == null) {
+            if (config.mavenSession.getProjects().size() != config.mavenSession.getAllProjects().size()) {
+                // The reactor has been trimmed/filtered, most likely because of -pl and so the default ProjectDependencyGraph
+                // will not give us any downstream dependencies for modules that are not part of the trimmed reactor.
+                // Therefore we need to create a separate graph that contains all modules.
+                // Note: Due to https://issues.apache.org/jira/browse/MNG-6972 we cannot use DefaultDependencyGraph directly.
+                try {
+                    graph = new Maven38DefaultDependencyGraph(config.mavenSession.getAllProjects());
+                } catch (CycleDetectedException | DuplicateProjectException e) {
+                    throw new IllegalStateException(e); // extremely unlikely
+                }
+            } else {
+                graph = config.mavenSession.getProjectDependencyGraph();
+            }
+        }
         boolean testOnly = Boolean.TRUE.equals(project.getContextValue(ChangedProjects.CTX_TEST_ONLY));
         // idea: if testOnly, try to map actual changes to test-jar inclusions/exclusions (if present) and bail out if no match
-        // possible issue: a file that is not part of a test-jar might contribute to a (generated) file that _is_ part of the test-jar 
+        // possible issue: a file that is not part of a test-jar might contribute to a (generated) file that _is_ part of the test-jar
         return streamProjectWithDownstreamProjects(project, testOnly, config);
     }
 
@@ -63,7 +82,7 @@ class DownstreamCalculator {
         downstream = new LinkedHashSet<>();
         downstream.add(project);
 
-        List<MavenProject> unfilteredDownstream = config.mavenSession.getProjectDependencyGraph().getDownstreamProjects(project, false);
+        List<MavenProject> unfilteredDownstream = graph.getDownstreamProjects(project, false);
         if (!unfilteredDownstream.isEmpty()) {
             for (MavenProject downstreamProj : unfilteredDownstream) {
                 ActualDependentState state = getActualDependentState(downstreamProj, project, testOnly);
@@ -84,6 +103,7 @@ class DownstreamCalculator {
     }
 
     public void clearCache() {
+        graph = null;
         downstreamCache.clear();
         testJarClassifiersCache.clear();
     }

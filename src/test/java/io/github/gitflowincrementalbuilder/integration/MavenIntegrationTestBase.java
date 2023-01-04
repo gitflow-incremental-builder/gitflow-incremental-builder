@@ -351,6 +351,33 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     }
 
     @Test
+    public void buildWithSingleSelectedModule_dsph_transitiveParentChanged() throws Exception {
+
+        // Child modules of 'parent' (e.g. 'child4') unfortunately don't use 'parent' as their <parent>,
+        // so we need to adjust that for this case (a _transitive_ parent must be changed and build-parent is not known to the git repo).
+        var child4PomPath = repoPath.resolve("parent").resolve("child4").resolve("pom.xml");
+        var child4PomString = Files.readString(child4PomPath);
+        child4PomString = child4PomString.replaceAll("build-parent", "parent");
+        child4PomString = child4PomString.replaceFirst("../../parent/pom.xml", "../pom.xml");
+        Files.writeString(child4PomPath, child4PomString);
+        Git git = localRepoMock.getGit();
+        git.add().addFilepattern(".").call();
+        git.commit().setMessage("Switch child4 parent from 'build-parent' to 'parent'").call();
+
+        Files.write(repoPath.resolve("parent").resolve("pom.xml"), Arrays.asList("<!-- changed -->"), StandardOpenOption.APPEND);
+
+        final String output = executeBuild("-pl", "child4/subchild41", prop(Property.disableSelectedProjectsHandling, "true"),
+                prop(Property.uncommitted, "true"), prop(Property.disableBranchComparison, "true"));
+
+        assertThat(output)
+                .doesNotContain("Building parent")
+                .doesNotContain("Building child1")
+                .doesNotContain("Building child4")
+                .contains("Building subchild41")
+                .contains("maven-compiler-plugin");
+    }
+
+    @Test
     public void testOnly_noDependent() throws Exception {
         checkout(Branch.DEVELOP);
 
