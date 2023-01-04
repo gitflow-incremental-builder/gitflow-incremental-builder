@@ -68,6 +68,9 @@ public class DifferentFiles {
                 worker.credentialsProvider.resetAll();
             }
         }
+        if (!paths.isEmpty() && logger.isDebugEnabled()) {
+            logger.debug("Changed files:\n\t" + paths.stream().map(Path::toString).collect(Collectors.joining("\n\t")));
+        }
         return paths;
     }
 
