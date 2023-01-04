@@ -71,7 +71,7 @@
         <version.archunit>1.0.1</version.archunit>
         <version.assertj>3.23.1</version.assertj>
         <version.mockito>4.9.0</version.mockito>
-        <version.jetty>10.0.12</version.jetty>
+        <version.jetty>10.0.13</version.jetty>
 
         <!-- Plugin versions -->
         <version.maven-dependency-plugin>3.4.0</version.maven-dependency-plugin>
