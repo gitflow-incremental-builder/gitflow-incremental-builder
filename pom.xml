@@ -69,7 +69,7 @@
         <version.bytebuddy>1.12.20</version.bytebuddy>
         <version.junit>5.9.1</version.junit>
         <version.archunit>1.0.1</version.archunit>
-        <version.assertj>3.23.1</version.assertj>
+        <version.assertj>3.24.1</version.assertj>
         <version.mockito>4.11.0</version.mockito>
         <version.jetty>10.0.13</version.jetty>
 
