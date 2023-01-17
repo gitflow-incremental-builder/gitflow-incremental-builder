@@ -38,7 +38,7 @@ jobs:
         distribution: temurin
         java-version: 11
     - name: Set up Maven
-      uses: stCarolas/setup-maven@v4
+      uses: stCarolas/setup-maven@v4.5
       with:
         maven-version: 3.8.7
     - name: Cache Maven Repository
@@ -136,7 +136,7 @@ jobs:
         distribution: temurin
         java-version: ${{ matrix.java-maven.java-version }}
     - name: Set up Maven
-      uses: stCarolas/setup-maven@v4
+      uses: stCarolas/setup-maven@v4.5
       with:
         maven-version: ${{ matrix.java-maven.maven-version }}
     - name: Print Java & Maven version
