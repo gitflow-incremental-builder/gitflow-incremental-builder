@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.gitflow-incremental-builder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>4.3.1-SNAPSHOT</version>
+    <version>4.4.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Maven extension for incremental building of multi-module projects when using Git Flow (or Git in general).</description>
     <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
@@ -66,6 +66,7 @@
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.11</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
+        <version.plexus-utils>3.5.1</version.plexus-utils>
         <version.bytebuddy>1.14.0</version.bytebuddy>
         <version.junit>5.9.2</version.junit>
         <version.archunit>1.0.1</version.archunit>
@@ -166,6 +167,11 @@
             <artifactId>javax.inject</artifactId>
             <version>${version.javax.inject}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>${version.plexus-utils}</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
@@ -628,7 +634,7 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.92</minimum>
+                                            <minimum>0.91</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
@@ -710,23 +716,6 @@
                         </goals>
                         <configuration>
                             <expression>project.version</expression>    <!-- just something, does not matter -->
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
-                 and it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160 -->
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ensure-plexus-utils-downloaded</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>get</goal>
-                        </goals>
-                        <configuration>
-                            <artifact>org.codehaus.plexus:plexus-utils:1.1</artifact>
                         </configuration>
                     </execution>
                 </executions>

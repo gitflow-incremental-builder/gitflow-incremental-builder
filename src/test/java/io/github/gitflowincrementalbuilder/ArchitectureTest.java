@@ -6,6 +6,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAccess;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -30,7 +31,10 @@ public class ArchitectureTest {
                     .and(new DescribedPredicate<JavaClass>("are only called from classes that reside in same package") {
                             @Override
                             public boolean test(final JavaClass cls) {
-                                return cls.getAccessesToSelf()
+                                var enclosingClassPublicOrNotPresent = cls.getEnclosingClass()
+                                        .map(eClass -> eClass.getModifiers().contains(JavaModifier.PUBLIC))
+                                        .orElse(true);
+                                return enclosingClassPublicOrNotPresent && cls.getAccessesToSelf()
                                     .stream()
                                     .map(JavaAccess::getOriginOwner)
                                     .allMatch(callerClass -> callerClass.getPackageName().equals(cls.getPackageName()));
