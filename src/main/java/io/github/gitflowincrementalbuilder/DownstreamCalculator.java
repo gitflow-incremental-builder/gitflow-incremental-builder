@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.graph.DefaultProjectDependencyGraph;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
@@ -53,13 +54,18 @@ class DownstreamCalculator {
 
     public Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
         if (graph == null) {
-            if (config.mavenSession.getProjects().size() != config.mavenSession.getAllProjects().size()) {
+            var allProjects = config.mavenSession.getAllProjects();
+            if (config.mavenSession.getProjects().size() != allProjects.size()) {
                 // The reactor has been trimmed/filtered, most likely because of -pl and so the default ProjectDependencyGraph
                 // will not give us any downstream dependencies for modules that are not part of the trimmed reactor.
                 // Therefore we need to create a separate graph that contains all modules.
-                // Note: Due to https://issues.apache.org/jira/browse/MNG-6972 we cannot use DefaultDependencyGraph directly.
                 try {
-                    graph = new Maven38DefaultDependencyGraph(config.mavenSession.getAllProjects());
+                    try {
+                        graph = new DefaultProjectDependencyGraph(allProjects);
+                    } catch (NoClassDefFoundError err) {
+                        // cannot use DPDG in maven < 3.9.0 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
+                        graph = new Maven38DefaultDependencyGraph(allProjects);
+                    }
                 } catch (CycleDetectedException | DuplicateProjectException e) {
                     throw new IllegalStateException(e); // extremely unlikely
                 }

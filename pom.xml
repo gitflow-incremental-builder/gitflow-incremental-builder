@@ -603,6 +603,8 @@
                 <configuration>
                     <excludes>
                         <exclude>**/mojo/**</exclude>
+                        <!-- unit tests will always use the official graph, but our graph is only a copy anyway -->
+                        <exclude>**/Maven38DefaultDependencyGraph.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -634,17 +636,18 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.91</minimum>
+                                            <minimum>0.93</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.84</minimum>
+                                            <minimum>0.85</minimum>
                                         </limit>
                                         <limit>
                                             <counter>CLASS</counter>
                                             <value>MISSEDCOUNT</value>
-                                            <maximum>0</maximum>
+                                            <!-- Maven38DefaultDependencyGraph is not covered, exclude does not seem to help here -->
+                                            <maximum>1</maximum>
                                         </limit>
                                     </limits>
                                 </rule>
