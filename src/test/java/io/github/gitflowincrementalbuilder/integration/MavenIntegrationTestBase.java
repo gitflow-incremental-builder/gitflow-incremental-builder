@@ -374,7 +374,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .doesNotContain("Building child1")
                 .doesNotContain("Building child4")
                 .contains("Building subchild41")
-                .contains("maven-compiler-plugin");
+                .contains("default-compile");
     }
 
     @Test

@@ -714,8 +714,9 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
-                 and it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160 -->
+            <!-- Ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
+                And it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160
+                Obsolete with Maven 3.9+. -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
