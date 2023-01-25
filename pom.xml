@@ -714,23 +714,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
-                 and it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160 -->
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ensure-plexus-utils-downloaded</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>get</goal>
-                        </goals>
-                        <configuration>
-                            <artifact>org.codehaus.plexus:plexus-utils:1.1</artifact>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
