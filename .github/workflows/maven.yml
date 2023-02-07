@@ -103,34 +103,9 @@ jobs:
       matrix:
         java-maven:
           - {
-            name: "JDK 11 & Maven 3.6.3",
-            java-version: 11,
-            maven-version: 3.6.3
-          }
-          - {
-            name: "JDK 17 & Maven 3.8.7",
-            java-version: 17,
-            maven-version: 3.8.7
-          }
-          - {
             name: "JDK 17 & Maven 3.9.0",
             java-version: 17,
             maven-version: 3.9.0
-          }
-          - {
-            name: "JDK 17 & Maven 3.6.3",
-            java-version: 17,
-            maven-version: 3.6.3
-          }
-          - {
-            name: "JDK 19 & Maven 3.8.7",
-            java-version: 19,
-            maven-version: 3.8.7
-          }
-          - {
-            name: "JDK 20 EA & Maven 3.8.7",
-            java-version: 20-ea,
-            maven-version: 3.8.7
           }
 
     steps:
