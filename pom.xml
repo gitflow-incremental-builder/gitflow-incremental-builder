@@ -143,10 +143,10 @@
             <scope>provided</scope>
             <exclusions>
                 <!-- avoid direct usage of Guice annotations -->
-                <exclusion>
+                <!--<exclusion>
                     <groupId>com.google.inject</groupId>
                     <artifactId>guice</artifactId>
-                </exclusion>
+                </exclusion>-->
             </exclusions>
         </dependency>
         <dependency>
@@ -466,7 +466,7 @@
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
-                                        <exclude>com.google.guava:guava</exclude>
+                                        <!--<exclude>com.google.guava:guava</exclude>-->
                                         <exclude>junit:junit</exclude>
                                     </excludes>
                                 </bannedDependencies>
