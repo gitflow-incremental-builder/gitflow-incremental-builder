@@ -74,7 +74,7 @@ jobs:
         fi
     - name: Maven verify
       shell: bash
-      run: mvn verify -DskipUTs ${MVN_DEFAULT_ARGS}
+      run: mvn clean verify -DskipUTs ${MVN_DEFAULT_ARGS}
     - name: Build test reports archive on failure
       if: failure()
       shell: bash
