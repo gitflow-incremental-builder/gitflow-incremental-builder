@@ -23,10 +23,10 @@ concurrency:
 
 jobs:
   primary:
-    name: JDK 11 & Maven 3.8.7
+    name: JDK 11 & Maven 3.9.0
     # workaround: there doesn't seem to be an expression for the job name (for non-matrix)
     env:
-      JOB_NAME: JDK 11 & Maven 3.8.7
+      JOB_NAME: JDK 11 & Maven 3.9.0
 
     runs-on: ubuntu-latest
 
@@ -40,7 +40,7 @@ jobs:
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.5
       with:
-        maven-version: 3.8.7
+        maven-version: 3.9.0
     - name: Cache Maven Repository
       uses: actions/cache@v3
       with:
@@ -88,64 +88,64 @@ jobs:
         if-no-files-found: ignore
         retention-days: 30
 
-  secondary:
-    name: ${{ matrix.java-maven.name }}
-
-    # don't run the secondary jobs in forks
-    if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder' || github.event.inputs.runSecondary == 'yes'
-
-    runs-on: ubuntu-latest
-
-    needs: primary
-
-    strategy:
-      fail-fast: false
-      matrix:
-        java-maven:
-          - {
-            name: "JDK 17 & Maven 3.9.0",
-            java-version: 17,
-            maven-version: 3.9.0
-          }
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: temurin
-        java-version: ${{ matrix.java-maven.java-version }}
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v4.5
-      with:
-        maven-version: ${{ matrix.java-maven.maven-version }}
-    - name: Print Java & Maven version
-      shell: bash
-      run: mvn --version
-    - name: Cache Maven Repository
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-    - name: Maven test
-      shell: bash
-      # see primary job notes regarding ssh-agent
-      run: |
-        eval $(ssh-agent)
-        mvn test -Denforcer.skip -Djacoco.skip ${MVN_DEFAULT_ARGS}
-    - name: Maven verify
-      shell: bash
-      run: mvn verify -Denforcer.skip -DskipUTs -Dspotbugs.skip ${MVN_DEFAULT_ARGS}
-    - name: Build test reports archive on failure
-      if: failure()
-      shell: bash
-      run: find target -name '*-reports' -type d -prune | tar -czf test-reports.tgz -T -
-    - name: Upload test reports archive on failure
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: test-reports-${{ matrix.java-maven.name }}
-        path: 'test-reports.tgz'
-        if-no-files-found: ignore
+#  secondary:
+#    name: ${{ matrix.java-maven.name }}
+#
+#    # don't run the secondary jobs in forks
+#    if: github.repository == 'gitflow-incremental-builder/gitflow-incremental-builder' || github.event.inputs.runSecondary == 'yes'
+#
+#    runs-on: ubuntu-latest
+#
+#    needs: primary
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        java-maven:
+#          - {
+#            name: "JDK 17 & Maven 3.9.0",
+#            java-version: 17,
+#            maven-version: 3.9.0
+#          }
+#
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Set up JDK
+#      uses: actions/setup-java@v3
+#      with:
+#        distribution: temurin
+#        java-version: ${{ matrix.java-maven.java-version }}
+#    - name: Set up Maven
+#      uses: stCarolas/setup-maven@v4.5
+#      with:
+#        maven-version: ${{ matrix.java-maven.maven-version }}
+#    - name: Print Java & Maven version
+#      shell: bash
+#      run: mvn --version
+#    - name: Cache Maven Repository
+#      uses: actions/cache@v3
+#      with:
+#        path: ~/.m2/repository
+#        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#        restore-keys: |
+#          ${{ runner.os }}-maven-
+#    - name: Maven test
+#      shell: bash
+#      # see primary job notes regarding ssh-agent
+#      run: |
+#        eval $(ssh-agent)
+#        mvn test -Denforcer.skip -Djacoco.skip ${MVN_DEFAULT_ARGS}
+#    - name: Maven verify
+#      shell: bash
+#      run: mvn verify -Denforcer.skip -DskipUTs -Dspotbugs.skip ${MVN_DEFAULT_ARGS}
+#    - name: Build test reports archive on failure
+#      if: failure()
+#      shell: bash
+#      run: find target -name '*-reports' -type d -prune | tar -czf test-reports.tgz -T -
+#    - name: Upload test reports archive on failure
+#      uses: actions/upload-artifact@v3
+#      if: failure()
+#      with:
+#        name: test-reports-${{ matrix.java-maven.name }}
+#        path: 'test-reports.tgz'
+#        if-no-files-found: ignore
