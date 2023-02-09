@@ -36,6 +36,7 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
                 "    <groupId>" + pluginGA[0] + "</groupId>\n" +
                 "    <artifactId>" + pluginGA[1] + "</artifactId>\n" +
                 "    <version>" + gibVersion + "</version>\n" +
+                "    <classLoadingStrategy>plugin</classLoadingStrategy>\n" +
                 "  </extension>\n" +
                 "</extensions>";
         Path extensionsPath = Files.createDirectory(repoPath.resolve(".mvn")).resolve("extensions.xml");
