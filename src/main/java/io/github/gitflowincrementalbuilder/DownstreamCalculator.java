@@ -1,5 +1,6 @@
 package io.github.gitflowincrementalbuilder;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.graph.DefaultProjectDependencyGraph;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
@@ -52,13 +54,18 @@ class DownstreamCalculator {
 
     public Stream<MavenProject> streamProjectWithDownstreamProjects(MavenProject project, Configuration config) {
         if (graph == null) {
-            if (config.mavenSession.getProjects().size() != config.mavenSession.getAllProjects().size()) {
+            var allProjects = config.mavenSession.getAllProjects();
+            if (config.mavenSession.getProjects().size() != allProjects.size()) {
                 // The reactor has been trimmed/filtered, most likely because of -pl and so the default ProjectDependencyGraph
                 // will not give us any downstream dependencies for modules that are not part of the trimmed reactor.
                 // Therefore we need to create a separate graph that contains all modules.
-                // Note: Due to https://issues.apache.org/jira/browse/MNG-6972 we cannot use DefaultDependencyGraph directly.
                 try {
-                    graph = new Maven38DefaultDependencyGraph(config.mavenSession.getAllProjects());
+                    try {
+                        graph = new DefaultProjectDependencyGraph(allProjects);
+                    } catch (NoClassDefFoundError err) {
+                        // cannot use DPDG in maven < 3.9.0 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
+                        graph = new Maven38DefaultDependencyGraph(allProjects);
+                    }
                 } catch (CycleDetectedException | DuplicateProjectException e) {
                     throw new IllegalStateException(e); // extremely unlikely
                 }
@@ -190,11 +197,11 @@ class DownstreamCalculator {
         return testJarClassifiersCache.computeIfAbsent(String.valueOf(project.hashCode()), ignored -> project.getBuildPlugins().stream()
                 .filter(p -> "maven-jar-plugin".equals(p.getArtifactId()))
                 .flatMap(p -> p.getExecutions().stream().filter(e -> e.getGoals().contains(TEST_JAR)))
-                .map(e -> (Xpp3Dom) e.getConfiguration())
+                .map(e -> Xpp3DomWrapper.build(e.getConfiguration(), logger))
                 .map(d -> Optional.ofNullable(d)
-		                .map(xpp3Dom -> xpp3Dom.getChild("classifier"))
-		                .map(Xpp3Dom::getValue)
-		                .orElse(TEST_JAR_DEFAULT_CLASSIFIER))
+                        .map(xpp3Dom -> xpp3Dom.getChild("classifier"))
+                        .map(Xpp3DomWrapper::getValue)
+                        .orElse(TEST_JAR_DEFAULT_CLASSIFIER))
                 .collect(Collectors.toUnmodifiableSet()));
     }
 
@@ -265,6 +272,91 @@ class DownstreamCalculator {
             } catch (ExpressionEvaluationException e) {
                 LOGGER.warn("Failed to evaluate: " + expression, e);
                 return expression;
+            }
+        }
+    }
+
+    // wraps org.codehaus.plexus.util.xml.Xpp3Dom for either direct access or reflective access
+    static interface Xpp3DomWrapper {
+
+        Xpp3DomWrapper getChild(String name);
+        String getValue();
+
+        static Xpp3DomWrapper build(Object xpp3Dom, Logger logger) {
+            if (xpp3Dom == null) {
+                return null;
+            }
+            try {
+                return new Direct((Xpp3Dom) xpp3Dom);
+            } catch (ClassCastException e) {
+                logger.info("Trying to access org.codehaus.plexus.util.xml.Xpp3Dom via reflection to work around an issue related to MNG-6965 "
+                        + "and Maven 3.8.7 (or earlier); https://lists.apache.org/thread/wcbz8nsrrrdx8s8byoqpj99ksv73scqy\n"
+                        + "Consider upgrading to Maven 3.8.8 or higher, if available.");
+                logger.debug("Full exception:", e);
+                return new Reflective(xpp3Dom, logger);
+            }
+        }
+
+        static class Direct implements Xpp3DomWrapper {
+
+            private final Xpp3Dom dom;
+
+            Direct(Xpp3Dom dom) {
+                this.dom = dom;
+            }
+
+            @Override
+            public Xpp3DomWrapper getChild(String name) {
+                var child = dom.getChild(name);
+                return child != null ? new Direct(child) : null;
+            }
+
+            @Override
+            public String getValue() {
+                return dom.getValue();
+            }
+        }
+
+        static class Reflective implements Xpp3DomWrapper {
+
+            private static Method getChild;
+            private static Method getValue;
+            private final Object dom;
+            private final Logger logger;
+
+            Reflective(Object dom, Logger logger) {
+                this.dom = dom;
+                this.logger = logger;
+            }
+
+            @Override
+            public Xpp3DomWrapper getChild(String name) {
+                try {
+                    if (getChild == null) {
+                        getChild = dom.getClass().getMethod("getChild", String.class);
+                    }
+                    var child = getChild.invoke(dom, name);
+                    return child != null ? new Reflective(child, logger) : null;
+                } catch (ReflectiveOperationException | SecurityException e) {
+                    logger.warn("Unable to apply reflection workaround for Xpp3Dom: {}", e.toString());
+                    logger.debug("Full exception:", e);
+                    return null;
+                }
+            }
+
+            @Override
+            public String getValue() {
+                try {
+                    if (getValue == null) {
+                        getValue = dom.getClass().getMethod("getValue");
+                    }
+                    var value = getValue.invoke(dom);
+                    return value != null ? value.toString() : null;
+                } catch (ReflectiveOperationException | SecurityException e) {
+                    logger.warn("Unable to apply reflection workaround for Xpp3Dom: {}", e.toString());
+                    logger.debug("Full exception:", e);
+                    return null;
+                }
             }
         }
     }
