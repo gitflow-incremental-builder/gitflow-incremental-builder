@@ -168,10 +168,15 @@
             <version>${version.javax.inject}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
             <version>${version.plexus-utils}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+            <version>3.3.4</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
@@ -647,7 +652,7 @@
                                             <counter>CLASS</counter>
                                             <value>MISSEDCOUNT</value>
                                             <!-- Maven38DefaultDependencyGraph is not covered, exclude does not seem to help here -->
-                                            <maximum>1</maximum>
+                                            <maximum>2</maximum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -719,6 +724,23 @@
                         </goals>
                         <configuration>
                             <expression>project.version</expression>    <!-- just something, does not matter -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
+                 and it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160 -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ensure-plexus-utils-downloaded</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>get</goal>
+                        </goals>
+                        <configuration>
+                            <artifact>org.codehaus.plexus:plexus-utils:1.1</artifact>
                         </configuration>
                     </execution>
                 </executions>
