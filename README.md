@@ -18,8 +18,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 - [Requirements](#requirements)
 
 - [Usage](#usage)
-  - [Usage as a Maven extension](#usage-as-a-maven-extension)
   - [Usage as a Maven plugin](#usage-as-a-maven-plugin)
+  - [Usage as a Maven extension](#usage-as-a-maven-extension)
   - [Disable in IDE](#disable-in-ide)
 
 - [Example](#example)
@@ -72,7 +72,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 To be able to use GIB, your project must use:
 
-- **Apache Maven** build tool, version **3.8.7** or 3.9.0 is recommended
+- **Apache Maven** build tool, version **3.8.8** or 3.9.0 is recommended
   - The minimum Maven version is 3.6.3 due to [MNG-6580](https://issues.apache.org/jira/browse/MNG-6580)
 
 - **Git** version control
@@ -85,26 +85,9 @@ To be able to use GIB, your project must use:
 
 There are two usage scenarios of GIB:
 
-### Usage as a Maven extension
-
-Add to (root) `pom.xml`:
-```xml
-<build>
-    <extensions>
-        <extension>
-            <groupId>io.github.gitflow-incremental-builder</groupId>
-            <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.4.0</version>
-        </extension>
-    </extensions>
-    <!-- ... -->
-</build>
-```
-or use [`.mvn/extensions.xml`](https://maven.apache.org/ref/3.8.7/maven-embedder/core-extensions.html).
-
-The [Configuration](#configuration) can then be added via project or system properties.
-
 ### Usage as a Maven plugin
+
+ℹ️ This is the recommended way to configure GIB!
 
 Add to (root) `pom.xml`:
 ```xml
@@ -125,15 +108,35 @@ Add to (root) `pom.xml`:
 </build>
 ```
 
-The [Configuration](#configuration) can then be added to the `configuration` block of the plugin.
+The [Configuration](#configuration) can then be added to the `configuration` block of the plugin (and/or via project or system properties).
+
+When defined as a plugin, GIB will still do its work as an extension (see `<extensions>true</extensions>`).<br/>
+The plugin definition is merely a "shell" to provide `<profile>`-support, better visibility of parameters and works around 3rd-party issues like
+[`versions-maven-plugin`: Support for reporting new extenions versions](https://github.com/mojohaus/versions-maven-plugin/issues/74).
 
 :warning: GIB comes with a "fake" mojo (or goal). **Do _not_ try to execute this fake mojo!**<br/>
 It only exists to generate a plugin descriptor so that you can see the parameters nicely in your IDE or via `maven-help-plugin`.<br/>
 Because of this limitation, you have to use the general `<configuration>` section of the plugin instead of any `<execution>` block.
 
-When defined as a plugin, GIB will still do its work as an extension (see `<extensions>true</extensions>`).<br/>
-The plugin definition is merely a "shell" to provide `<profile>`-support, better visibility of parameters and works around 3rd-party issues like
-[`versions-maven-plugin`: Support for reporting new extenions versions](https://github.com/mojohaus/versions-maven-plugin/issues/74).
+### Usage as a Maven extension
+
+Add to (root) `pom.xml`:
+```xml
+<build>
+    <extensions>
+        <extension>
+            <groupId>io.github.gitflow-incremental-builder</groupId>
+            <artifactId>gitflow-incremental-builder</artifactId>
+            <version>4.4.0</version>
+        </extension>
+    </extensions>
+    <!-- ... -->
+</build>
+```
+Or use [`.mvn/extensions.xml`](https://maven.apache.org/ref/3.8.8/maven-embedder/core-extensions.html).
+If using `.mvn/extensions.xml` and Maven 3.8.8 or higher, it's strongly recommended to add `<classLoadingStrategy>plugin</classLoadingStrategy>` to the `extension` element. See [MNG-7160](https://issues.apache.org/jira/browse/MNG-7160) for more details.
+
+In both cases the [Configuration](#configuration) can then be added via project or system properties.
 
 ### Disable in IDE
 
