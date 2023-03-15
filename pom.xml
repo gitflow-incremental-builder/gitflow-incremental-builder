@@ -60,7 +60,7 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.5.0.202303070854-r</version.jgit>
-        <version.maven-core>3.8.7</version.maven-core>
+        <version.maven-core>3.8.8</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.8.1</version.maven-plugin>
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
@@ -392,6 +392,7 @@
                             <settings.localRepository>${settings.localRepository}</settings.localRepository>
                             <project.version>${project.version}</project.version>
                             <logback.FILE.name>test-integration</logback.FILE.name>
+                            <maven.version>${maven.version}</maven.version>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>

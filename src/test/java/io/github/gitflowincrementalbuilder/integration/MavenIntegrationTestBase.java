@@ -70,6 +70,8 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     private String testDisplayName;
 
+    protected String latestBuildOutput;
+
     @BeforeAll
     static void evaluateSystemProperties() throws IOException, InterruptedException, URISyntaxException {
         gibVersion = Validate.notEmpty(System.getProperty("project.version"), "project.version not set");
@@ -163,17 +165,17 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void buildAllSkipTest() throws Exception {
         final String output = executeBuild(prop(Property.buildAll, "true"), prop(Property.skipTestsForUpstreamModules, "true"));
 
-        assertBuilAllSkipTest(output);
+        assertBuildAllSkipTest(output);
     }
 
     @Test
     public void buildAllSkipTest_emptyPropertyValues() throws Exception {
         final String output = executeBuild(prop(Property.buildAll, ""), prop(Property.skipTestsForUpstreamModules, ""));
 
-        assertBuilAllSkipTest(output);
+        assertBuildAllSkipTest(output);
     }
 
-    private static void assertBuilAllSkipTest(final String output) {
+    private static void assertBuildAllSkipTest(final String output) {
         assertThat(output).contains("Building child1")
                 .contains("Building child2")
                 .contains("Building subchild1")
@@ -496,6 +498,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         if (logOutput) {
             LOGGER.info("Output of {}({}):\n{}", testDisplayName, String.join(" ", command), output);
         }
+        latestBuildOutput = output;
         return output;
     }
 

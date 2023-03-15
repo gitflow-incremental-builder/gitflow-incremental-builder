@@ -291,7 +291,8 @@ class DownstreamCalculator {
             } catch (ClassCastException e) {
                 logger.info("Trying to access org.codehaus.plexus.util.xml.Xpp3Dom via reflection to work around an issue related to MNG-6965 "
                         + "and Maven 3.8.7 (or earlier); https://lists.apache.org/thread/wcbz8nsrrrdx8s8byoqpj99ksv73scqy\n"
-                        + "Consider upgrading to Maven 3.8.8 or higher, if available.");
+                        + "Consider upgrading to Maven 3.8.8 or higher "
+                        + "and setting <classLoadingStrategy>plugin</classLoadingStrategy> in extensions.xml (see its xsd for more details).");
                 logger.debug("Full exception:", e);
                 return new Reflective(xpp3Dom, logger);
             }
