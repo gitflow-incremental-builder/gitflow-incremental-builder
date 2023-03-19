@@ -113,9 +113,9 @@ jobs:
             maven-version: 3.8.8
           }
           - {
-            name: "JDK 17 & Maven 3.9.0",
+            name: "JDK 17 & Maven 3.9.1",
             java-version: 17,
-            maven-version: 3.9.0
+            maven-version: 3.9.1
           }
           - {
             name: "JDK 17 & Maven 3.6.3",

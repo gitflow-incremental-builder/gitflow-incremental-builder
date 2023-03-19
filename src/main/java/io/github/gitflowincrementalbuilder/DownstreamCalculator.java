@@ -63,7 +63,7 @@ class DownstreamCalculator {
                     try {
                         graph = new DefaultProjectDependencyGraph(allProjects);
                     } catch (NoClassDefFoundError err) {
-                        // cannot use DPDG in maven < 3.9.0 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
+                        // cannot use DPDG in maven < 3.8.8 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
                         graph = new Maven38DefaultDependencyGraph(allProjects);
                     }
                 } catch (CycleDetectedException | DuplicateProjectException e) {
