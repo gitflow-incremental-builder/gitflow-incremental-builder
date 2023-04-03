@@ -78,7 +78,7 @@
         <version.maven-dependency-plugin>3.5.0</version.maven-dependency-plugin>
         <version.maven-enforcer-plugin>3.2.1</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.2.0</version.maven-clean-plugin>
-        <version.jacoco-maven-plugin>0.8.8</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
+        <version.jacoco-maven-plugin>0.8.9</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
         <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.sisu-maven-plugin>0.3.5</version.sisu-maven-plugin>
         <version.maven-resources-plugin>3.3.0</version.maven-resources-plugin>
