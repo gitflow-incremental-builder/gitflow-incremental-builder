@@ -123,13 +123,13 @@ jobs:
             maven-version: 3.6.3
           }
           - {
-            name: "JDK 19 & Maven 3.8.8",
-            java-version: 19,
+            name: "JDK 20 & Maven 3.8.8",
+            java-version: 20,
             maven-version: 3.8.8
           }
           - {
-            name: "JDK 20 EA & Maven 3.8.8",
-            java-version: 20-ea,
+            name: "JDK 21 EA & Maven 3.8.8",
+            java-version: 21-ea,
             maven-version: 3.8.8
           }
 
