@@ -66,7 +66,7 @@
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.12</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
-        <version.plexus-xml>4.0.0</version.plexus-xml>
+        <version.plexus-xml>4.0.1</version.plexus-xml>
         <version.bytebuddy>1.14.5</version.bytebuddy>
         <version.junit>5.9.3</version.junit>
         <version.archunit>1.0.1</version.archunit>
