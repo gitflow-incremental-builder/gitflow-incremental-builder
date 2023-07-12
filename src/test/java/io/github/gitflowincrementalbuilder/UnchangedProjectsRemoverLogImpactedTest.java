@@ -49,7 +49,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains();
+        assertLogFileContains(logFilePath);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains(changedModuleMock);
+        assertLogFileContains(logFilePath, changedModuleMock);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains(changedModuleMock, dependentModuleMock);
+        assertLogFileContains(logFilePath, changedModuleMock, dependentModuleMock);
     }
 
     @Test
@@ -84,10 +84,26 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains(changedModuleMock);
+        assertLogFileContains(logFilePath, changedModuleMock);
     }
 
-    private void assertLogFileContains(MavenProject... mavenProjects) throws IOException {
+    @Test
+    public void logImpactedNonExistingPath() throws IOException {
+        Path nonExistingPath = Path.of("some", "unknown", "path", "impacted.log");
+        Path customLogFilePath = tempDir.resolve(nonExistingPath);
+        assertThat(!Files.exists(customLogFilePath));
+
+        addGibProperty(Property.logImpactedTo, customLogFilePath.toAbsolutePath().toString());
+
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+        underTest.act(config());
+
+        assertThat(Files.exists(customLogFilePath));
+        assertLogFileContains(customLogFilePath, changedModuleMock);
+    }
+
+    private void assertLogFileContains(Path logFilePath, MavenProject... mavenProjects) throws IOException {
         assertThat(Files.isReadable(logFilePath))
                 .as(logFilePath + " is missing")
                 .isTrue();
