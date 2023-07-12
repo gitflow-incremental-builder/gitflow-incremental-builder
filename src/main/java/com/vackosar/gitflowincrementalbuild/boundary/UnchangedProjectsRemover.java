@@ -199,6 +199,11 @@ class UnchangedProjectsRemover {
         }
         logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
         try {
+            Path parentDir = logFilePath.toAbsolutePath().getParent();
+            // Check if the parent Directory to the logFilePath exists. If not create it.
+            if (parentDir != null && !Files.exists(parentDir)) {
+                Files.createDirectories(parentDir);
+            }
             Files.write(logFilePath, projectsToLog, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write impacted projects to " + logFilePath + ": " + impacted, e);
