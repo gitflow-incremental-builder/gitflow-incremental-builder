@@ -28,15 +28,19 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
 import io.github.gitflowincrementalbuilder.config.Property;
+import io.github.gitflowincrementalbuilder.util.LoggerSpyUtil;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks.
@@ -53,6 +57,10 @@ abstract class BaseUnchangedProjectsRemoverTest {
     protected static final String AID_MODULE_C = "module-C";
     protected static final String AID_MODULE_D = "module-D";
     protected static final String AID_MODULE_E = "module-E";
+
+    protected Logger logger = LoggerFactory.getLogger(getClass());
+
+    protected Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(UnchangedProjectsRemover.class);
 
     /**
      * The first module in the chain, unchanged by default.
@@ -97,7 +105,9 @@ abstract class BaseUnchangedProjectsRemoverTest {
     private final List<MavenProject> allModuleMocks = new ArrayList<>();
 
     @BeforeEach
-    void before() {
+    void before(TestInfo testInfo) {
+        logger.info("↓↓↓ Running {}", testInfo.getDisplayName());
+
         moduleA = addModuleMock(AID_MODULE_A, false);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);

@@ -1,6 +1,7 @@
 package io.github.gitflowincrementalbuilder;
 
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
 import io.github.gitflowincrementalbuilder.config.Configuration.BuildUpstreamMode;
+import io.github.gitflowincrementalbuilder.config.Configuration.LogProjectsMode;
 import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
 @Singleton
@@ -99,23 +101,33 @@ class UnchangedProjectsRemover {
             handleNoChangesDetected(selected, projectComparator, config);
             return;
         }
-        logProjects(changed, "Changed Artifacts:", projectComparator, config.mavenSession);
 
         final Set<MavenProject> impacted = calculateImpactedProjects(selected, changed, config);
+        LazyValue<List<MavenProject>> lazyDownstreamProjects = new LazyValue<>(
+                () -> impacted.stream().filter(not(changed::contains)).collect(toList()));
         if (!config.argsForDownstreamModules.isEmpty()) {
-            impacted.stream()
-                    .filter(not(changed::contains))
-                    .forEach(proj -> config.argsForDownstreamModules.forEach(proj.getProperties()::setProperty));
+            lazyDownstreamProjects.get().forEach(proj -> config.argsForDownstreamModules.forEach(proj.getProperties()::setProperty));
         }
 
         config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(impacted, logFilePath, projectComparator, config));
 
+        LazyValue<List<MavenProject>> lazyUpstreamProjects = new LazyValue<>(
+                () -> config.mavenSession.getProjects().stream().filter(not(impacted::contains)).collect(toList()));
         if (!config.buildAll) {
             modifyProjectList(selected, changed, impacted, projectComparator, config);
         } else {
-            config.mavenSession.getProjects().stream()
-                    .filter(proj -> !impacted.contains(proj))
-                    .forEach(proj -> applyUpstreamModuleArgs(proj, config));
+            lazyUpstreamProjects.get().forEach(proj -> applyUpstreamModuleArgs(proj, config));
+        }
+
+        // project logging at the very end so that no other messages get in between
+        if (config.logProjectsMode != LogProjectsMode.NONE) {
+            logProjects(changed, "Changed", projectComparator, config.mavenSession);
+        }
+        if (config.logProjectsMode == LogProjectsMode.IMPACTED || config.logProjectsMode == LogProjectsMode.ALL) {
+            logProjects(lazyDownstreamProjects.get(), "Downstream", projectComparator, config.mavenSession);
+        }
+        if (config.logProjectsMode == LogProjectsMode.ALL) {
+            logProjects(lazyUpstreamProjects.get(), "Upstream", projectComparator, config.mavenSession);
         }
     }
 
@@ -141,11 +153,11 @@ class UnchangedProjectsRemover {
                     // only retain selected and downstream
                     config.mavenSession.setProjects(selectedAndDownstream.stream()
                             .sorted(projectComparator)
-                            .collect(Collectors.toList()));
+                            .collect(toList()));
                 } else {
                     // applyUpstreamModuleArgs
                     config.mavenSession.getProjects().stream()
-                            .filter(proj -> !selectedAndDownstream.contains(proj))
+                            .filter(not(selectedAndDownstream::contains))
                             .forEach(proj -> applyUpstreamModuleArgs(proj, config));
                 }
             }
@@ -154,7 +166,7 @@ class UnchangedProjectsRemover {
                     && !config.buildDownstream) {
                 config.mavenSession.setProjects(config.mavenSession.getProjects().stream()  // retain order, without projectComparator
                         .filter(proj -> selected.contains(proj) || !selectedAndDownstream.contains(proj))
-                        .collect(Collectors.toList()));
+                        .collect(toList()));
             }
         } else if (config.buildAllIfNoChanges) {
             logger.info("No changed artifacts detected: Building all modules in buildAll mode.");
@@ -190,7 +202,7 @@ class UnchangedProjectsRemover {
             projectsToLog = impacted.stream()
                     .sorted(projectComparator)
                     .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())
-                    .collect(Collectors.toList());
+                    .collect(toList());
         }
         logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
         try {
@@ -212,10 +224,10 @@ class UnchangedProjectsRemover {
                         .filter(entry -> impacted.stream()
                                 .anyMatch(proj -> entry.getKey().matcher(proj.getArtifactId()).matches()))
                         .map(Entry::getValue)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
                 Set<MavenProject> forceBuildModules = config.mavenSession.getProjects().stream()
-                        .filter(proj -> !rebuild.contains(proj))
+                        .filter(not(rebuild::contains))
                         .filter(proj -> matchesAny(proj.getArtifactId(), config.forceBuildModules)
                                 || matchesAny(proj.getArtifactId(), conditionalPatterns))
                         .map(proj -> applyUpstreamModuleArgs(proj, config))
@@ -224,7 +236,7 @@ class UnchangedProjectsRemover {
             }
             config.mavenSession.setProjects(rebuild.stream()
                     .sorted(projectComparator)
-                    .collect(Collectors.toList()));
+                    .collect(toList()));
         }
     }
 
@@ -248,7 +260,7 @@ class UnchangedProjectsRemover {
         }
         Set<MavenProject> upstreamProjects = upstreamRequiringProjects.stream()
                 .flatMap(proj -> streamUpstreamProjects(proj, config.mavenSession))
-                .filter(proj -> !impacted.contains(proj))
+                .filter(not(impacted::contains))
                 .peek(proj -> applyUpstreamModuleArgs(proj, config))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
@@ -281,8 +293,11 @@ class UnchangedProjectsRemover {
                 .anyMatch(GOAL_TEST_JAR::equals);
     }
 
-    private void logProjects(Set<MavenProject> projects, String title, LazyMavenProjectComparator projectComparator, MavenSession mavenSession) {
-        logger.info(title);
+    private void logProjects(Collection<MavenProject> projects, String titlePrefix, LazyMavenProjectComparator projectComparator, MavenSession mavenSession) {
+        if (projects.isEmpty()) {
+            return;
+        }
+        logger.info("{} artifactIds ({}):", titlePrefix, projects.size());
         logger.info("");
         projects.stream()
                 .sorted(projectComparator)
@@ -291,7 +306,7 @@ class UnchangedProjectsRemover {
                     if (!mavenSession.getProjects().contains(proj)) {
                         entry += " (but deselected)";
                     }
-                    return entry;
+                    return "- " + entry;
                 })
                 .forEach(logger::info);
         logger.info("");

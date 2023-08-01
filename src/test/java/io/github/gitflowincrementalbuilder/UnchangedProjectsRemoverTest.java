@@ -1,7 +1,12 @@
 package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -19,9 +24,9 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.quality.Strictness;
-
 import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
@@ -32,6 +37,7 @@ import io.github.gitflowincrementalbuilder.config.Property;
 public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTest {
 
     private static final String AID_MODULE_B_DEP_WAR = AID_MODULE_B + "-dependent-war";
+    private static final String LOG_TITLE_PATTERN = "{} artifactIds ({}):";
 
     @Test
     public void nothingChanged() {
@@ -584,6 +590,59 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
         verify(dependentModuleMock, never()).getDependencies();
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_parent_logNone() {
+        addGibProperty(Property.logProjectsMode, "none");
+
+        singleChanged_buildDownstream_parent();
+
+        verify(loggerSpy, never()).info(contains("artifactIds"), anyString(), anyInt());
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_parent_logChanged() {
+        addGibProperty(Property.logProjectsMode, "changed");
+
+        singleChanged_buildDownstream_parent();
+
+        InOrder inOrder = inOrder(loggerSpy);
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Changed", 1);
+        inOrder.verify(loggerSpy).info("- module-B");
+        verify(loggerSpy, never()).info(eq(LOG_TITLE_PATTERN), eq("Downstream"), anyInt());
+        verify(loggerSpy, never()).info(eq(LOG_TITLE_PATTERN), eq("Upstream"), anyInt());
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_parent_logImpacted() {
+        addGibProperty(Property.logProjectsMode, "impacted");
+
+        singleChanged_buildDownstream_parent();
+
+        InOrder inOrder = inOrder(loggerSpy);
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Changed", 1);
+        inOrder.verify(loggerSpy).info("- module-B");
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Downstream", 2);
+        inOrder.verify(loggerSpy).info("- module-B-dependent-jar");
+        inOrder.verify(loggerSpy).info("- module-B-dependent-jar-transitive");
+        verify(loggerSpy, never()).info(eq(LOG_TITLE_PATTERN), eq("Upstream"), anyInt());
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_parent_logAll() {
+        addGibProperty(Property.logProjectsMode, "all");
+
+        singleChanged_buildDownstream_parent();
+
+        InOrder inOrder = inOrder(loggerSpy);
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Changed", 1);
+        inOrder.verify(loggerSpy).info("- module-B");
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Downstream", 2);
+        inOrder.verify(loggerSpy).info("- module-B-dependent-jar");
+        inOrder.verify(loggerSpy).info("- module-B-dependent-jar-transitive");
+        inOrder.verify(loggerSpy).info(LOG_TITLE_PATTERN, "Upstream", 1);
+        inOrder.verify(loggerSpy).info("- module-A");
     }
 
     @Test

@@ -54,6 +54,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
+  - [gib.logProjectsMode](#giblogprojectsmode)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
   - [mvn -pl](#mvn--pl)
@@ -363,6 +364,7 @@ Maven pom properties configuration with default values is below:
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
+    <gib.logProjectsMode>changed</gib.logProjectsMode>                                 <!-- or -Dgib.lpm=...   -->
 </properties>
 ```
 
@@ -684,6 +686,12 @@ GIB overwrites the file if it already exists and will create an empty file in ca
 or only [explicitly selected projects](#explicitly-selected-projects) are present.
 
 Since: 3.10.1
+
+### gib.logProjectsMode
+
+Controls which projects to log to the console. Default is `changed`, other options are `none`, `impacted` (changed + downstream) and `all` (including upstream).
+
+Since: 4.5.0
 
 ## Explicitly selected projects
 
