@@ -153,10 +153,15 @@ public enum Property {
      * Controls whether or not to fail on any error.
      */
     failOnError("true", "foe", true),
+
     /**
      * Defines an optional logfile which GIB shall write all "impacted" modules to.
      */
-    logImpactedTo("", "lit");
+    logImpactedTo("", "lit"),
+    /**
+     * Controls which projects to log.
+     */
+    logProjectsMode("changed", "lpm");
 
     public static final String PREFIX = "gib.";
 

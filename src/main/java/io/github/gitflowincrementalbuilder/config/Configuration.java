@@ -69,7 +69,9 @@ public class Configuration {
 
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
+
     public final Optional<Path> logImpactedTo;
+    public final LogProjectsMode logProjectsMode;
 
     private Logger logger = LoggerFactory.getLogger(Configuration.class);
 
@@ -123,7 +125,10 @@ public class Configuration {
 
             failOnMissingGitDir = false;
             failOnError = false;
+
+            // log related
             logImpactedTo = null;
+            logProjectsMode = null;
 
             return;
         }
@@ -187,7 +192,11 @@ public class Configuration {
 
         failOnMissingGitDir = Boolean.parseBoolean(Property.failOnMissingGitDir.getValue(pluginProperties, projectProperties));
         failOnError = Boolean.parseBoolean(Property.failOnError.getValue(pluginProperties, projectProperties));
+
+        // log related
         logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
+                parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }
 
     /**
@@ -241,11 +250,15 @@ public class Configuration {
         if (!isBuildStreamActive(Property.buildUpstream, pluginProperties, projectProperties, session, MavenExecutionRequest.REACTOR_MAKE_UPSTREAM)) {
             return BuildUpstreamMode.NONE;
         }
-        ValueWithOriginContext propertyValue = Property.buildUpstreamMode.getValueWithOriginContext(pluginProperties, projectProperties);
+        return parseEnum(Property.buildUpstreamMode, BuildUpstreamMode.class, pluginProperties, projectProperties);
+    }
+
+    private static <T extends Enum<T>> T parseEnum(Property property, Class<T> enumClass, Properties pluginProperties, Properties projectProperties) {
+        ValueWithOriginContext propertyValue = property.getValueWithOriginContext(pluginProperties, projectProperties);
         try {
-            return BuildUpstreamMode.valueOf(propertyValue.value.toUpperCase());
+            return Enum.valueOf(enumClass, propertyValue.value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid mode: " + propertyValue, e);
+            throw new IllegalArgumentException("GIB property '" + propertyValue.originName + "' defines an invalid enum value: " + propertyValue, e);
         }
     }
 
@@ -309,5 +322,12 @@ public class Configuration {
         NONE,
         CHANGED,
         IMPACTED;
+    }
+
+    public static enum LogProjectsMode {
+        NONE,
+        CHANGED,
+        IMPACTED,
+        ALL;
     }
 }
