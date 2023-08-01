@@ -30,7 +30,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     @TempDir
     Path tempDir;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private GitProvider gitProviderMock;
 
     private Path logFilePath;

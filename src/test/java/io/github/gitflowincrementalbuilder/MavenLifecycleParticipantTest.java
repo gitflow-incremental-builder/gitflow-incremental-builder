@@ -40,7 +40,7 @@ public class MavenLifecycleParticipantTest {
 
     private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenLifecycleParticipant.class);
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private MavenSession mavenSessionMock;
 
     @Mock
