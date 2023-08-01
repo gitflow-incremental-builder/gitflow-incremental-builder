@@ -47,10 +47,10 @@ public class ConfigurationTest {
     @Mock
     private MavenExecutionRequest mavenExecutionRequestMock;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private MavenSession mavenSessionMock;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private MavenProject currentProjectMock;
 
     private final Properties projectProperties = new Properties();

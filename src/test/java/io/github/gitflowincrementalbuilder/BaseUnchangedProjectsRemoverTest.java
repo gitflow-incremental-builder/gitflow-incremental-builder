@@ -67,16 +67,16 @@ abstract class BaseUnchangedProjectsRemoverTest {
      */
     protected MavenProject moduleA;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     protected MavenExecutionRequest mavenExecutionRequestMock;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     protected MavenSession mavenSessionMock;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     protected ProjectDependencyGraph projectDependencyGraphMock;
 
-    @Mock(lenient = true)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     protected ChangedProjects changedProjectsMock;
 
     @Spy
