@@ -35,12 +35,7 @@ public enum Property {
     /**
      * Can be used to disable this extension on certain branches.
      */
-    disableIfBranchMatches("", "dibm") {
-        @Override
-        public Optional<String> deprecatedName() {
-            return Optional.of("disableIfBranchRegex");
-        }
-    },
+    disableIfBranchMatches("", "dibm"),
     /**
      * Can be used to disable this extension for certain reference branches.
      */
@@ -84,21 +79,11 @@ public enum Property {
     /**
      * Can be used to exclude certain changed files from being detected as changed, reducing the number of modules to build.
      */
-    excludePathsMatching("", "epm") {
-        @Override
-        public Optional<String> deprecatedName() {
-            return Optional.of("excludePathRegex");
-        }
-    },
+    excludePathsMatching("", "epm"),
     /**
      * Can be used to include only certain changed files from being detected as changed, reducing the number of modules to build.
      */
-    includePathsMatching("", "ipm") {
-        @Override
-        public Optional<String> deprecatedName() {
-            return Optional.of("includePathRegex");
-        }
-    },
+    includePathsMatching("", "ipm"),
 
     /**
      * Builds all modules, including upstream modules.
