@@ -1,6 +1,7 @@
 package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -40,9 +41,8 @@ import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 @ExtendWith(MockitoExtension.class)
 abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
-    @Spy
     @InjectMocks
-    protected DifferentFiles differentFilesSpy;
+    protected DifferentFiles differentFilesSpy = spy(DifferentFiles.class);
 
     @Spy
     protected Modules modulesSpy;
