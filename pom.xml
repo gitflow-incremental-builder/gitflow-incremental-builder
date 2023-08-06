@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.gitflow-incremental-builder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>4.4.2-SNAPSHOT</version>
+    <version>4.5.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Maven extension for incremental building of multi-module projects when using Git Flow (or Git in general).</description>
     <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
