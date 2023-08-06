@@ -75,8 +75,14 @@ class UnchangedProjectsRemover {
 
     private void doAct(Configuration config) {
         LazyMavenProjectComparator projectComparator = new LazyMavenProjectComparator(config.mavenSession);
-        // ensure to write logfile for impaced (even if just empty)
-        config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator, config));
+        // remove a possibly existing logfile of a previous run (so that e.g. SkipExecutionException doesn't leave behind an empty file like in < 4.5.0)
+        config.logImpactedTo.ifPresent(logFilePath -> {
+            try {
+                Files.deleteIfExists(logFilePath);
+            } catch (IOException e) {
+                logger.warn("Could not delete '" + logFilePath + "', file might contain outdated projects!", e);
+            }
+        });
 
         final Set<MavenProject> selected;
         if (config.disableSelectedProjectsHandling) {
@@ -89,6 +95,7 @@ class UnchangedProjectsRemover {
                 printDelimiter();
                 logger.info("Building explicitly selected projects (without any adjustment): {}",
                         config.mavenSession.getProjects().stream().map(MavenProject::getArtifactId).collect(Collectors.joining(", ")));
+                config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(selected, logFilePath, projectComparator, config));
                 return;
             }
 
@@ -99,6 +106,8 @@ class UnchangedProjectsRemover {
             if (!config.mavenSession.getRequest().isRecursive() || onlySingleLeafModulePresent(config)) {
                 printDelimiter();
                 logger.info("Building single project (without any adjustment): {}", config.currentProject.getArtifactId());
+                config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(
+                        Collections.singleton(config.currentProject), logFilePath, projectComparator, config));
                 return;
             }
         }
@@ -107,6 +116,7 @@ class UnchangedProjectsRemover {
         printDelimiter();
         if (changed.isEmpty()) {
             handleNoChangesDetected(selected, projectComparator, config);
+            config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator, config));
             return;
         }
         logProjects(changed, "Changed Artifacts:", projectComparator, config.mavenSession);

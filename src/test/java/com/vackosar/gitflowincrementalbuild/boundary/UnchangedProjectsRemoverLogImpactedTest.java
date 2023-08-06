@@ -1,6 +1,7 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
+import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#logImpactedTo}.
@@ -85,6 +87,40 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         underTest.act(config());
 
         assertLogFileContains(logFilePath, changedModuleMock);
+    }
+
+    @Test
+    public void skipExecutionException() throws IOException {
+        addModuleMock(AID_MODULE_B, true);
+        Files.createFile(logFilePath);
+        Configuration config = config();
+        when(changedProjectsMock.get(config)).thenThrow(new SkipExecutionException("deliberate test exception"));
+
+        assertThatThrownBy(() -> underTest.act(config)).isInstanceOf(SkipExecutionException.class);
+
+        assertThat(logFilePath).doesNotExist();
+    }
+
+
+    @Test
+    public void onlySelectedModulesPresent() throws IOException {
+        addModuleMock(AID_MODULE_B, true);
+        setProjectSelections(moduleA);
+        overrideProjects(moduleA);
+
+        underTest.act(config());
+
+        assertLogFileContains(logFilePath, moduleA);
+    }
+
+    @Test
+    public void nonRecursive() throws IOException {
+        addModuleMock(AID_MODULE_B, true);
+        when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
+
+        underTest.act(config());
+
+        assertLogFileContains(logFilePath, moduleA);
     }
 
     @Test
