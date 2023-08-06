@@ -682,8 +682,17 @@ Controls whether or not to fail on any error.
 Defines an optional logfile which GIB shall write all "impacted" modules to. Each line represents the base directory of a changed module
 or a downstream module of a changed module.
 
-GIB overwrites the file if it already exists and will create an empty file in case no changes are detected
-or only [explicitly selected projects](#explicitly-selected-projects) are present.
+GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
+
+Starting with 4.5.0, GIB does also write the actually built modules to this file:
+
+- if only [explicitly selected projects](#explicitly-selected-projects) are present
+- or if Maven is building non-recursively (`-N`)
+- or if Maven is building only a single leaf module
+
+Before 4.5.0 GIB only created an empty file in those cases.
+
+Starting with 4.5.0, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
 
 Since: 3.10.1
 
@@ -697,7 +706,7 @@ Since: 4.5.0
 
 By default, GIB tries not to interfere with any projects/modules that have been selected explicitly by the user.
 
-The details are described in the following subsections. This special handling can be disabled via [gib.disableSelectedProjectsHandling](#gibdisableSelectedProjectsHandling).
+The details are described in the following subsections. This special handling can be disabled via [gib.disableSelectedProjectsHandling](#gibdisableselectedprojectshandling).
 
 ### mvn -pl
 
