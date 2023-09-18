@@ -71,7 +71,7 @@
         <version.junit>5.10.0</version.junit>
         <version.archunit>1.1.0</version.archunit>
         <version.assertj>3.24.2</version.assertj>
-        <version.mockito>5.4.0</version.mockito>
+        <version.mockito>5.5.0</version.mockito>
         <version.jetty>10.0.15</version.jetty>
 
         <!-- Plugin versions -->
