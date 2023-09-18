@@ -684,15 +684,15 @@ or a downstream module of a changed module.
 
 GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
 
-Starting with 4.5.1, GIB does also write the actually built modules to this file:
+Starting with 4.5.0, GIB does also write the actually built modules to this file:
 
 - if only [explicitly selected projects](#explicitly-selected-projects) are present
 - or if Maven is building non-recursively (`-N`)
 - or if Maven is building only a single leaf module
 
-Before 4.5.1 GIB only created an empty file in those cases.
+Before 4.5.0 GIB only created an empty file in those cases.
 
-Starting with 4.5.1, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
+Starting with 4.5.0, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
 
 Since: 3.10.1
 
@@ -700,7 +700,7 @@ Since: 3.10.1
 
 Controls which projects to log to the console. Default is `changed`, other options are `none`, `impacted` (changed + downstream) and `all` (including upstream).
 
-Since: 4.5.1
+Since: 4.5.0
 
 ## Explicitly selected projects
 
