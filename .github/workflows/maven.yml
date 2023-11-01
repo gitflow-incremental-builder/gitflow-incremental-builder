@@ -118,13 +118,13 @@ jobs:
             maven-version: 3.9.5
           }
           - {
-            name: "JDK 20 & Maven 3.9.5",
-            java-version: 20,
+            name: "JDK 21 & Maven 3.9.5",
+            java-version: 21,
             maven-version: 3.9.5
           }
           - {
-            name: "JDK 21 EA & Maven 3.9.5",
-            java-version: 21-ea,
+            name: "JDK 22 EA & Maven 3.9.5",
+            java-version: 22-ea,
             maven-version: 3.9.5
           }
 
