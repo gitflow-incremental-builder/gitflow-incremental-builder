@@ -777,7 +777,7 @@ As GIB does _not_ (yet) provide a console input passthrough mechanism to native 
 
 ### SSH
 
-For SSH, GIB pretty much relies on the default JGit/[JSch](http://www.jcraft.com/jsch/) mechanisms.<br/>
+For SSH, GIB pretty much relies on [JGit SSH agent support via Apache MINA sshd](https://git.eclipse.org/r/plugins/gitiles/jgit/jgit/+/master/org.eclipse.jgit.ssh.apache/README.md#support-for-ssh-agents).<br/>
 Your private key will be picked up automatically in case it is located in `~/.ssh/` (as `identity`, `id_rsa` or `id_dsa`).
 
 To use a custom key, create a [SSH config](https://www.cyberciti.biz/faq/create-ssh-config-file-on-linux-unix/) in `~/.ssh/config` like the following:
