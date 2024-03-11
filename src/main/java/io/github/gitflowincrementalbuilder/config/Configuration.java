@@ -29,6 +29,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.gitflowincrementalbuilder.config.Property.ValueWithOriginContext;
 
 public class Configuration {
@@ -75,6 +76,7 @@ public class Configuration {
 
     private Logger logger = LoggerFactory.getLogger(Configuration.class);
 
+    @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Finalizers are deprecated.")
     public Configuration(MavenSession session) {
         this.mavenSession = session;
         this.currentProject = findCurrentProject(session);

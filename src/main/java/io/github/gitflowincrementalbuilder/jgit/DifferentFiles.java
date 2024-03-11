@@ -28,6 +28,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.gitflowincrementalbuilder.SkipExecutionException;
 import io.github.gitflowincrementalbuilder.config.Configuration;
 
@@ -91,6 +92,7 @@ public class DifferentFiles {
         private final Configuration configuration;
         private final HttpDelegatingCredentialsProvider credentialsProvider;
 
+        @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Finalizers are deprecated.")
         public Worker(Git git, Configuration configuration) {
             this.git = git;
             this.workTree = git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath();
