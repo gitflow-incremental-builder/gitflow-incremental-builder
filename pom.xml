@@ -62,7 +62,7 @@
         <version.jgit>6.9.0.202403050737-r</version.jgit>
         <version.maven-core>3.9.6</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
-        <version.maven-plugin>3.11.0</version.maven-plugin>
+        <version.maven-plugin>3.13.0</version.maven-plugin>
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.13</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
