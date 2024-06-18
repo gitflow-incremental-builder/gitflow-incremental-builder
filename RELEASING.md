@@ -36,11 +36,12 @@ Note: Releases and SNAPSHOTs are deployed via [`nexus-staging-maven-plugin`](htt
       <servers>
         <server>
           <id>ossrh</id>
-          <username>your-OSSRH-Jira-username</username>
-          <password>your-OSSRH-Jira-password</password>
+          <username>your-OSSRH-token-username</username>
+          <password>your-OSSRH-token-password</password>
         </server>
       </servers>
       ```
+      Note: Log into https://s01.oss.sonatype.org and proceed as described [here](https://central.sonatype.org/publish/generate-token/) to get the token info.
 
 ## Perform a release
 
