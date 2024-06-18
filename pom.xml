@@ -878,6 +878,16 @@
             </build>
         </profile>
         <profile>
+            <id>jdk-21-workarounds</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <properties>
+                <!-- quickfix until something better is available: https://github.com/mockito/mockito/issues/3037 -->
+                <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+            </properties>
+        </profile>
+        <profile>
             <id>eclipse</id>
             <activation>
                 <property>
