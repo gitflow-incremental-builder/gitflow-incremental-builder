@@ -88,7 +88,7 @@
         <version.maven-javadoc-plugin>3.7.0</version.maven-javadoc-plugin>
         <version.maven-jar-plugin>3.4.1</version.maven-jar-plugin>
         <version.maven-help-plugin>3.4.1</version.maven-help-plugin>
-        <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
+        <version.maven-failsafe-plugin>3.3.0</version.maven-failsafe-plugin>
         <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
         <version.maven-install-plugin>3.1.2</version.maven-install-plugin>
         <version.maven-deploy-plugin>3.1.1</version.maven-deploy-plugin>
