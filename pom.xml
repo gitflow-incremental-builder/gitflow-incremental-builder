@@ -75,7 +75,7 @@
         <version.jetty>10.0.20</version.jetty>
 
         <!-- Plugin versions -->
-        <version.maven-dependency-plugin>3.6.1</version.maven-dependency-plugin>
+        <version.maven-dependency-plugin>3.7.0</version.maven-dependency-plugin>
         <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
