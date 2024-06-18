@@ -60,7 +60,7 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.10.0.202406032230-r</version.jgit>
-        <version.maven-core>3.9.6</version.maven-core>
+        <version.maven-core>3.9.8</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.13.1</version.maven-plugin>
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
@@ -74,6 +74,7 @@
         <version.assertj>3.26.0</version.assertj>
         <version.mockito>5.12.0</version.mockito>
         <version.jetty>10.0.21</version.jetty>
+        <version.commons-lang3>3.14.0</version.commons-lang3>
 
         <!-- Plugin versions -->
         <version.maven-dependency-plugin>3.7.0</version.maven-dependency-plugin>
@@ -251,6 +252,12 @@
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit.junit.ssh</artifactId>
             <version>${version.jgit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${version.commons-lang3}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
