@@ -1,6 +1,9 @@
 version: 2
 updates:
+  ######
+  # main
   - package-ecosystem: maven
+    target-branch: "main"
     directory: "/"
     schedule:
       interval: daily
@@ -29,7 +32,49 @@ updates:
       versions:
       - ">= 11.0.0"
   - package-ecosystem: "github-actions"
+    target-branch: "main"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
+      interval: "weekly"
+  #####
+  # 3.x
+  - package-ecosystem: maven
+    target-branch: "3.x"
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    ignore:
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit
+      versions:
+      - ">= 6.0.0"
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent
+      versions:
+      - ">= 6.0.0"
+    - dependency-name: ch.qos.logback:logback-classic
+      versions:
+      - ">= 1.3.0"
+    - dependency-name: javax.inject:javax.inject
+      versions:
+      - ">= 0"
+    - dependency-name: net.sf.saxon:Saxon-HE
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven:maven-core
+      versions:
+      - ">= 0"
+    - dependency-name: org.slf4j:slf4j-api
+      versions:
+      - ">= 0"
+    # https://webtide.com/jetty-10-and-11-have-arrived/ (Java 8 support still needed)
+    - dependency-name: org.eclipse.jetty:jetty-server
+      versions:
+      - ">= 10.0.0"
+    - dependency-name: org.eclipse.jetty:jetty-servlet
+      versions:
+      - ">= 10.0.0"
+  - package-ecosystem: "github-actions"
+    target-branch: "3.x"
+    directory: "/"
+    schedule:
       interval: "weekly"
