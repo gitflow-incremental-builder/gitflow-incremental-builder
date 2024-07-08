@@ -98,7 +98,7 @@
         <version.nexus-staging-maven-plugin>1.6.14</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.16.2</version.versions-maven-plugin>
         <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
-        <version.spotbugs-maven-plugin>4.8.5.0</version.spotbugs-maven-plugin>
+        <version.spotbugs-maven-plugin>4.8.6.2</version.spotbugs-maven-plugin>
         <version.spotbugs>4.8.6</version.spotbugs>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
