@@ -68,7 +68,7 @@
         <version.javax.inject>1</version.javax.inject>
         <version.bytebuddy>1.14.17</version.bytebuddy>
         <version.junit>5.8.2</version.junit>
-        <version.assertj>3.22.0</version.assertj>
+        <version.assertj>3.26.3</version.assertj>
         <version.mockito>4.3.1</version.mockito>
         <version.jetty>9.4.45.v20220203</version.jetty>
 
