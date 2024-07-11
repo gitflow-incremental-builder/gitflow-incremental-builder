@@ -81,6 +81,22 @@ updates:
     - dependency-name: org.eclipse.jetty:jetty-servlet
       versions:
       - ">= 10.0.0"
+    # the following plugins have abandoned Maven < 3.6.3
+    - dependency-name: org.apache.maven.plugins:maven-clean-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-jar-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-help-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
+      versions:
+      - ">= 0"
   - package-ecosystem: "github-actions"
     target-branch: "3.x"
     commit-message:
