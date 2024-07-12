@@ -28,6 +28,13 @@ updates:
     - dependency-name: org.eclipse.jetty:jetty-servlet
       versions:
       - ">= 10.0.0"
+    # Mockito 5 dropped Java 8 support
+    - dependency-name: org.mockito:mockito-core
+      versions:
+      - ">= 5.0.0"
+    - dependency-name: org.mockito:mockito-junit-jupiter
+      versions:
+      - ">= 5.0.0"
     # the following plugins have abandoned Maven < 3.6.3
     - dependency-name: org.apache.maven.plugins:maven-clean-plugin
       versions:
