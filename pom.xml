@@ -93,8 +93,8 @@
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
         <version.versions-maven-plugin>2.9.0</version.versions-maven-plugin>
         <version.maven-release-plugin>3.0.0-M5</version.maven-release-plugin>
-        <version.spotbugs-maven-plugin>4.5.3.0</version.spotbugs-maven-plugin>
-        <version.spotbugs>4.5.3</version.spotbugs>
+        <version.spotbugs-maven-plugin>4.8.3.1</version.spotbugs-maven-plugin>
+        <version.spotbugs-annotations>4.8.3</version.spotbugs-annotations>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
 
@@ -200,7 +200,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>${version.spotbugs}</version>
+            <version>${version.spotbugs-annotations}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -437,14 +437,6 @@
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
                     <version>${version.spotbugs-maven-plugin}</version>
-                    <dependencies>
-                        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                        <dependency>
-                            <groupId>com.github.spotbugs</groupId>
-                            <artifactId>spotbugs</artifactId>
-                            <version>${version.spotbugs}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
