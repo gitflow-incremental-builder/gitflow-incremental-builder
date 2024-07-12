@@ -104,6 +104,12 @@ updates:
     - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
       versions:
       - ">= 0"
+    - dependency-name: com.github.spotbugs:spotbugs-maven-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: com.github.spotbugs:spotbugs-annotations
+      versions:
+      - ">= 0"
   - package-ecosystem: "github-actions"
     target-branch: "3.x"
     commit-message:
