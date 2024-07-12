@@ -35,6 +35,7 @@ import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConf
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
 @Named
@@ -86,6 +87,7 @@ public class DifferentFiles {
         additionalNativeGitEnvironment.put(key, value);
     }
 
+    @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Won't fix for 3.x; actual attack vector very unlikely")
     private class Worker {
 
         private final Git git;

@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vackosar.gitflowincrementalbuild.control.Property;
 import com.vackosar.gitflowincrementalbuild.control.Property.ValueWithOriginContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Won't fix for 3.x; actual attack vector very unlikely")
 public class Configuration {
 
     public static final String PLUGIN_KEY = "com.vackosar.gitflowincrementalbuilder:gitflow-incremental-builder";
