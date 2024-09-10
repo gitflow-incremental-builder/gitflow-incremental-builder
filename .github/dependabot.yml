@@ -31,6 +31,10 @@ updates:
     - dependency-name: org.eclipse.jetty:jetty-servlet
       versions:
       - ">= 11.0.0"
+    # plexus-xml seems to be aimed for Maven 4
+    - dependency-name: org.codehaus.plexus:plexus-xml
+      versions:
+      - ">= 4.0.0"
   - package-ecosystem: "github-actions"
     target-branch: "main"
     directory: "/"
@@ -92,16 +96,40 @@ updates:
     - dependency-name: org.apache.maven.plugins:maven-clean-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
+    - dependency-name: org.apache.maven.plugins:maven-deploy-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-jar-plugin
+    - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-gpg-plugin
       versions:
       - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-help-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
+    - dependency-name: org.apache.maven.plugins:maven-jar-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-install-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-javadoc-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-plugin-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugin-tools:maven-plugin-annotations
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-release-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-site-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
       versions:
       - ">= 0"
     - dependency-name: com.github.spotbugs:spotbugs-maven-plugin
