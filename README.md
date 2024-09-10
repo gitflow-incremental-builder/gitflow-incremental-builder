@@ -436,7 +436,7 @@ The branch to compare `baseBranch` to. You can use the simple branch name to com
 
 If you want to compare to a _remote_ branch you need to use the prefix `refs/remotes/<remoteName>/`, e.g. `refs/remotes/origin/develop`.
 
-You can also use a tag name, e.g. `refs/tags/myTag` or just `myTag`.
+You can also use a tag name, e.g. `refs/tags/myTag` or simply `myTag`, or just reference the previous commit via `HEAD~1`.
 
 ### gib.fetchReferenceBranch
 
