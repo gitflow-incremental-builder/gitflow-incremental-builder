@@ -6,6 +6,18 @@ updates:
       interval: daily
     open-pull-requests-limit: 10
     ignore:
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit
+      versions:
+      - ">= 6.0.0.202111291000-r"
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent
+      versions:
+      - ">= 6.0.0.202111291000-r"
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.http.server
+      versions:
+      - ">= 6.0.0.202111291000-r"
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.junit.ssh
+      versions:
+      - ">= 6.0.0.202111291000-r"
     - dependency-name: ch.qos.logback:logback-classic
       versions:
       - ">= 1.3.0"
@@ -39,16 +51,40 @@ updates:
     - dependency-name: org.apache.maven.plugins:maven-clean-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
+    - dependency-name: org.apache.maven.plugins:maven-deploy-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-jar-plugin
+    - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-gpg-plugin
       versions:
       - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-help-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
+    - dependency-name: org.apache.maven.plugins:maven-jar-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-install-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-javadoc-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-plugin-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugin-tools:maven-plugin-annotations
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-release-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-site-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
       versions:
       - ">= 0"
     - dependency-name: com.github.spotbugs:spotbugs-maven-plugin
