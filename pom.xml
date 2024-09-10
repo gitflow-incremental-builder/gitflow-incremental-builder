@@ -62,7 +62,7 @@
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.8.4</version.maven-core>
         <version.maven-enforced>3.3.9</version.maven-enforced>
-        <version.maven-plugin>3.6.4</version.maven-plugin>
+        <version.maven-plugin>3.12.0</version.maven-plugin>
         <version.slf4j>1.7.32</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.13</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
@@ -73,25 +73,25 @@
         <version.jetty>9.4.56.v20240826</version.jetty>
 
         <!-- Plugin versions -->
-        <version.maven-enforcer-plugin>3.0.0</version.maven-enforcer-plugin>
-        <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
+        <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
+        <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
         <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
-        <version.plexus-component-metadata>2.1.1</version.plexus-component-metadata>
+        <version.plexus-component-metadata>2.2.0</version.plexus-component-metadata>
         <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
-        <version.maven-compiler-plugin>3.10.0</version.maven-compiler-plugin>
-        <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
+        <version.maven-compiler-plugin>3.12.1</version.maven-compiler-plugin>
+        <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
         <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
-        <version.maven-javadoc-plugin>3.3.2</version.maven-javadoc-plugin>
-        <version.maven-jar-plugin>3.2.2</version.maven-jar-plugin>
-        <version.maven-help-plugin>3.2.0</version.maven-help-plugin>
-        <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
+        <version.maven-javadoc-plugin>3.6.2</version.maven-javadoc-plugin>
+        <version.maven-jar-plugin>3.3.0</version.maven-jar-plugin>
+        <version.maven-help-plugin>3.3.0</version.maven-help-plugin>
+        <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
         <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
-        <version.maven-install-plugin>3.0.0-M1</version.maven-install-plugin>
-        <version.maven-deploy-plugin>3.0.0-M2</version.maven-deploy-plugin>
-        <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
+        <version.maven-install-plugin>3.1.1</version.maven-install-plugin>
+        <version.maven-deploy-plugin>3.1.1</version.maven-deploy-plugin>
+        <version.maven-gpg-plugin>3.2.4</version.maven-gpg-plugin>
         <version.nexus-staging-maven-plugin>1.6.8</version.nexus-staging-maven-plugin>
-        <version.maven-release-plugin>3.0.0-M5</version.maven-release-plugin>
+        <version.maven-release-plugin>3.0.1</version.maven-release-plugin>
         <version.spotbugs-maven-plugin>4.8.3.1</version.spotbugs-maven-plugin>
         <version.spotbugs-annotations>4.8.3</version.spotbugs-annotations>
 
@@ -351,6 +351,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${version.maven-javadoc-plugin}</version>
                     <configuration>
+                        <!-- exclude 'missing' from doclint for now (avoids 'warning: no comment' spam), see also:
+                             https://docs.oracle.com/en/java/javase/17/docs/specs/man/javadoc.html#additional-options-provided-by-the-standard-doclet -->
+                        <doclint>accessibility,html,reference,syntax</doclint>
                         <source>${maven.compiler.source}</source>
                     </configuration>
                 </plugin>
@@ -515,6 +518,9 @@
                         <goals>
                             <goal>descriptor</goal>
                         </goals>
+                        <configuration>
+                            <goalPrefix>gitflow-incremental-builder</goalPrefix>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
