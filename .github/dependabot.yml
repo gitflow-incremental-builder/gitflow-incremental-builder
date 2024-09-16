@@ -60,7 +60,7 @@ updates:
     - dependency-name: org.apache.maven.plugins:maven-deploy-plugin
       versions:
       - ">= 0"
-    - dependency-name: org.apache.maven.plugins:maven-emforcer-plugin
+    - dependency-name: org.apache.maven.plugins:maven-enforcer-plugin
       versions:
       - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
