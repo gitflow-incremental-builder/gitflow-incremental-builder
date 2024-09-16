@@ -73,6 +73,7 @@
         <version.jetty>9.4.56.v20240826</version.jetty>
 
         <!-- Plugin versions -->
+        <version.maven-dependency-plugin>3.6.1</version.maven-dependency-plugin>
         <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
@@ -268,6 +269,11 @@
         </testResources>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${version.maven-dependency-plugin}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -713,6 +719,23 @@
                         </goals>
                         <configuration>
                             <expression>project.version</expression>    <!-- just something, does not matter -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- ancient plexus-utils:1.1 is "required" in IT repo because it's no declared: https://issues.apache.org/jira/browse/MNG-6965
+                 and it's not declared because of: https://issues.apache.org/jira/browse/MNG-7160 -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ensure-plexus-utils-downloaded</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>get</goal>
+                        </goals>
+                        <configuration>
+                            <artifact>org.codehaus.plexus:plexus-utils:1.1</artifact>
                         </configuration>
                     </execution>
                 </executions>

@@ -17,15 +17,14 @@ import com.vackosar.gitflowincrementalbuild.mojo.MojoParametersGeneratingByteBud
 
 /**
  * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}
- * registered directly as a Maven extension (not as a plugin).
+ * registered as a Maven plugin (not directly as an extension).
  */
 public class MavenPluginIntegrationTest extends MavenIntegrationTestBase {
 
     @Override
     @BeforeEach
     void initialInstall(TestInfo testInfo) throws Exception {
-        Path projectRoot = localRepoMock.getRepoDir();
-        Files.move(projectRoot.resolve("build-parent/pom-plugin.xml"), projectRoot.resolve("build-parent/pom.xml"), StandardCopyOption.REPLACE_EXISTING);
+        Files.move(repoPath.resolve("build-parent/pom-plugin.xml"), repoPath.resolve("build-parent/pom.xml"), StandardCopyOption.REPLACE_EXISTING);
         super.initialInstall(testInfo);
     }
 
