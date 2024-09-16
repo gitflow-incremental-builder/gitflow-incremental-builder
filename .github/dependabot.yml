@@ -9,7 +9,7 @@ updates:
     - dependency-name: org.eclipse.jgit:org.eclipse.jgit
       versions:
       - ">= 6.0.0.202111291000-r"
-    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent
+    - dependency-name: org.eclipse.jgit:org.eclipse.jgit.ssh.jsch
       versions:
       - ">= 6.0.0.202111291000-r"
     - dependency-name: org.eclipse.jgit:org.eclipse.jgit.http.server
