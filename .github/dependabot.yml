@@ -93,10 +93,19 @@ updates:
       versions:
       - ">= 5.0.0"
     # the following plugins have abandoned Maven < 3.6.3
+    - dependency-name: org.apache.maven.plugins:maven-dependency-plugin
+      versions:
+      - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-clean-plugin
       versions:
       - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-compiler-plugin
+      versions:
+      - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-deploy-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-enforcer-plugin
       versions:
       - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-failsafe-plugin
