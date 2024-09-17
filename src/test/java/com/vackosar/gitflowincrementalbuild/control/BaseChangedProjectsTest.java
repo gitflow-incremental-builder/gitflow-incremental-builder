@@ -3,7 +3,6 @@ package com.vackosar.gitflowincrementalbuild.control;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.vackosar.gitflowincrementalbuild.BaseRepoTest;
 import com.vackosar.gitflowincrementalbuild.boundary.Configuration;
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
@@ -131,7 +130,7 @@ public abstract class BaseChangedProjectsTest extends BaseRepoTest {
         assertExpectedProjectsFound(expected);
     }
 
-    public List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) throws GitAPIException, IOException {
+    public List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) {
         Set<MavenProject> foundProjects = underTest.get(config());
         final Set<Path> actual = underTest.get(config()).stream()
                 .map(MavenProject::getBasedir)

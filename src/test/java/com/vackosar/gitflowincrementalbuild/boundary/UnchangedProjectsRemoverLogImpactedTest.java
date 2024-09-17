@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +35,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     private Path logFilePath;
 
     @BeforeEach
-    void beforeThis() throws GitAPIException, IOException {
+    void beforeThis() {
         logFilePath = tempDir.resolve("impacted.log");
         addGibProperty(Property.logImpactedTo, logFilePath.toAbsolutePath().toString());
 
@@ -44,7 +43,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     @Test
-    public void logImpatcedTo_nothingChanged() throws GitAPIException, IOException {
+    public void logImpatcedTo_nothingChanged() throws IOException {
         addModuleMock(AID_MODULE_B, false);
 
         underTest.act(config());
@@ -53,7 +52,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     @Test
-    public void singleChanged() throws GitAPIException, IOException {
+    public void singleChanged() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         underTest.act(config());
@@ -62,7 +61,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     @Test
-    public void singleChanged_withDownstream() throws GitAPIException, IOException {
+    public void singleChanged_withDownstream() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_C, false);
         MavenProject independentModuleMock = addModuleMock(AID_MODULE_D, false);
@@ -77,7 +76,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
     @Test
-    public void singleChanged_buildUpstream() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.buildUpstream, "true");

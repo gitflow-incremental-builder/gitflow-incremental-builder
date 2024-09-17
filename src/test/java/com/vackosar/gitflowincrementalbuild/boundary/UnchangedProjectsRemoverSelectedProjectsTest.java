@@ -6,12 +6,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,13 +25,13 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedProjectsRemoverTest {
 
     @BeforeEach
-    void beforeThis() throws GitAPIException, IOException {
+    void beforeThis()  {
         addGibProperty(Property.skipTestsForUpstreamModules, "true");
     }
 
     // mvn -pl :module-B
     @Test
-    public void nothingChanged() throws GitAPIException, IOException {
+    public void nothingChanged() {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -48,7 +47,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B
     @Test
-    public void nothingChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void nothingChanged_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -67,7 +66,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B,:module-C
     @Test
-    public void nothingChanged_twoSelected() throws GitAPIException, IOException {
+    public void nothingChanged_twoSelected()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setProjectSelections(moduleB, moduleC);
@@ -85,7 +84,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B,:module-C
     @Test
-    public void nothingChanged_twoSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void nothingChanged_twoSelected_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setProjectSelections(moduleB, moduleC);
@@ -105,7 +104,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void nothingChanged_makeUpstream() throws GitAPIException, IOException {
+    public void nothingChanged_makeUpstream()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -122,7 +121,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void nothingChanged_makeUpstream_buildUpstreamDisabled() throws GitAPIException, IOException {
+    public void nothingChanged_makeUpstream_buildUpstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
 
@@ -141,7 +140,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -amd
     @Test
-    public void nothingChanged_makeDownstream() throws GitAPIException, IOException {
+    public void nothingChanged_makeDownstream()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -166,7 +165,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -amd
     @Test
-    public void nothingChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void nothingChanged_makeDownstream_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -193,7 +192,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // A <- B <- C
     // A <- D <- E
     @Test
-    public void nothingChanged_makeDownstream_twoSelected() throws GitAPIException, IOException {
+    public void nothingChanged_makeDownstream_twoSelected()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -225,7 +224,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void nothingChanged_makeBoth() throws GitAPIException, IOException {
+    public void nothingChanged_makeBoth()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -249,7 +248,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B
     @Test
-    public void moduleAChanged() throws GitAPIException, IOException {
+    public void moduleAChanged()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -263,7 +262,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B
     @Test
-    public void moduleAChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void moduleAChanged_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -283,7 +282,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleAChanged_makeUpstream() throws GitAPIException, IOException {
+    public void moduleAChanged_makeUpstream()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -300,7 +299,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleAChanged_makeUpstream_buildUpstreamDisabled() throws GitAPIException, IOException {
+    public void moduleAChanged_makeUpstream_buildUpstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -318,7 +317,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleAChanged_makeUpstream_moduleCSelected() throws GitAPIException, IOException {
+    public void moduleAChanged_makeUpstream_moduleCSelected()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setDownstreamProjects(moduleB, moduleC);
@@ -342,7 +341,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void moduleAChanged_makeBoth() throws GitAPIException, IOException {
+    public void moduleAChanged_makeBoth()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -366,7 +365,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void moduleAChanged_makeBoth_buildUpstreamDisabled() throws GitAPIException, IOException {
+    public void moduleAChanged_makeBoth_buildUpstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -391,7 +390,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void moduleAChanged_makeBoth_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void moduleAChanged_makeBoth_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -416,7 +415,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void moduleAChanged_makeDownstream_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void moduleAChanged_makeDownstream_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -441,7 +440,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-A
     @Test
-    public void moduleAChanged_deselectedA() throws GitAPIException, IOException {
+    public void moduleAChanged_deselectedA()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -460,7 +459,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-A
     @Test
-    public void moduleAChanged_deselectedA_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void moduleAChanged_deselectedA_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -481,7 +480,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-A
     @Test
-    public void moduleAChanged_deselectedA_buildDownstreamDisabled_buildAllIfNoChanges() throws GitAPIException, IOException {
+    public void moduleAChanged_deselectedA_buildDownstreamDisabled_buildAllIfNoChanges()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -506,7 +505,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B
     @Test
-    public void moduleBChanged() throws GitAPIException, IOException {
+    public void moduleBChanged()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -517,7 +516,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     }
 
     @Test
-    public void moduleBChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void moduleBChanged_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleB);
         overrideProjects(moduleB);
@@ -532,7 +531,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     }
 
     @Test
-    public void moduleBChanged_twoSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void moduleBChanged_twoSelected_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setProjectSelections(moduleB, moduleC);
@@ -549,7 +548,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleBChanged_makeUpstream() throws GitAPIException, IOException {
+    public void moduleBChanged_makeUpstream()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -563,7 +562,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleBChanged_makeUpstream_buildAll() throws GitAPIException, IOException {
+    public void moduleBChanged_makeUpstream_buildAll()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -580,7 +579,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am
     @Test
-    public void moduleBChanged_makeUpstream_forceBuildA() throws GitAPIException, IOException {
+    public void moduleBChanged_makeUpstream_forceBuildA()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleB);
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -597,7 +596,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl :module-B -am -amd
     @Test
-    public void moduleBChanged_makeBoth() throws GitAPIException, IOException {
+    public void moduleBChanged_makeBoth()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -618,7 +617,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-B
     @Test
-    public void moduleBChanged_deselectedB() throws GitAPIException, IOException {
+    public void moduleBChanged_deselectedB()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -635,7 +634,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-B
     @Test
-    public void moduleBChanged_deselectedB_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void moduleBChanged_deselectedB_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -656,7 +655,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-B
     @Test
-    public void moduleBChanged_deselectedB_buildDownstreamDisabled_buildAllIfNoChanges() throws GitAPIException, IOException {
+    public void moduleBChanged_deselectedB_buildDownstreamDisabled_buildAllIfNoChanges()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -679,7 +678,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-B
     @Test
-    public void moduleBChanged_deselectedB_buildUpstream() throws GitAPIException, IOException {
+    public void moduleBChanged_deselectedB_buildUpstream()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -701,7 +700,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
     // mvn -pl !:module-B
     @Test
-    public void moduleBChanged_deselectedB_buildUpstream_buildDownstreamDisabled() throws GitAPIException, IOException {
+    public void moduleBChanged_deselectedB_buildUpstream_buildDownstreamDisabled()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -725,7 +724,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // A <- B* <- C
     // A <- D* <- E
     @Test
-    public void twoSelected_differentUpstreams_bothChanged() throws GitAPIException, IOException {
+    public void twoSelected_differentUpstreams_bothChanged()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -759,7 +758,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // A <- B <- C
     // A <- D* <- E
     @Test
-    public void twoSelected_differentUpstreams_oneChanged() throws GitAPIException, IOException {
+    public void twoSelected_differentUpstreams_oneChanged()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
         setUpstreamProjects(moduleC, moduleB, moduleA);
@@ -790,7 +789,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     }
 
     @Test
-    public void twoSelected_bothChanged_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void twoSelected_bothChanged_disableSelectedProjectsHandling()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, true);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, true);
         setProjectSelections(moduleB, moduleC);

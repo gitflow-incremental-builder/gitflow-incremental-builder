@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -93,7 +91,7 @@ public abstract class BaseUnchangedProjectsRemoverTest {
     private final List<MavenProject> allModuleMocks = new ArrayList<>();
 
     @BeforeEach
-    void before() throws GitAPIException, IOException {
+    void before() {
         moduleA = addModuleMock(AID_MODULE_A, false);
 
         when(mavenSessionMock.getCurrentProject()).thenReturn(moduleA);

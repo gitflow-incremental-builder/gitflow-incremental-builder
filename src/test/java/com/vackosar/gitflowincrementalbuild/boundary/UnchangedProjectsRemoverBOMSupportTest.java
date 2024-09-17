@@ -8,7 +8,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
@@ -20,7 +19,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
@@ -35,7 +33,7 @@ import com.vackosar.gitflowincrementalbuild.control.Property;
 public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProjectsRemoverTest {
 
     @Test
-    public void bomChanged_noImport() throws GitAPIException, IOException {
+    public void bomChanged_noImport() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         addModuleMock(AID_MODULE_C, false);
@@ -46,7 +44,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_noImport_otherBOMVersion() throws GitAPIException, IOException {
+    public void bomChanged_noImport_otherBOMVersion() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
@@ -60,7 +58,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_noImport_nonBOMModuleChangedAsWell() throws GitAPIException, IOException {
+    public void bomChanged_noImport_nonBOMModuleChangedAsWell() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject changedModuleMock= addModuleMock(AID_MODULE_C, true);
@@ -71,7 +69,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport() throws GitAPIException, IOException {
+    public void bomChanged_oneImport() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
@@ -85,7 +83,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_versionProperty() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_versionProperty() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
@@ -114,7 +112,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_oneWithout() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_oneWithout() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         addModuleMock(AID_MODULE_C, false);
@@ -130,7 +128,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_bomNotSelected() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_bomNotSelected() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
@@ -146,7 +144,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_bomNotSelected_transitive() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_bomNotSelected_transitive() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMockC = addModuleMock(AID_MODULE_C, false);
@@ -168,7 +166,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_C, false);
@@ -187,7 +185,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling_transitive() throws GitAPIException, IOException {
+    public void bomChanged_oneImport_bomNotSelected_disableSelectedProjectsHandling_transitive() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMockC = addModuleMock(AID_MODULE_C, false);
@@ -211,7 +209,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_twoImports() throws GitAPIException, IOException {
+    public void bomChanged_twoImports() {
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_B, true, "pom");
 
         MavenProject unchangedModuleMock1 = addModuleMock(AID_MODULE_C, false);
@@ -230,7 +228,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
     }
 
     @Test
-    public void bomChanged_twoImports_twoBOMs() throws GitAPIException, IOException {
+    public void bomChanged_twoImports_twoBOMs() {
         MavenProject unchangedBOMModuleMock = addModuleMock(AID_MODULE_B, false, "pom");
         MavenProject changedBOMModuleMock = addModuleMock(AID_MODULE_C, true, "pom");
 
