@@ -39,7 +39,6 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.TypeAwareExpressionEvaluator;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +64,7 @@ class UnchangedProjectsRemover {
 
     private final Map<String, Set<MavenProject>> downstreamCache = new HashMap<>();
 
-    void act(Configuration config) throws GitAPIException, IOException {
+    void act(Configuration config) {
         try {
             doAct(config);
         } finally {
@@ -74,7 +73,7 @@ class UnchangedProjectsRemover {
         }
     }
 
-    private void doAct(Configuration config) throws GitAPIException, IOException {
+    private void doAct(Configuration config) {
         LazyMavenProjectComparator projectComparator = new LazyMavenProjectComparator(config.mavenSession);
         // ensure to write logfile for impaced (even if just empty)
         config.logImpactedTo.ifPresent(logFilePath -> writeImpactedLogFile(Collections.emptySet(), logFilePath, projectComparator, config));

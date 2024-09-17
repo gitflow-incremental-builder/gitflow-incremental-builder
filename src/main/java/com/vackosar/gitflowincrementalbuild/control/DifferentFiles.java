@@ -35,13 +35,12 @@ import com.vackosar.gitflowincrementalbuild.control.jgit.AgentProxyAwareJschConf
 import com.vackosar.gitflowincrementalbuild.control.jgit.GitProvider;
 import com.vackosar.gitflowincrementalbuild.control.jgit.HttpDelegatingCredentialsProvider;
 import com.vackosar.gitflowincrementalbuild.entity.SkipExecutionException;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
 @Named
 public class DifferentFiles {
-
-    public static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
     private static final String HEAD = "HEAD";
     private static final String REFS_REMOTES = "refs/remotes/";
@@ -54,7 +53,7 @@ public class DifferentFiles {
 
     private final Map<String, String> additionalNativeGitEnvironment = new HashMap<>();
 
-    public Set<Path> get(Configuration config) throws GitAPIException, IOException {
+    public Set<Path> get(Configuration config) {
         Set<Path> paths = new HashSet<>();
 
         Worker worker = null;
@@ -69,6 +68,8 @@ public class DifferentFiles {
             if (config.uncommitted || config.untracked) {
                 paths.addAll(worker.getChangesFromStatus());
             }
+        } catch (GitAPIException | IOException e) {
+            throw new RuntimeException("Failed to get file differences", e);
         } finally {
             if (worker != null) {
                 worker.credentialsProvider.resetAll();

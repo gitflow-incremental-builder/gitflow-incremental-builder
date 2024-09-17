@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -16,7 +15,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -33,7 +31,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     private static final String AID_MODULE_B_DEP_WAR = AID_MODULE_B + "-dependent-war";
 
     @Test
-    public void nothingChanged() throws GitAPIException, IOException {
+    public void nothingChanged() {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
 
         underTest.act(config());
@@ -47,7 +45,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void nothingChanged_buildAllIfNoChanges() throws GitAPIException, IOException {
+    public void nothingChanged_buildAllIfNoChanges()  {
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_B, false);
 
         addGibProperty(Property.buildAllIfNoChanges, "true");
@@ -65,7 +63,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     // mvn -f ... for a multi-module-submodule
     @Test
-    public void nothingChanged_singleModule_withSubmodules() throws GitAPIException, IOException {
+    public void nothingChanged_singleModule_withSubmodules()  {
         // note: a more realistic setup would require a proper parent/root
         moduleA.getModel().addModule("test");
 
@@ -81,7 +79,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     // mvn -N ... for a multi-module-submodule
     @Test
-    public void nothingChanged_singleModule_withSubmodules_nonRecursive() throws GitAPIException, IOException {
+    public void nothingChanged_singleModule_withSubmodules_nonRecursive()  {
         // note: a more realistic setup would require a proper parent/root
         moduleA.getModel().addModule("test");
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
@@ -98,7 +96,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     // mvn -f module-B (or unusal case of a non-multi-module project)
     @Test
-    public void nothingChanged_singleModule_leaf() throws GitAPIException, IOException {
+    public void nothingChanged_singleModule_leaf()  {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
 
         // emulate -f module-B
@@ -116,7 +114,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged() throws GitAPIException, IOException {
+    public void singleChanged()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         underTest.act(config());
@@ -125,7 +123,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -139,7 +137,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_skipTestsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -155,7 +153,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_testJarGoal() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_skipTestsForUpstreamModules_testJarGoal()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -173,7 +171,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_argsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_argsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         when(mavenExecutionRequestMock.getMakeBehavior()).thenReturn(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
@@ -189,7 +187,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeChanged() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeChanged()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -211,7 +209,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -235,7 +233,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     // linear: A <- B <- C <- D
     @Test
-    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules_linear() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeChanged_argsForUpstreamModules_linear()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedIntermediateModuleMock = addModuleMock("module-C", false);
         MavenProject dependsOnIntermediateModuleMock = addModuleMock("module-D", true);
@@ -261,7 +259,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeImpacted() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeImpacted()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -283,7 +281,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
         MavenProject dependsOnBothModuleMock = addModuleMock("changed-and-unchanged-dependent", false);
@@ -307,7 +305,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
     // linear: A <- B <- C <- D
     @Test
-    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules_linear() throws GitAPIException, IOException {
+    public void singleChanged_buildUpstream_modeImpacted_argsForUpstreamModules_linear()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedIntermediateModuleMock = addModuleMock("module-C", false);
         MavenProject dependsOnIntermediateModuleMock = addModuleMock("module-D", false);
@@ -333,7 +331,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildAll_argsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.argsForUpstreamModules, "enforcer.skip=true argWithNoValue");
@@ -348,7 +346,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_enabled() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_enabled()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
@@ -363,7 +361,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_disabled() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_disabled()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
@@ -378,7 +376,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_disabled_buildAll_argsForUpstreamModules() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_disabled_buildAll_argsForUpstreamModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
 
@@ -399,7 +397,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -416,7 +414,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly_overriddenByChange() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly_overriddenByChange()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", true);    // changed, sic!
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -433,7 +431,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly_testJarGoal() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly_testJarGoal()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -451,7 +449,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -471,7 +469,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep_transitive() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep_transitive()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -495,7 +493,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_buildDownstream_testOnly_testJarGoal_compileDep_transitive() throws GitAPIException, IOException {
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_compileDep_transitive()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
         MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
@@ -516,7 +514,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.forceBuildModules, moduleA.getArtifactId());
@@ -527,7 +525,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_conditionalMatches() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_conditionalMatches()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.forceBuildModules, changedModuleMock.getArtifactId() + "=" + moduleA.getArtifactId());
@@ -538,7 +536,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_conditionalMatchesNot() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_conditionalMatchesNot()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.forceBuildModules, changedModuleMock.getArtifactId() + "=X");
@@ -549,7 +547,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_two() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_two()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("unchanged-module", false);
 
@@ -562,7 +560,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_oneWildcard() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_oneWildcard()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock(AID_MODULE_A + "-2", false);
 
@@ -575,7 +573,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_twoWildcards() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_twoWildcards()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("module-C", false);
 
@@ -588,7 +586,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_twoWildcards_secondMatchesNot() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_twoWildcards_secondMatchesNot()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         addModuleMock("module-C", false);
 
@@ -601,7 +599,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_forceBuildModules_mixWithConditional() throws GitAPIException, IOException {
+    public void singleChanged_forceBuildModules_mixWithConditional()  {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject unchangedModuleMock = addModuleMock("module-C", false);
 
@@ -614,7 +612,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_oneExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_oneExcluded()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
@@ -629,7 +627,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_oneExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_oneExcluded()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentJar = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
@@ -645,7 +643,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_twoExcluded() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_twoTransitive_twoExcluded()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
         MavenProject dependentEar = addModuleMock(AID_MODULE_B + "-dependent-ear", false, "ear");
@@ -661,7 +659,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_buildAll() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_buildAll()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
@@ -677,7 +675,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_forceBuildModules() throws GitAPIException, IOException {
+    public void singleChanged_excludeDownstreamModulesPackagedAs_oneTransitive_forceBuildModules()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, false, "war");
 
@@ -693,7 +691,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded() throws GitAPIException, IOException {
+    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, true, "war");
 
@@ -708,7 +706,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
     }
 
     @Test
-    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded_transitive() throws GitAPIException, IOException {
+    public void twoChanged_excludeDownstreamModulesPackagedAs_changedNotExcluded_transitive()  {
         MavenProject changedProjectMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentWar = addModuleMock(AID_MODULE_B_DEP_WAR, true, "war");
 

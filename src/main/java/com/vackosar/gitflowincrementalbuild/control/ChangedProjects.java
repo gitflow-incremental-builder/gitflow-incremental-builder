@@ -1,6 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.control;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -14,7 +13,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +37,7 @@ public class ChangedProjects {
     @Inject private Modules modules;
     @Inject private GitProvider gitProvider;
 
-    public Set<MavenProject> get(Configuration config) throws GitAPIException, IOException {
+    public Set<MavenProject> get(Configuration config) {
         Map<Path, List<MavenProject>> modulesPathMap = modules.createPathMap(config.mavenSession);
         Path projectRoot = gitProvider.getProjectRoot(config);
         return differentFiles.get(config).stream()

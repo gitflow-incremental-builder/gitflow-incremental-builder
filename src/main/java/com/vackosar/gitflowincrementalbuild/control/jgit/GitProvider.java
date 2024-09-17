@@ -52,6 +52,14 @@ public class GitProvider {
         return get(config).getRepository().getDirectory().toPath().getParent();
     }
 
+    public String getCurrentBranch(Configuration config) {
+        try {
+            return get(config).getRepository().getBranch();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public void close() {
         if (git != null) {
             git.close();

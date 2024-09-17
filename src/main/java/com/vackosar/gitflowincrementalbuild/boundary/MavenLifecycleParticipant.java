@@ -1,8 +1,5 @@
 package com.vackosar.gitflowincrementalbuild.boundary;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -107,16 +104,12 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
 
     private boolean isDisabledForCurrentBranch(Configuration config) {
         return config.disableIfBranchMatches.map(predicate -> {
-            try {
-                String branch = gitProvider.get(config).getRepository().getBranch();
-                boolean matches = predicate.test(branch);
-                if (matches) {
-                    logger.info("gitflow-incremental-builder is disabled for the current branch: {}", branch);
-                }
-                return matches;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+            String branch = gitProvider.getCurrentBranch(config);
+            boolean matches = predicate.test(branch);
+            if (matches) {
+                logger.info("gitflow-incremental-builder is disabled for the current branch: {}", branch);
             }
+            return matches;
         }).orElse(false);
     }
 

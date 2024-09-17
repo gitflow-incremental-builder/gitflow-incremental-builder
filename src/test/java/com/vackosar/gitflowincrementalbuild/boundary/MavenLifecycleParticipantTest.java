@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -21,8 +20,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +70,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void defaultlyEnabled() throws Exception {
+    public void defaultlyEnabled() throws MavenExecutionException {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -82,7 +79,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabled() throws Exception {
+    public void disabled() throws MavenExecutionException {
         projectProperties.setProperty(Property.disable.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
@@ -93,7 +90,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabled_helpRequested() throws Exception {
+    public void disabled_helpRequested() throws MavenExecutionException {
         projectProperties.setProperty(Property.disable.prefixedName(), "true");
         projectProperties.setProperty(Property.help.prefixedName(), "true");
 
@@ -104,7 +101,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void helpRequested() throws Exception {
+    public void helpRequested() throws MavenExecutionException {
         projectProperties.setProperty(Property.help.prefixedName(), "true");
 
         underTest.afterProjectsRead(mavenSessionMock);
@@ -114,7 +111,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void defaultlyNoHelp() throws Exception {
+    public void defaultlyNoHelp() throws MavenExecutionException {
 
         underTest.afterProjectsRead(mavenSessionMock);
 
@@ -122,7 +119,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void onRuntimeException() throws Exception {
+    public void onRuntimeException() throws MavenExecutionException {
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
         doThrow(runtimeException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
 
@@ -131,7 +128,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void onRuntimeException_failOnErrorFalse() throws Exception {
+    public void onRuntimeException_failOnErrorFalse() throws MavenExecutionException {
         projectProperties.setProperty(Property.failOnError.prefixedName(), "false");
         RuntimeException runtimeException = new RuntimeException("FAIL !!!");
         doThrow(runtimeException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
@@ -143,7 +140,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void onSkipExecutionException() throws Exception {
+    public void onSkipExecutionException() throws MavenExecutionException {
         SkipExecutionException skipExecutionException = new SkipExecutionException("FAIL !!!");
         doThrow(skipExecutionException).when(unchangedProjectsRemoverMock).act(any(Configuration.class));
 
@@ -154,7 +151,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void projectDependencyGraphMissing() throws Exception {
+    public void projectDependencyGraphMissing() throws MavenExecutionException {
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(null);
 
         underTest.afterProjectsRead(mavenSessionMock);
@@ -164,7 +161,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForReferenceBranch() throws Exception {
+    public void enabledForReferenceBranch() throws MavenExecutionException {
         projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
 
         projectProperties.setProperty(Property.referenceBranch.prefixedName(), "feature/group-effort");
@@ -175,7 +172,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabledForReferenceBranch() throws Exception {
+    public void disabledForReferenceBranch() throws MavenExecutionException {
         projectProperties.setProperty(Property.disableIfReferenceBranchMatches.prefixedName(), "origin/\\d+\\.\\d+");
 
         projectProperties.setProperty(Property.referenceBranch.prefixedName(), "origin/1.13");
@@ -187,7 +184,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForCurrentBranch() throws Exception {
+    public void enabledForCurrentBranch() throws MavenExecutionException {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("feature/cool-stuff");
@@ -198,7 +195,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void enabledForCurrentBranch_quarkusStyle() throws Exception {
+    public void enabledForCurrentBranch_quarkusStyle() throws MavenExecutionException {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|\\d+\\.\\d+|.*backport.*");
 
         mockCurrentBranch("bump-xyz-to-1.1");
@@ -209,7 +206,7 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
-    public void disabledForCurrentBranch() throws Exception {
+    public void disabledForCurrentBranch() throws MavenExecutionException {
         projectProperties.setProperty(Property.disableIfBranchMatches.prefixedName(), "main|develop|(release/.+)|(hotfix/.+)");
 
         mockCurrentBranch("develop");
@@ -220,12 +217,8 @@ public class MavenLifecycleParticipantTest {
         verifyNoInteractions(unchangedProjectsRemoverMock);
     }
 
-    private void mockCurrentBranch(String branchName) throws IOException {
-        Git git = mock(Git.class);
-        Repository repository = mock(Repository.class);
-        when(git.getRepository()).thenReturn(repository);
-        when(repository.getBranch()).thenReturn(branchName);
-        when(gitProviderMock.get(any(Configuration.class))).thenReturn(git);
+    private void mockCurrentBranch(String branchName) {
+        when(gitProviderMock.getCurrentBranch(any(Configuration.class))).thenReturn(branchName);
     }
 
     private void verifyHelpLogged(boolean logged) {
