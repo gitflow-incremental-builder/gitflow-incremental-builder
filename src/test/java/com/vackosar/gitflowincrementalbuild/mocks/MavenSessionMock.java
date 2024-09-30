@@ -20,6 +20,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
+import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class MavenSessionMock {
 
         MavenProject currentProject = projects.get(0);
         currentProject.getModel().setProperties(topLevelProjectProperties);
-        MavenSession mavenSession = mock(MavenSession.class, withSettings().lenient());
+        MavenSession mavenSession = mock(MavenSession.class, withSettings().strictness(Strictness.LENIENT));
         when(mavenSession.getCurrentProject()).thenReturn(currentProject);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
         when(mavenSession.getRequest()).thenReturn(request);
