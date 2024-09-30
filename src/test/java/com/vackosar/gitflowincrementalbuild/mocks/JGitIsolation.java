@@ -13,6 +13,7 @@ import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.util.FS;
 import org.eclipse.jgit.util.SystemReader;
 import org.mockito.AdditionalAnswers;
+import org.mockito.quality.Strictness;
 
 /**
  * Ensures that JGit is isolated from system and user config to avoid inconsistent test results. As JGit does not provide a mechanism to skip user config,
@@ -43,7 +44,7 @@ public class JGitIsolation {
         // note: cannot directly use Mockito.spy(SystemReader.getInstance()) because org.eclipse.jgit.util.SystemReader.Default is invisible
         SystemReader spiedSystemReader = mock(SystemReader.class, withSettings()
                 .defaultAnswer(AdditionalAnswers.delegatesTo(SystemReader.getInstance()))
-                .lenient());
+                .strictness(Strictness.LENIENT));
         try {
             doReturn(emptyConfig).when(spiedSystemReader).getSystemConfig();
             doReturn(emptyConfig).when(spiedSystemReader).getUserConfig();
