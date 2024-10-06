@@ -1,6 +1,6 @@
 # gitflow-incremental-builder (GIB)
 [![GitHub license](https://img.shields.io/github/license/gitflow-incremental-builder/gitflow-incremental-builder.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/blob/3.x/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)](https://maven-badges.herokuapp.com/maven-central/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder)
+[![Maven Central](https://img.shields.io/maven-central/v/com.vackosar.gitflowincrementalbuilder/gitflow-incremental-builder?versionPrefix=3)](https://search.maven.org/search?q=g:com.vackosar.gitflowincrementalbuilder%20AND%20a:gitflow-incremental-builder%20AND%20v:3.*)
 [![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3A3.x)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a?branch=3.x)](https://app.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade?branch=3.x)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a?branch=3.x)](https://app.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage?branch=3.x)
