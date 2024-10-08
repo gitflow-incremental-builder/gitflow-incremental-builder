@@ -4,15 +4,15 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Collections;
 
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jgit.http.server.GitServlet;
 import org.eclipse.jgit.lib.Repository;
@@ -63,14 +63,14 @@ class HttpProtocolServer implements TestServer {
         }
     }
 
-    private ServletHandler buildServletHandler(Repository repo) {
+    private ServletContextHandler buildServletHandler(Repository repo) {
         GitServlet gitServlet = new GitServlet();
         gitServlet.setRepositoryResolver(new SinglePredefinedRepoResolver<>(repo));
 
-        ServletHolder holder = new ServletHolder(gitServlet);
-        ServletHandler servletHandler = new ServletHandler();
-        servletHandler.addServletWithMapping(holder, "/*");
-        return servletHandler;
+        ServletContextHandler ctx = new ServletContextHandler();
+        ctx.setContextPath("/");
+        ctx.addServlet(new ServletHolder(gitServlet), "/*");
+        return ctx;
     }
 
     // https://www.eclipse.org/jetty/documentation/current/configuring-security.html#_authentication_and_authorization_with_embedded_jetty
@@ -79,9 +79,9 @@ class HttpProtocolServer implements TestServer {
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();
         security.setAuthenticator(new BasicAuthenticator());
 
-        Constraint constraint = new Constraint();
-        constraint.setAuthenticate(true);
-        constraint.setRoles(ROLES);
+        Constraint constraint = new Constraint.Builder()
+                .authorization(Constraint.Authorization.SPECIFIC_ROLE)
+                .roles(ROLES).build();
         ConstraintMapping mapping = new ConstraintMapping();
         mapping.setPathSpec("/*");
         mapping.setConstraint(constraint);
