@@ -60,7 +60,7 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.10.0.202406032230-r</version.jgit>
-        <version.maven-core>3.9.8</version.maven-core>
+        <version.maven-core>3.9.9</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.13.1</version.maven-plugin>
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
