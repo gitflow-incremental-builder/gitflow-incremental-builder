@@ -15,7 +15,6 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.gitflowincrementalbuilder.SkipExecutionException;
 import io.github.gitflowincrementalbuilder.config.Configuration;
 
@@ -35,7 +34,6 @@ public class GitProvider {
      * @param config the configuration
      * @return a {@link Git} instance
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Makes no sense to wrap 'git', it's only for internal use anyway.")
     Git get(Configuration config) {
         if (git == null) {
             try {

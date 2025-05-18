@@ -39,14 +39,11 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectSorter;
 import org.codehaus.plexus.util.dag.CycleDetectedException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Describes the inter-dependencies between projects in the reactor.
  *
  * @author Benjamin Bentmann
  */
-@SuppressFBWarnings(justification = "Taken 1:1 from Maven")
 class Maven38DefaultDependencyGraph
     implements ProjectDependencyGraph
 {
