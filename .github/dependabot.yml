@@ -7,6 +7,7 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    versioning-strategy: "increase"
     open-pull-requests-limit: 20
     ignore:
     - dependency-name: ch.qos.logback:logback-classic
