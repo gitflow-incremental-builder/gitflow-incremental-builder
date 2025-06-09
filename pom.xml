@@ -69,7 +69,7 @@
         <version.plexus-utils>4.0.2</version.plexus-utils>
         <version.plexus-xml>3.0.2</version.plexus-xml>
         <version.bytebuddy>1.17.5</version.bytebuddy>
-        <version.junit>5.12.2</version.junit>
+        <version.junit>5.13.1</version.junit>
         <version.archunit>1.4.1</version.archunit>
         <version.assertj>3.27.3</version.assertj>
         <version.mockito>5.18.0</version.mockito>
