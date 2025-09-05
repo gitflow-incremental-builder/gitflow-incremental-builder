@@ -103,12 +103,12 @@ jobs:
       matrix:
         java-maven:
           - {
-            name: "JDK 11 & Maven 3.6.3",
+            name: "JDK 11 & Maven 3.6",
             java-version: 11,
             maven-version: 3.6.3
           }
           - {
-            name: "JDK 17 & Maven 3.8.8",
+            name: "JDK 17 & Maven 3.8",
             java-version: 17,
             maven-version: 3.8.8
           }
