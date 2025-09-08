@@ -6,10 +6,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,7 +73,7 @@ class DownstreamCalculator {
                 graph = config.mavenSession.getProjectDependencyGraph();
             }
         }
-        boolean testOnly = Boolean.TRUE.equals(project.getContextValue(ChangedProjects.CTX_TEST_ONLY));
+        boolean testOnly = ChangedProjects.isTestOnly(project);
         // idea: if testOnly, try to map actual changes to test-jar inclusions/exclusions (if present) and bail out if no match
         // possible issue: a file that is not part of a test-jar might contribute to a (generated) file that _is_ part of the test-jar
         return streamProjectWithDownstreamProjects(project, testOnly, config);

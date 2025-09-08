@@ -398,6 +398,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .doesNotContain("Building child4")
                 .doesNotContain("Building subchild41")
                 .contains("Building child6")
+                .contains("child6 (test only)")
                 .doesNotContain("Building testJarDependency")
                 .doesNotContain("Building testJarDependent");
     }
@@ -422,6 +423,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 .doesNotContain("Building subchild41")
                 .doesNotContain("Building child6")
                 .contains("Building testJarDependency")
+                .contains("testJarDependency (test only)")
                 .contains("Building testJarDependent");
     }
 

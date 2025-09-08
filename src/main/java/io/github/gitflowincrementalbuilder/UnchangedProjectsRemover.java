@@ -320,6 +320,9 @@ class UnchangedProjectsRemover {
                     if (!mavenSession.getProjects().contains(proj)) {
                         entry += " (but deselected)";
                     }
+                    if (ChangedProjects.isTestOnly(proj)) {
+                        entry += " (test only)";
+                    }
                     return "- " + entry;
                 })
                 .forEach(logger::info);
