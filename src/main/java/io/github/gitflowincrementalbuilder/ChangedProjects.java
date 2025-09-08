@@ -27,7 +27,8 @@ class ChangedProjects {
 
     /**
      * Key of the {@link MavenProject#setContextValue(String, Object) context value} this class sets for each returned project. A value of {@link Boolean#TRUE}
-     * means that only changes in the {@code src/test} part of the module were detected.
+     * means that only changes in the {@code src/test} part of the module were detected.<br/>
+     * Prefer using {@link #isTestOnly(MavenProject)} instead of using this key directly.
      */
     public static final String CTX_TEST_ONLY = ChangedProjects.class.getName() + "#TEST-ONLY";
 
@@ -36,6 +37,10 @@ class ChangedProjects {
     @Inject private DifferentFiles differentFiles;
     @Inject private Modules modules;
     @Inject private GitProvider gitProvider;
+
+    public static boolean isTestOnly(MavenProject project) {
+        return Boolean.TRUE.equals(project.getContextValue(CTX_TEST_ONLY));
+    }
 
     public Set<MavenProject> get(Configuration config) {
         Map<Path, List<MavenProject>> modulesPathMap = modules.createPathMap(config.mavenSession);
