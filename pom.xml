@@ -60,7 +60,7 @@
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
 
         <!-- Dependency versions -->
-        <version.jgit>5.13.3.202401111512-r</version.jgit>
+        <version.jgit>5.13.5.202508271544-r</version.jgit>
         <version.jsch.agentproxy>0.0.9</version.jsch.agentproxy>
         <version.maven-core>3.8.4</version.maven-core>
         <version.maven-enforced>3.3.9</version.maven-enforced>
