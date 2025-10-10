@@ -80,7 +80,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 To be able to use GIB, your project must use:
 
-- **Apache Maven** build tool, version **3.8.4** is recommended
+- **Apache Maven** build tool, version **3.8.9** is recommended
   - GIB is also tested with Maven 3.6.3, 3.5.4 and 3.3.9, but 3.3.9 is _not recommended_ in case you want to use `mvn -pl`/`--projects` (see [issue 324](../../issues/324) and [MNG-6173](https://issues.apache.org/jira/browse/MNG-6173))
   - GIB _might_ work with Maven down to version 3.1.0
 
