@@ -97,7 +97,7 @@
         <version.maven-gpg-plugin>3.2.8</version.maven-gpg-plugin>
         <version.central-publishing-maven-plugin>0.8.0</version.central-publishing-maven-plugin>
         <version.maven-release-plugin>3.1.1</version.maven-release-plugin>
-        <version.spotbugs-maven-plugin>4.9.4.2</version.spotbugs-maven-plugin>
+        <version.spotbugs-maven-plugin>4.9.8.1</version.spotbugs-maven-plugin>
         <version.spotbugs>4.9.4</version.spotbugs>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
