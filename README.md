@@ -99,7 +99,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.16.0</version>
+            <version>3.16.1</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -118,7 +118,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>3.16.0</version>
+            <version>3.16.1</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -191,7 +191,7 @@ $ cat pom.xml
             <extension>
                 <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>3.16.0</version>
+                <version>3.16.1</version>
             </extension>
         </extensions>
     </build>
@@ -679,15 +679,15 @@ or a downstream module of a changed module.
 
 GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
 
-Starting with 3.16.0, GIB does also write the actually built modules to this file:
+Starting with 3.16.1, GIB does also write the actually built modules to this file:
 
 - if only [explicitly selected projects](#explicitly-selected-projects) are present
 - or if Maven is building non-recursively (`-N`)
 - or if Maven is building only a single leaf module
 
-Before 3.16.0 GIB only created an empty file in those cases.
+Before 3.16.1 GIB only created an empty file in those cases.
 
-Starting with 3.16.0, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
+Starting with 3.16.1, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
 
 Since: 3.10.1
 
