@@ -68,7 +68,7 @@
         <version.slf4j>1.7.32</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.13</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
         <version.javax.inject>1</version.javax.inject>
-        <version.bytebuddy>1.17.7</version.bytebuddy>
+        <version.bytebuddy>1.18.1</version.bytebuddy>
         <version.junit>5.14.0</version.junit>
         <version.assertj>3.27.6</version.assertj>
         <version.mockito>4.11.0</version.mockito>
