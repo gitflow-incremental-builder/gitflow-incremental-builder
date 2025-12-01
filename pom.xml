@@ -83,7 +83,7 @@
         <version.jacoco-maven-plugin>0.8.13</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
         <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.sisu-maven-plugin>0.3.5</version.sisu-maven-plugin>
-        <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
+        <version.maven-resources-plugin>3.4.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
         <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
         <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
