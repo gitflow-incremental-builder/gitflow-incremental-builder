@@ -80,7 +80,7 @@ jobs:
       shell: bash
       run: find target -name '*-reports' -type d -prune | tar -czf 'test-reports-${{ env.JOB_NAME }}.tgz' -T -
     - name: Upload test reports archive on failure
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: test-reports-${{ env.JOB_NAME }}
@@ -173,7 +173,7 @@ jobs:
       shell: bash
       run: find target -name '*-reports' -type d -prune | tar -czf test-reports.tgz -T -
     - name: Upload test reports archive on failure
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: test-reports-${{ matrix.java-maven.name }}
