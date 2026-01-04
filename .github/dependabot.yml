@@ -147,7 +147,13 @@ updates:
     - dependency-name: org.apache.maven.plugins:maven-release-plugin
       versions:
       - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-resources-plugin
+      versions:
+      - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-site-plugin
+      versions:
+      - ">= 0"
+    - dependency-name: org.apache.maven.plugins:maven-source-plugin
       versions:
       - ">= 0"
     - dependency-name: org.apache.maven.plugins:maven-surefire-plugin
