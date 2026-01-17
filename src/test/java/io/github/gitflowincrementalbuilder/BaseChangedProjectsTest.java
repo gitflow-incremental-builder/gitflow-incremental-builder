@@ -1,9 +1,13 @@
 package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +51,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
     @Spy
     protected Modules modulesSpy;
+    private Map<Path, List<MavenProject>> modulesPathMapSpy;
 
     @InjectMocks
     protected ChangedProjects underTest;
@@ -62,6 +68,14 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @BeforeEach
     void initMavenSessionMock() throws Exception {
         mavenSessionMock = getMavenSessionMock();
+
+        // spy the modules path map
+        doAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Map<Path, List<MavenProject>> map = (Map<Path, List<MavenProject>>) invocation.callRealMethod();
+            modulesPathMapSpy = spy(map);
+            return modulesPathMapSpy;
+        }).when(modulesSpy).createPathMap(mavenSessionMock);
     }
 
     @AfterEach
@@ -72,7 +86,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void list() throws Exception {
+    public void list() {
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get("parent/child2/subchild2"),
                 Paths.get("parent/child3"),
@@ -85,7 +99,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void list_ignoreChangedNonReactorModule() throws Exception {
+    public void list_ignoreChangedNonReactorModule() {
         // remove child3 (which contains changes) from the reactor/session
         mavenSessionMock.getAllProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
         mavenSessionMock.getProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
@@ -101,7 +115,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void list_testOnly() throws Exception {
+    public void list_testOnly() throws IOException {
         projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
         projectProperties.setProperty(Property.untracked.prefixedName(), "true");
         Path testJavaPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/java"));
@@ -120,7 +134,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void embeddedTestMavenProject() throws Exception {
+    public void embeddedTestMavenProject() throws IOException {
         projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
         projectProperties.setProperty(Property.untracked.prefixedName(), "true");
         Path testProjectPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/resources/project"));
@@ -132,20 +146,40 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void foo() throws Exception {
+    public void embeddedTestMavenProject_notInReactor() throws IOException {
         projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
         projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        // hint: not contained in modules map
+        Path fooModule = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/foo"));
+        Files.createFile(fooModule.resolve("pom.xml"));
+        Path testProjectPath = Files.createDirectories(fooModule.resolve("src/test/resources/project"));
+        Files.createFile(testProjectPath.resolve("pom.xml"));
+
+        final Set<Path> expected = Collections.emptySet();
+
+        assertExpectedProjectsFound(expected);
+
+        verify(modulesPathMapSpy, times(2)).get(fooModule);
+    }
+
+    @Test
+    public void srcInModulePath_notInReactor() throws IOException {
+        projectProperties.setProperty(Property.disableBranchComparison.prefixedName(), "true");
+        projectProperties.setProperty(Property.untracked.prefixedName(), "true");
+        // hint: not contained in modules map
         Path testProjectPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("src/java"));
         Files.createFile(testProjectPath.resolve("pom.xml"));
 
         final Set<Path> expected = Collections.emptySet();
 
         assertExpectedProjectsFound(expected);
+
+        verify(modulesPathMapSpy).get(testProjectPath);
     }
 
     private List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) {
         Set<MavenProject> foundProjects = underTest.get(config());
-        final Set<Path> actual = underTest.get(config()).stream()
+        final Set<Path> actual = foundProjects.stream()
                 .map(MavenProject::getBasedir)
                     .map(File::toPath)
                     .map(localRepoMock.getRepoDir()::relativize)

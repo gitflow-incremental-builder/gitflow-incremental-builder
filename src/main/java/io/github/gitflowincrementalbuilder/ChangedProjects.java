@@ -86,7 +86,7 @@ class ChangedProjects {
         for (Path element : relativePath) {
             // note: just "src" is good enough for 99.9% of projects,
             // for the rest we'd need to evaluate (test) compile source roots and resources of the "closest" module
-            if (relativePath.getParent() != null && element.getFileName().toString().equals("src")) {
+            if (element.getFileName().toString().equals("src")) {
                 Path shortenedPath = elementIndex == 0 ? projectRoot : projectRoot.resolve(relativePath.subpath(0, elementIndex));
                 // if there is no pom.xml next to src we must not consider it a "Maven src" folder
                 if (pomXmlExistsIn(shortenedPath)) {
