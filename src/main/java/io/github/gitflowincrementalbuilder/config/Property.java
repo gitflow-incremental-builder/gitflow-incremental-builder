@@ -148,6 +148,10 @@ public enum Property {
      */
     logGAVsImpactedTo("", "lgit"),
     /**
+     * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
+     */
+    impactedDependenciesFrom("", "idf"),
+    /**
      * Controls which projects to log.
      */
     logProjectsMode("changed", "lpm");

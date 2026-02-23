@@ -52,6 +52,8 @@ class UnchangedProjectsRemover {
 
     @Inject private ChangedProjects changedProjects;
 
+    @Inject private ImpactedDependencies impactedDependencies;
+
     @Inject private DownstreamCalculator downstreamCalculator;
 
     @Inject private GitProvider gitProvider;
@@ -112,7 +114,16 @@ class UnchangedProjectsRemover {
             }
         }
 
-        final Set<MavenProject> changed = changedProjects.get(config);
+        final Set<MavenProject> changed;
+
+        // If impactedDependenciesFrom is provided, use it instead of change detection
+        if (config.impactedDependenciesFrom.isPresent()) {
+            logger.info("Using impacted dependencies from file: {}", config.impactedDependenciesFrom.get());
+            changed = impactedDependencies.get(config);
+        } else {
+            changed = changedProjects.get(config);
+        }
+
         printDelimiter();
         if (changed.isEmpty()) {
             handleNoChangesDetected(selected, projectComparator, config);

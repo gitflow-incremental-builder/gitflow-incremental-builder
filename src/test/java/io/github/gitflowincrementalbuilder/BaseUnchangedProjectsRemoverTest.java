@@ -79,6 +79,9 @@ abstract class BaseUnchangedProjectsRemoverTest {
     @Mock(strictness = Mock.Strictness.LENIENT)
     protected ChangedProjects changedProjectsMock;
 
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    protected ImpactedDependencies impactedDependencies;
+
     @Spy
     protected DownstreamCalculator downstreamCalculator;
 
@@ -118,6 +121,7 @@ abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenSessionMock.getAllProjects()).thenReturn(allProjects);
         when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get(any(Configuration.class))).thenReturn(changedProjects);
+        when(impactedDependencies.get(any(Configuration.class))).thenReturn(changedProjects);
 
         when(mavenSessionMock.getGoals()).thenReturn(new ArrayList<>());
     }

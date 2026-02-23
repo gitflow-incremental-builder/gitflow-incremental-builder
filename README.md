@@ -709,6 +709,26 @@ GIB will always remove the file first (unless disabled via any of the `disabled*
 
 Since: 4.6.0
 
+### gib.impactedDependenciesFrom
+
+Defines an optional file containing a list of GAVs (GroupId:ArtifactId:Version, one per line) of dependencies. When specified, GIB will read this file and determine which modules should be built based on whether they have transitive dependencies matching the listed GAVs. This overrides the normal git-based change detection.
+
+Each line in the file should contain a single GAV in the format `groupId:artifactId:version`. Lines starting with `#` are treated as comments and ignored, as are blank lines.
+
+This is useful for scenarios where you want to rebuild modules that depend on specific updated dependencies, without relying on git change detection.
+
+**Example file contents:**
+```
+# Updated dependencies that trigger rebuilds
+com.example:lib-a:1.0
+com.example:lib-b:2.1
+org.apache:commons-lang:3.8
+```
+
+Any module in the reactor that has one of these dependencies (directly or transitively) will be included in the build, along with any downstream modules that depend on the impacted modules.
+
+Since: 4.6.0
+
 ### gib.logProjectsMode
 
 Controls which projects to log to the console. Default is `changed`, other options are `none`, `impacted` (changed + downstream) and `all` (including upstream).
