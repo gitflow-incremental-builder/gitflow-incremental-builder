@@ -696,6 +696,19 @@ Starting with 4.5.0, GIB will always remove the file first (unless disabled via 
 
 Since: 3.10.1
 
+### gib.logGAVsImpactedTo
+
+Defines an optional logfile which GIB shall write all "impacted" modules with their GroupId:ArtifactId:Version to. Each line represents the GAV (GroupId:ArtifactId:Version) of a changed module
+or a downstream module of a changed module.
+
+This property is similar to [gib.logImpactedTo](#giblogimpactedto) but outputs the full Maven coordinates (GAV) instead of the module base directory paths.
+
+GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
+
+GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
+
+Since: 4.6.0
+
 ### gib.logProjectsMode
 
 Controls which projects to log to the console. Default is `changed`, other options are `none`, `impacted` (changed + downstream) and `all` (including upstream).

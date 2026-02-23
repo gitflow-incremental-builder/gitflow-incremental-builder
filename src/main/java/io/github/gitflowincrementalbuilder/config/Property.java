@@ -144,6 +144,10 @@ public enum Property {
      */
     logImpactedTo("", "lit"),
     /**
+     * Defines an optional logfile which GIB shall write all "impacted" modules with their GroupId:ArtifactId:Version to.
+     */
+    logGAVsImpactedTo("", "lgit"),
+    /**
      * Controls which projects to log.
      */
     logProjectsMode("changed", "lpm");

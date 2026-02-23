@@ -72,6 +72,7 @@ public class Configuration {
     public final boolean failOnError;
 
     public final Optional<Path> logImpactedTo;
+    public final Optional<Path> logGAVsImpactedTo;
     public final LogProjectsMode logProjectsMode;
 
     private Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -130,6 +131,7 @@ public class Configuration {
 
             // log related
             logImpactedTo = null;
+            logGAVsImpactedTo = null;
             logProjectsMode = null;
 
             return;
@@ -197,6 +199,7 @@ public class Configuration {
 
         // log related
         logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        logGAVsImpactedTo = Property.logGAVsImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
                 parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }
