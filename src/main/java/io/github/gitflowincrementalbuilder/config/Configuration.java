@@ -329,13 +329,13 @@ public class Configuration {
     public enum BuildUpstreamMode {
         NONE,
         CHANGED,
-        IMPACTED;
+        IMPACTED
     }
 
     public enum LogProjectsMode {
         NONE,
         CHANGED,
         IMPACTED,
-        ALL;
+        ALL
     }
 }
