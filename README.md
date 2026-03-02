@@ -54,6 +54,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
+  - [gib.logGAVsImpactedTo](#gibloggavsimpactedto)
+  - [gib.gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
   - [gib.logProjectsMode](#giblogprojectsmode)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
@@ -709,7 +711,7 @@ GIB will always remove the file first (unless disabled via any of the `disabled*
 
 Since: 4.6.0
 
-### gib.impactedDependenciesFrom
+### gib.loadImpactedDependenciesFrom
 
 Defines an optional file containing a list of GAVs (GroupId:ArtifactId:Version, one per line) of dependencies. When specified, GIB will read this file and determine which modules should be built based on whether they have transitive dependencies matching the listed GAVs. This overrides the normal git-based change detection.
 
