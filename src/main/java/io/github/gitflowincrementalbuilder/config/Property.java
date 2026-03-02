@@ -150,7 +150,7 @@ public enum Property {
     /**
      * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
      */
-    impactedDependenciesFrom("", "idf"),
+    loadImpactedDependenciesFrom("", "lidf"),
     /**
      * Controls which projects to log.
      */

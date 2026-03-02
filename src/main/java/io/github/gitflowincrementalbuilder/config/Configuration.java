@@ -202,7 +202,7 @@ public class Configuration {
         // log related
         logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logGAVsImpactedTo = Property.logGAVsImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
-        impactedDependenciesFrom = Property.impactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
                 parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }

@@ -25,7 +25,7 @@ import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
 /**
- * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#impactedDependenciesFrom}.
+ * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#loadImpactedDependenciesFrom}.
  *
  * @author famod
  */
@@ -47,7 +47,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
 
     @Test
     public void noImpactedDependenciesFile() throws IOException {
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -61,7 +61,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
         // Create empty file
         Files.createFile(impactedDepsFile);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -83,7 +83,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
         // Write the impacted dependencies file
         Files.write(impactedDepsFile, Arrays.asList(externalGav), StandardCharsets.UTF_8);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -110,7 +110,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
         // Write the impacted dependencies file with multiple GAVs
         Files.write(impactedDepsFile, Arrays.asList(impactedGav1, impactedGav2), StandardCharsets.UTF_8);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -133,7 +133,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
                 ""
         ), StandardCharsets.UTF_8);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -155,7 +155,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
 
         Files.write(impactedDepsFile, Arrays.asList(impactedGav), StandardCharsets.UTF_8);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
@@ -168,7 +168,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchan
         // Write impacted dependencies file with GAVs that no project has
         Files.write(impactedDepsFile, Arrays.asList("com.example:unknown:1.0"), StandardCharsets.UTF_8);
 
-        addGibProperty(Property.impactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
+        addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
         underTest.act(config());
 
