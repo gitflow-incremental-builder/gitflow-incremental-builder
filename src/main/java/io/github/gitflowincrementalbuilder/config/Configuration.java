@@ -326,13 +326,13 @@ public class Configuration {
                 .map(Pattern::asMatchPredicate);
     }
 
-    public static enum BuildUpstreamMode {
+    public enum BuildUpstreamMode {
         NONE,
         CHANGED,
         IMPACTED;
     }
 
-    public static enum LogProjectsMode {
+    public enum LogProjectsMode {
         NONE,
         CHANGED,
         IMPACTED,
