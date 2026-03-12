@@ -54,7 +54,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
-  - [gib.logGAVsImpactedTo](#gibloggavsimpactedto)
+  - [gib.logImpactedFormat](#giblogimpactedformat)
   - [gib.gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
   - [gib.logProjectsMode](#giblogprojectsmode)
 
@@ -366,6 +366,7 @@ Maven pom properties configuration with default values is below:
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
+    <gib.logImpactedFormat>path</gib.logImpactedFormat>                                 <!-- or -Dgib.lif=...   -->
     <gib.logProjectsMode>changed</gib.logProjectsMode>                                 <!-- or -Dgib.lpm=...   -->
 </properties>
 ```
@@ -698,16 +699,14 @@ Starting with 4.5.0, GIB will always remove the file first (unless disabled via 
 
 Since: 3.10.1
 
-### gib.logGAVsImpactedTo
+### gib.logImpactedFormat
 
-Defines an optional logfile which GIB shall write all "impacted" modules with their GroupId:ArtifactId:Version to. Each line represents the GAV (GroupId:ArtifactId:Version) of a changed module
-or a downstream module of a changed module.
+Controls the output format of the logfile defined by [gib.logImpactedTo](#giblogimpactedto):
 
-This property is similar to [gib.logImpactedTo](#giblogimpactedto) but outputs the full Maven coordinates (GAV) instead of the module base directory paths.
+- `path` (default): each line contains the relative base directory path of an impacted module
+- `gav`: each line contains the full Maven coordinates (`GroupId:ArtifactId:Version`) of an impacted module
 
-GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
-
-GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
+This property has no effect if `gib.logImpactedTo` is not set.
 
 Since: 4.6.0
 

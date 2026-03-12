@@ -144,9 +144,9 @@ public enum Property {
      */
     logImpactedTo("", "lit"),
     /**
-     * Defines an optional logfile which GIB shall write all "impacted" modules with their GroupId:ArtifactId:Version to.
+     * Controls the output format of the logfile defined by {@link #logImpactedTo}: {@code path} (default) for relative module paths or {@code gav} for GroupId:ArtifactId:Version.
      */
-    logGAVsImpactedTo("", "lgit"),
+    logImpactedFormat("path", "lif"),
     /**
      * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
      */
