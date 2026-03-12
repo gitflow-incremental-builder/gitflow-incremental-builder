@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -29,7 +28,7 @@ import io.github.gitflowincrementalbuilder.jgit.GitProvider;
  *
  * @author famod
  */
-public class UnchangedProjectsRemoverImpactedDependenciesTest extends BaseUnchangedProjectsRemoverTest {
+public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUnchangedProjectsRemoverTest {
 
     @TempDir
     Path tempDir;
