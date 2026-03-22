@@ -128,8 +128,8 @@ jobs:
             maven-version: 3.9.12
           }
           - {
-            name: "JDK 26 EA & Maven 3.9",
-            java-version: 26-ea,
+            name: "JDK 27 EA & Maven 3.9",
+            java-version: 27-ea,
             maven-version: 3.9.12
           }
 
