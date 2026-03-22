@@ -144,6 +144,14 @@ public enum Property {
      */
     logImpactedTo("", "lit"),
     /**
+     * Controls the output format of the logfile defined by {@link #logImpactedTo}: {@code path} (default) for relative module paths or {@code gav} for GroupId:ArtifactId:Version.
+     */
+    logImpactedFormat("path", "lif"),
+    /**
+     * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
+     */
+    loadImpactedDependenciesFrom("", "lidf"),
+    /**
      * Controls which projects to log.
      */
     logProjectsMode("changed", "lpm");

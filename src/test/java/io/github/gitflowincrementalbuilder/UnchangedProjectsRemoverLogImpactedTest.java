@@ -9,15 +9,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Configuration.LogImpactedFormat;
 import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
@@ -44,26 +48,32 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         when(gitProviderMock.getProjectRoot(any(Configuration.class))).thenReturn(PSEUDO_PROJECT_ROOT);
     }
 
-    @Test
-    public void logImpatcedTo_nothingChanged() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void logImpatcedTo_nothingChanged(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         addModuleMock(AID_MODULE_B, false);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath);
+        assertLogFileContains(logFilePath, format);
     }
 
-    @Test
-    public void singleChanged() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void singleChanged(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, changedModuleMock);
+        assertLogFileContains(logFilePath, format, changedModuleMock);
     }
 
-    @Test
-    public void singleChanged_withDownstream() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void singleChanged_withDownstream(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_C, false);
         MavenProject independentModuleMock = addModuleMock(AID_MODULE_D, false);
@@ -74,18 +84,20 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, changedModuleMock, dependentModuleMock);
+        assertLogFileContains(logFilePath, format, changedModuleMock, dependentModuleMock);
     }
 
-    @Test
-    public void singleChanged_buildUpstream() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void singleChanged_buildUpstream(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.buildUpstream, "true");
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, changedModuleMock);
+        assertLogFileContains(logFilePath, format, changedModuleMock);
     }
 
     @Test
@@ -101,25 +113,29 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     }
 
 
-    @Test
-    public void onlySelectedModulesPresent() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void onlySelectedModulesPresent(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleA);
         overrideProjects(moduleA);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, moduleA);
+        assertLogFileContains(logFilePath, format, moduleA);
     }
 
-    @Test
-    public void nonRecursive() throws IOException {
+    @ParameterizedTest
+    @EnumSource(LogImpactedFormat.class)
+    public void nonRecursive(LogImpactedFormat format) throws IOException {
+        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
         addModuleMock(AID_MODULE_B, true);
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, moduleA);
+        assertLogFileContains(logFilePath, format, moduleA);
     }
 
     @Test
@@ -135,15 +151,31 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         underTest.act(config());
 
         assertThat(Files.exists(customLogFilePath));
-        assertLogFileContains(customLogFilePath, changedModuleMock);
+        assertLogFileContains(customLogFilePath, LogImpactedFormat.PATH, changedModuleMock);
     }
 
-    private void assertLogFileContains(Path logFilePath, MavenProject... mavenProjects) throws IOException {
+    private void assertLogFileContains(Path logFilePath, LogImpactedFormat format, MavenProject... mavenProjects) throws IOException {
         assertThat(Files.isReadable(logFilePath))
                 .as(logFilePath + " is missing")
                 .isTrue();
+
         assertThat(Files.readAllLines(logFilePath))
                 .as("Unexpected content of " + logFilePath)
-                .isEqualTo(Arrays.stream(mavenProjects).map(proj -> proj.getBasedir().getName()).collect(Collectors.toList()));
+                .isEqualTo(formatProjects(format, mavenProjects));
+    }
+
+    private List<String> formatProjects(LogImpactedFormat format, MavenProject... mavenProjects) {
+        switch (format) {
+            case GAV:
+                return Arrays.stream(mavenProjects)
+                        .map(proj -> proj.getGroupId() + ":" + proj.getArtifactId() + ":" + proj.getVersion())
+                        .collect(Collectors.toList());
+            case PATH:
+                return Arrays.stream(mavenProjects)
+                        .map(proj -> proj.getBasedir().getName())
+                        .collect(Collectors.toList());
+            default:
+                throw new IllegalArgumentException("Unsupported LogImpactedFormat: " + format);
+        }
     }
 }

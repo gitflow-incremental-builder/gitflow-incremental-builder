@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
 import io.github.gitflowincrementalbuilder.config.Configuration.BuildUpstreamMode;
+import io.github.gitflowincrementalbuilder.config.Configuration.LogImpactedFormat;
 import io.github.gitflowincrementalbuilder.config.Configuration.LogProjectsMode;
 import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
@@ -51,6 +52,8 @@ class UnchangedProjectsRemover {
     private Logger logger = LoggerFactory.getLogger(UnchangedProjectsRemover.class);
 
     @Inject private ChangedProjects changedProjects;
+
+    @Inject private ImpactedDependencies impactedDependencies;
 
     @Inject private DownstreamCalculator downstreamCalculator;
 
@@ -103,7 +106,16 @@ class UnchangedProjectsRemover {
             }
         }
 
-        final Set<MavenProject> changed = changedProjects.get(config);
+        final Set<MavenProject> changed;
+
+        // If impactedDependenciesFrom is provided, use it instead of change detection
+        if (config.impactedDependenciesFrom.isPresent()) {
+            logger.info("Using impacted dependencies from file: {}", config.impactedDependenciesFrom.get());
+            changed = impactedDependencies.get(config);
+        } else {
+            changed = changedProjects.get(config);
+        }
+
         printDelimiter();
         if (changed.isEmpty()) {
             handleNoChangesDetected(selected, projectComparator, config);
@@ -202,18 +214,28 @@ class UnchangedProjectsRemover {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, LazyMavenProjectComparator projectComparator, Configuration config) {
+    private void writeImpactedLogFile(Set<MavenProject> impacted, Path logFilePath, LazyMavenProjectComparator projectComparator,
+            Configuration config) {
+        LogImpactedFormat format = config.logImpactedFormat;
         List<String> projectsToLog;
         if (impacted.isEmpty()) {
             projectsToLog = Collections.emptyList();
         } else {
-            Path projectRootDir = gitProvider.getProjectRoot(config);
-            projectsToLog = impacted.stream()
-                    .sorted(projectComparator)
-                    .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())
-                    .collect(toList());
+            if (format == LogImpactedFormat.GAV) {
+                projectsToLog = impacted.stream()
+                        .sorted(projectComparator)
+                        .map(proj -> proj.getGroupId() + ":" + proj.getArtifactId() + ":" + proj.getVersion())
+                        .collect(toList());
+            } else {
+                Path projectRootDir = gitProvider.getProjectRoot(config);
+                projectsToLog = impacted.stream()
+                        .sorted(projectComparator)
+                        .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())
+                        .collect(toList());
+            }
         }
-        logger.debug("Writing impacted projects to {}: {}", logFilePath, projectsToLog);
+        String label = format == LogImpactedFormat.GAV ? "GAVs" : "projects";
+        logger.debug("Writing impacted {} to {}: {}", label, logFilePath, projectsToLog);
         try {
             Path parentDir = logFilePath.toAbsolutePath().getParent();
             // Check if the parent Directory to the logFilePath exists. If not create it.
@@ -222,7 +244,7 @@ class UnchangedProjectsRemover {
             }
             Files.write(logFilePath, projectsToLog, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to write impacted projects to " + logFilePath + ": " + impacted, e);
+            throw new IllegalStateException("Failed to write impacted " + label + " to " + logFilePath + ": " + impacted, e);
         }
     }
 

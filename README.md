@@ -54,6 +54,8 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
+  - [gib.logImpactedFormat](#giblogimpactedformat)
+  - [gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
   - [gib.logProjectsMode](#giblogprojectsmode)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
@@ -364,6 +366,8 @@ Maven pom properties configuration with default values is below:
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
+    <gib.logImpactedFormat>path</gib.logImpactedFormat>                                <!-- or -Dgib.lif=...   -->
+    <gib.loadImpactedDependenciesFrom></gib.loadImpactedDependenciesFrom>              <!-- or -Dgib.lidf=...  -->
     <gib.logProjectsMode>changed</gib.logProjectsMode>                                 <!-- or -Dgib.lpm=...   -->
 </properties>
 ```
@@ -695,6 +699,37 @@ Before 4.5.0 GIB only created an empty file in those cases.
 Starting with 4.5.0, GIB will always remove the file first (unless disabled via any of the `disabled*` properties), so that cases like [skipIfPathMatches](#gibskipifpathmatches) don't leave behind an empty file which could be misinterpreted as "no changes are detected".
 
 Since: 3.10.1
+
+### gib.logImpactedFormat
+
+Controls the output format of the logfile defined by [gib.logImpactedTo](#giblogimpactedto):
+
+- `path` (default): each line contains the relative base directory path of an impacted module
+- `gav`: each line contains the full Maven coordinates (`GroupId:ArtifactId:Version`) of an impacted module
+
+This property has no effect if `gib.logImpactedTo` is not set.
+
+Since: 4.6.0
+
+### gib.loadImpactedDependenciesFrom
+
+Defines an optional file containing a list of GAVs (GroupId:ArtifactId:Version, one per line) of dependencies. When specified, GIB will read this file and determine which modules should be built based on whether they have transitive dependencies matching the listed GAVs. This overrides the normal git-based change detection.
+
+Each line in the file should contain a single GAV in the format `groupId:artifactId:version`. Lines starting with `#` are treated as comments and ignored, as are blank lines.
+
+This is useful for scenarios where you want to rebuild modules that depend on specific updated dependencies, without relying on git change detection.
+
+**Example file contents:**
+```
+# Updated dependencies that trigger rebuilds
+com.example:lib-a:1.0
+com.example:lib-b:2.1
+org.apache:commons-lang:3.8
+```
+
+Any module in the reactor that has one of these dependencies (directly or transitively) will be included in the build, along with any downstream modules that depend on the impacted modules.
+
+Since: 4.6.0
 
 ### gib.logProjectsMode
 

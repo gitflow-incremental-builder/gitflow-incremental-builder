@@ -72,6 +72,8 @@ public class Configuration {
     public final boolean failOnError;
 
     public final Optional<Path> logImpactedTo;
+    public final LogImpactedFormat logImpactedFormat;
+    public final Optional<Path> impactedDependenciesFrom;
     public final LogProjectsMode logProjectsMode;
 
     private Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -130,6 +132,8 @@ public class Configuration {
 
             // log related
             logImpactedTo = null;
+            logImpactedFormat = null;
+            impactedDependenciesFrom = null;
             logProjectsMode = null;
 
             return;
@@ -197,6 +201,8 @@ public class Configuration {
 
         // log related
         logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        logImpactedFormat = parseEnum(Property.logImpactedFormat, LogImpactedFormat.class, pluginProperties, projectProperties);
+        impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
                 parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }
@@ -320,16 +326,21 @@ public class Configuration {
                 .map(Pattern::asMatchPredicate);
     }
 
-    public static enum BuildUpstreamMode {
+    public enum BuildUpstreamMode {
         NONE,
         CHANGED,
-        IMPACTED;
+        IMPACTED
     }
 
-    public static enum LogProjectsMode {
+    public enum LogProjectsMode {
         NONE,
         CHANGED,
         IMPACTED,
-        ALL;
+        ALL
+    }
+
+    public enum LogImpactedFormat {
+        PATH,
+        GAV
     }
 }
