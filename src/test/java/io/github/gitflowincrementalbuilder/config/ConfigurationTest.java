@@ -35,8 +35,6 @@ import io.github.gitflowincrementalbuilder.util.SystemPropertiesResetExtension;
 /**
  * Tests the system properties parsing logic in {@link Configuration}.
  *
- * @author famod
- *
  */
 @ExtendWith({SystemPropertiesResetExtension.class, MockitoExtension.class})
 public class ConfigurationTest {

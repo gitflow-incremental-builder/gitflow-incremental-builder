@@ -21,8 +21,6 @@ import org.mockito.quality.Strictness;
  * when {@link SystemReader#openUserConfig(Config, FS)} is called. Although system config can be skipped via
  * {@link org.eclipse.jgit.lib.Constants#GIT_CONFIG_NOSYSTEM_KEY}, the mockito spy is also active for {@link SystemReader#openSystemConfig(Config, FS)} to
  * allow for a consistent test behaviour in IDEs and on the command line.
- *
- * @author famod
  */
 public class JGitIsolation {
 

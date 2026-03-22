@@ -40,8 +40,6 @@ import io.github.gitflowincrementalbuilder.jgit.GitProvider;
  * {@link ChangedProjects}, {@link DifferentFiles} and {@link Modules} which is actually too much for a focused unit test and should be
  * cleaned up. This test should thus be considered a "small scale integration test".
  *
- * @author famod
- *
  */
 @ExtendWith(MockitoExtension.class)
 abstract class BaseChangedProjectsTest extends BaseRepoTest {

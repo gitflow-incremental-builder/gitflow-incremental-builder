@@ -44,8 +44,6 @@ import io.github.gitflowincrementalbuilder.util.LoggerSpyUtil;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks.
- *
- * @author famod
  */
 @ExtendWith(MockitoExtension.class)
 abstract class BaseUnchangedProjectsRemoverTest {
