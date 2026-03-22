@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -428,6 +429,24 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     }
 
     @Test
+    public void loadImpactedDependenciesFrom() throws Exception {
+        Path impactedDepsFile = Files.createTempFile("impacted-deps", ".txt");
+        // slightly crooked way as child6 is not an external dependency, but that doesn't matter for this test because we just want to verify the basic functionality
+        Files.write(impactedDepsFile, List.of("child6:child6:1.0-SNAPSHOT"), StandardCharsets.UTF_8);
+
+        final String output = executeBuild(prop(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString()));
+
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building subchild2")
+                .contains("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6");
+    }
+
     public void quarkusScenario_noChanges() throws Exception {
         final String output = executeBuild(quarkusScenarioProps());
 
