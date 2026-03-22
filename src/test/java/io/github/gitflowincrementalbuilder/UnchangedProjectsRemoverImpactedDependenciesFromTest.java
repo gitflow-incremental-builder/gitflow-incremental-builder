@@ -25,8 +25,6 @@ import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#loadImpactedDependenciesFrom}.
- *
- * @author famod
  */
 public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUnchangedProjectsRemoverTest {
 
@@ -70,9 +68,8 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
 
     @Test
     public void projectWithMatchingTransitiveDependency() throws IOException {
-        MavenProject moduleA = this.moduleA;
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        addModuleMock(AID_MODULE_C, false);
 
         // moduleB has a transitive dependency to external-lib:1.0
         String externalGav = "com.example:external-lib:1.0";
@@ -92,9 +89,8 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
 
     @Test
     public void multipleProjectsWithDependencies() throws IOException {
-        MavenProject moduleA = this.moduleA;
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
-        MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        addModuleMock(AID_MODULE_C, false);
         MavenProject moduleD = addModuleMock(AID_MODULE_D, false);
 
         // moduleB and moduleD have transitive dependencies to impacted GAVs

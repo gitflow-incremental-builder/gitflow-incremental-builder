@@ -55,7 +55,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
   - [gib.logImpactedFormat](#giblogimpactedformat)
-  - [gib.gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
+  - [gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
   - [gib.logProjectsMode](#giblogprojectsmode)
 
 - [Explicitly selected projects](#explicitly-selected-projects)
@@ -366,7 +366,8 @@ Maven pom properties configuration with default values is below:
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
-    <gib.logImpactedFormat>path</gib.logImpactedFormat>                                 <!-- or -Dgib.lif=...   -->
+    <gib.logImpactedFormat>path</gib.logImpactedFormat>                                <!-- or -Dgib.lif=...   -->
+    <gib.loadImpactedDependenciesFrom></gib.loadImpactedDependenciesFrom>              <!-- or -Dgib.lidf=...  -->
     <gib.logProjectsMode>changed</gib.logProjectsMode>                                 <!-- or -Dgib.lpm=...   -->
 </properties>
 ```
