@@ -616,8 +616,6 @@
                         <exclude>**/mojo/**</exclude>
                         <!-- unit tests will always use the official graph, but our graph is only a copy anyway -->
                         <exclude>**/Maven38DefaultDependencyGraph.class</exclude>
-                        <!-- Excluding because Jacoco tests won't use this feature -->
-                        <exclude>**/ImpactedDependencies.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
