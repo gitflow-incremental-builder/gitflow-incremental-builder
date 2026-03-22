@@ -18,8 +18,6 @@ import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks when "selected projects" are present ({@code mvn -pl ...}).
- *
- * @author famod
  * @see UnchangedProjectsRemoverBOMSupportTest UnchangedProjectsRemoverBOMSupportTest also contains some "selected projects" cases
  */
 public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedProjectsRemoverTest {

@@ -27,8 +27,6 @@ import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of BOMs (bill of material).
- *
- * @author famod
  */
 public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProjectsRemoverTest {
 
@@ -98,7 +96,7 @@ public class UnchangedProjectsRemoverBOMSupportTest extends BaseUnchangedProject
             currentProjectSetForClone.setValue(invocation.getArgument(0));
             return null;
         }).when(sessionCloneMock).setCurrentProject(any(MavenProject.class));
-        doAnswer(i -> currentProjectSetForClone.getValue()).when(sessionCloneMock).getCurrentProject();
+        doAnswer(i -> currentProjectSetForClone.get()).when(sessionCloneMock).getCurrentProject();
         when(mavenSessionMock.clone()).thenReturn(sessionCloneMock);
 
         // see constructor PluginParameterExpressionEvaluator

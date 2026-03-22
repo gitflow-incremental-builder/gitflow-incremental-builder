@@ -615,7 +615,7 @@
                     <excludes>
                         <exclude>**/mojo/**</exclude>
                         <!-- unit tests will always use the official graph, but our graph is only a copy anyway -->
-                        <exclude>**/Maven38DefaultDependencyGraph.class</exclude>
+                        <exclude>**/Maven38DefaultDependencyGraph*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -657,8 +657,7 @@
                                         <limit>
                                             <counter>CLASS</counter>
                                             <value>MISSEDCOUNT</value>
-                                            <!-- Maven38DefaultDependencyGraph is not covered, exclude does not seem to help here -->
-                                            <maximum>1</maximum>
+                                            <maximum>0</maximum>
                                         </limit>
                                     </limits>
                                 </rule>

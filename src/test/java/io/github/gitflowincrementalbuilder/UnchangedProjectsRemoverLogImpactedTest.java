@@ -27,8 +27,6 @@ import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#logImpactedTo}.
- *
- * @author famod
  */
 public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjectsRemoverTest {
 

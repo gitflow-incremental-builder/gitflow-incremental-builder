@@ -31,8 +31,6 @@ import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Tests {@link UnchangedProjectsRemover} with Mockito mocks.
- *
- * @author famod
  */
 public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTest {
 
