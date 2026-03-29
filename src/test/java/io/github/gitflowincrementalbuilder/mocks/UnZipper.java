@@ -37,14 +37,12 @@ public class UnZipper {
 
     private void process(Path outputFolder, ZipInputStream zis) throws IOException {
         ZipEntry ze = zis.getNextEntry();
+        Path normalizedOutputFolder = outputFolder.toAbsolutePath().normalize();
         while(ze != null) {
             String fileName = ze.getName();
-            Path newFile = outputFolder.resolve(fileName);
-
             // Prevent Zip Slip / directory traversal by ensuring the target path stays within outputFolder
-            Path normalizedOutput = outputFolder.toAbsolutePath().normalize();
-            Path normalizedNewFile = newFile.toAbsolutePath().normalize();
-            if (!normalizedNewFile.startsWith(normalizedOutput)) {
+            Path newFile = normalizedOutputFolder.resolve(fileName).toAbsolutePath().normalize();
+            if (!newFile.startsWith(normalizedOutputFolder)) {
                 throw new IOException("Bad zip entry: " + fileName);
             }
 
