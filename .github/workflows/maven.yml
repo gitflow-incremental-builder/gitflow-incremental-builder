@@ -13,6 +13,9 @@ on:
         required: true
         default: 'no'
 
+permissions:
+  contents: read
+
 env:
   MAVEN_OPTS: -Djansi.passthrough=true -XX:TieredStopAtLevel=1
   MVN_DEFAULT_ARGS: -e -B -Dstyle.color=always
