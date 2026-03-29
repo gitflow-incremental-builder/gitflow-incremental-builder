@@ -40,6 +40,14 @@ public class UnZipper {
         while(ze != null) {
             String fileName = ze.getName();
             Path newFile = outputFolder.resolve(fileName);
+
+            // Prevent Zip Slip / directory traversal by ensuring the target path stays within outputFolder
+            Path normalizedOutput = outputFolder.toAbsolutePath().normalize();
+            Path normalizedNewFile = newFile.toAbsolutePath().normalize();
+            if (!normalizedNewFile.startsWith(normalizedOutput)) {
+                throw new IOException("Bad zip entry: " + fileName);
+            }
+
             createParentDirectories(newFile);
             if (ze.isDirectory()) {
                 Files.createDirectory(newFile);
