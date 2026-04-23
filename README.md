@@ -54,7 +54,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
-  - [gib.logImpactedFormat](#giblogimpactedformat)
+  - [gib.logImpactedGavTo](#giblogimpactedgavto)
   - [gib.loadImpactedDependenciesFrom](#gibloadimpacteddependenciesfrom)
   - [gib.logProjectsMode](#giblogprojectsmode)
 
@@ -366,7 +366,7 @@ Maven pom properties configuration with default values is below:
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
-    <gib.logImpactedFormat>path</gib.logImpactedFormat>                                <!-- or -Dgib.lif=...   -->
+    <gib.logImpactedGavTo></gib.logImpactedGavTo>                                      <!-- or -Dgib.ligt=...  -->
     <gib.loadImpactedDependenciesFrom></gib.loadImpactedDependenciesFrom>              <!-- or -Dgib.lidf=...  -->
     <gib.logProjectsMode>changed</gib.logProjectsMode>                                 <!-- or -Dgib.lpm=...   -->
 </properties>
@@ -683,7 +683,7 @@ Controls whether or not to fail on any error.
 
 ### gib.logImpactedTo
 
-Defines an optional logfile which GIB shall write all "impacted" modules to. Each line represents the base directory of a changed module
+Defines an optional logfile which GIB shall write all "impacted" module paths to. Each line represents the relative base directory path of a changed module
 or a downstream module of a changed module.
 
 GIB overwrites the file if it already exists and will create an empty file in case no changes are detected.
@@ -700,16 +700,14 @@ Starting with 4.5.0, GIB will always remove the file first (unless disabled via 
 
 Since: 3.10.1
 
-### gib.logImpactedFormat
+### gib.logImpactedGavTo
 
-Controls the output format of the logfile defined by [gib.logImpactedTo](#giblogimpactedto):
+Defines an optional logfile which GIB shall write all "impacted" module GAVs (`GroupId:ArtifactId:Version`) to, one per line.
+Can be used independently of or together with [gib.logImpactedTo](#giblogimpactedto).
 
-- `path` (default): each line contains the relative base directory path of an impacted module
-- `gav`: each line contains the full Maven coordinates (`GroupId:ArtifactId:Version`) of an impacted module
+The same file handling behaviour as [gib.logImpactedTo](#giblogimpactedto) applies (overwrite, empty file on no changes, cleanup on skip, etc.).
 
-This property has no effect if `gib.logImpactedTo` is not set.
-
-Since: 4.6.0
+Since: 4.7.0
 
 ### gib.loadImpactedDependenciesFrom
 

@@ -140,13 +140,13 @@ public enum Property {
     failOnError("true", "foe", true),
 
     /**
-     * Defines an optional logfile which GIB shall write all "impacted" modules to.
+     * Defines an optional logfile which GIB shall write all "impacted" module paths to.
      */
     logImpactedTo("", "lit"),
     /**
-     * Controls the output format of the logfile defined by {@link #logImpactedTo}: {@code path} (default) for relative module paths or {@code gav} for GroupId:ArtifactId:Version.
+     * Defines an optional logfile which GIB shall write all "impacted" module GAVs (GroupId:ArtifactId:Version) to.
      */
-    logImpactedFormat("path", "lif"),
+    logImpactedGavTo("", "ligt"),
     /**
      * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
      */
