@@ -60,11 +60,11 @@
 
         <!-- Dependency versions -->
         <version.jgit>6.10.1.202505221210-r</version.jgit>
-        <version.maven-core>3.9.14</version.maven-core>
+        <version.maven-core>3.10.0-rc-1</version.maven-core>
         <version.maven-enforced>3.6.3</version.maven-enforced>
         <version.maven-plugin>3.15.2</version.maven-plugin>
-        <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
-        <version.logback>1.2.13</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
+        <version.slf4j>2.0.18</version.slf4j>   <!-- must match the version that is provided by maven (3.10.0-rc-1 ships slf4j 2.0.18) -->
+        <version.logback>1.3.16</version.logback>    <!-- the latest 1.3.x that appears to work properly with above slf4j 2.x version -->
         <version.javax.inject>1</version.javax.inject>
         <version.plexus-utils>4.0.3</version.plexus-utils>
         <version.plexus-xml>3.0.2</version.plexus-xml>
