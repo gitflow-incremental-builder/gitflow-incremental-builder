@@ -140,7 +140,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     public void logImpactedNonExistingPath() throws IOException {
         Path nonExistingPath = Path.of("some", "unknown", "path", "impacted.log");
         Path customLogFilePath = tempDir.resolve(nonExistingPath);
-        assertThat(!Files.exists(customLogFilePath));
+        assertThat(!Files.exists(customLogFilePath)).isTrue();
 
         addGibProperty(Property.logImpactedTo, customLogFilePath.toAbsolutePath().toString());
 
@@ -148,7 +148,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertThat(Files.exists(customLogFilePath));
+        assertThat(Files.exists(customLogFilePath)).isTrue();
         assertLogFileContains(customLogFilePath, LogImpactedFormat.PATH, changedModuleMock);
     }
 
