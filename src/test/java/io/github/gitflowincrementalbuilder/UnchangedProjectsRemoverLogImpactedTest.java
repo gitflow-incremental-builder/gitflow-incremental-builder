@@ -126,7 +126,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
     public void logImpactedNonExistingPath() throws IOException {
         Path nonExistingPath = Path.of("some", "unknown", "path", "impacted.log");
         Path customLogFilePath = tempDir.resolve(nonExistingPath);
-        assertThat(!Files.exists(customLogFilePath));
+        assertThat(customLogFilePath).doesNotExist();
 
         addGibProperty(Property.logImpactedTo, customLogFilePath.toAbsolutePath().toString());
 
@@ -134,7 +134,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertThat(Files.exists(customLogFilePath));
+        assertThat(customLogFilePath).exists();
         assertPathLogFileContains(customLogFilePath, changedModuleMock);
     }
 
@@ -237,7 +237,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         public void nonExistingPath() throws IOException {
             Path nonExistingPath = Path.of("some", "unknown", "path", "impacted-gavs.log");
             Path customGavLogFilePath = tempDir.resolve(nonExistingPath);
-            assertThat(!Files.exists(customGavLogFilePath));
+            assertThat(customGavLogFilePath).doesNotExist();
 
             addGibProperty(Property.logImpactedGavTo, customGavLogFilePath.toAbsolutePath().toString());
 
@@ -245,7 +245,7 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
             underTest.act(config());
 
-            assertThat(Files.exists(customGavLogFilePath));
+            assertThat(customGavLogFilePath).exists();
             assertGavLogFileContains(customGavLogFilePath, changedModuleMock);
         }
     }

@@ -227,7 +227,7 @@ class UnchangedProjectsRemover {
                             .sorted(projectComparator)
                             .map(proj -> projectRootDir.relativize(proj.getBasedir().toPath()).toString())
                             .collect(toList());
-            writeLogFile(logFilePath, projectsToLog, "projects", impacted);
+            writeLogFile(logFilePath, projectsToLog, "project paths", impacted);
         });
         config.logImpactedGavTo.ifPresent(logFilePath -> {
             List<String> gavsToLog = impacted.isEmpty()
@@ -236,7 +236,7 @@ class UnchangedProjectsRemover {
                             .sorted(projectComparator)
                             .map(proj -> proj.getGroupId() + ":" + proj.getArtifactId() + ":" + proj.getVersion())
                             .collect(toList());
-            writeLogFile(logFilePath, gavsToLog, "GAVs", impacted);
+            writeLogFile(logFilePath, gavsToLog, "project GAVs", impacted);
         });
     }
 
@@ -247,7 +247,7 @@ class UnchangedProjectsRemover {
             if (parentDir != null && !Files.exists(parentDir)) {
                 Files.createDirectories(parentDir);
             }
-            Files.write(logFilePath, lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+            Files.write(logFilePath, lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write impacted " + label + " to " + logFilePath + ": " + impacted, e);
         }

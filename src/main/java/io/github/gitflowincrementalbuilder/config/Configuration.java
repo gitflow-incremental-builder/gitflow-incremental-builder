@@ -200,8 +200,13 @@ public class Configuration {
         failOnError = Boolean.parseBoolean(Property.failOnError.getValue(pluginProperties, projectProperties));
 
         // log related
-        logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
-        logImpactedGavTo = Property.logImpactedGavTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        var deprecatedLogImpactedFormatIsGav =
+                parseEnum(Property.logImpactedFormat, LogImpactedFormat.class, pluginProperties, projectProperties) == LogImpactedFormat.GAV;
+        var logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        var logImpactedGavTo = Property.logImpactedGavTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        this.logImpactedTo = deprecatedLogImpactedFormatIsGav ? Optional.empty() : logImpactedTo;
+        this.logImpactedGavTo = logImpactedGavTo.or(() -> deprecatedLogImpactedFormatIsGav ? logImpactedTo : Optional.empty());
+
         impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
                 parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
@@ -339,4 +344,8 @@ public class Configuration {
         ALL
     }
 
+    private enum LogImpactedFormat {
+        PATH,
+        GAV
+    }
 }
