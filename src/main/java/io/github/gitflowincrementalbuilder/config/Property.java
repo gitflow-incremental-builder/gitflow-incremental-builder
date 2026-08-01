@@ -140,13 +140,24 @@ public enum Property {
     failOnError("true", "foe", true),
 
     /**
-     * Defines an optional logfile which GIB shall write all "impacted" modules to.
+     * Defines an optional logfile which GIB shall write all "impacted" module paths to.
      */
     logImpactedTo("", "lit"),
     /**
      * Controls the output format of the logfile defined by {@link #logImpactedTo}: {@code path} (default) for relative module paths or {@code gav} for GroupId:ArtifactId:Version.
+     * @deprecated Use {@link #logImpactedGavTo} (or {@link #logImpactedTo}) instead.
      */
-    logImpactedFormat("path", "lif"),
+    @Deprecated
+    logImpactedFormat("path", "lif") {
+        @Override
+        public Optional<Property> getPropertyToMigrateTo(String value) {
+            return logImpactedFormat.getDefaultValue().equalsIgnoreCase(value) ? Optional.of(logImpactedTo) : Optional.of(logImpactedGavTo);
+        }
+    },
+    /**
+     * Defines an optional logfile which GIB shall write all "impacted" module GAVs (GroupId:ArtifactId:Version) to.
+     */
+    logImpactedGavTo("", "ligt"),
     /**
      * Defines an optional file containing GAVs of dependencies (one per line) to determine which modules should be built based on transitive dependencies.
      */
@@ -228,14 +239,10 @@ public enum Property {
     }
 
     public ValueWithOriginContext getValueWithOriginContext(Properties pluginProperties, Properties projectProperties) {
-        Optional<ValueWithOriginContext> valueWithName = getValueWithOriginContext(nameCandidatesForPluginProperties, pluginProperties, "plugin");
-        if (!valueWithName.isPresent()) {
-            valueWithName = getValueWithOriginContext(nameCandidatesForSystemProperties, System.getProperties(), "system");
-        }
-        if (!valueWithName.isPresent()) {
-            valueWithName = getValueWithOriginContext(nameCandidatesForProjectProperties, projectProperties, "project");
-        }
-        ValueWithOriginContext finalValueWithOriginContext = valueWithName.orElseGet(() -> new ValueWithOriginContext(defaultValue, name(), "default"));
+        ValueWithOriginContext finalValueWithOriginContext = getValueWithOriginContext(nameCandidatesForPluginProperties, pluginProperties, "plugin")
+                .or(() -> getValueWithOriginContext(nameCandidatesForSystemProperties, System.getProperties(), "system"))
+                .or(() -> getValueWithOriginContext(nameCandidatesForProjectProperties, projectProperties, "project"))
+                .orElseGet(() -> new ValueWithOriginContext(defaultValue, name(), "default"));
         LOGGER.debug("{}", finalValueWithOriginContext);
         return finalValueWithOriginContext;
     }
@@ -257,7 +264,7 @@ public enum Property {
         return defaultValue.equals("true") || defaultValue.equals("false");
     }
 
-    protected Optional<Property> getPropertyToMigrateTo() {
+    protected Optional<Property> getPropertyToMigrateTo(String value) {
         return Optional.empty();
     }
 
@@ -273,19 +280,21 @@ public enum Property {
         if (value == null) {
             return null;
         }
+        if (mapEmptyValueToTrue && value.isEmpty()) {
+            value = "true";
+        }
+
         boolean prefixed = name.startsWith(PREFIX);
         String deprecatedName = prefixed ? deprecatedPrefixedName() : deprecatedName().orElse(null);
         if (name.equals(deprecatedName)) {
             LOGGER.warn("'{}' has been renamed to '{}' and the old name will be removed in an upcoming release. Please adjust your configuration!",
                     deprecatedName, prefixed ? prefixedName : name());
         }
-        getPropertyToMigrateTo().ifPresent(prop -> LOGGER.warn("'{}' is deprecated and will be removed in an upcoming release. Please migrate to '{}'!", name,
+        getPropertyToMigrateTo(value).ifPresent(prop -> LOGGER.warn("'{}' is deprecated and will be removed in an upcoming release. Please migrate to '{}'!", name,
                 prefixed
                         ? prop.prefixedName + (name.equals(prefixedShortName) ? " (" + prop.prefixedShortName + ")" : "")
                         : prop.name()));
-        if (mapEmptyValueToTrue && value.isEmpty()) {
-            value = "true";
-        }
+
         return new ValueWithOriginContext(value, name, propertiesDesc);
     }
 

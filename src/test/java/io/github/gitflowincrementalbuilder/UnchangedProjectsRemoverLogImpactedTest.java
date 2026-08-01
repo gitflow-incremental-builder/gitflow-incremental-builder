@@ -14,19 +14,18 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
-import io.github.gitflowincrementalbuilder.config.Configuration.LogImpactedFormat;
 import io.github.gitflowincrementalbuilder.config.Property;
 import io.github.gitflowincrementalbuilder.jgit.GitProvider;
 
 /**
- * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#logImpactedTo}.
+ * Tests {@link UnchangedProjectsRemover} with Mockito mocks in context of {@link Property#logImpactedTo}
+ * and {@link Property#logImpactedGavTo}.
  */
 public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjectsRemoverTest {
 
@@ -46,32 +45,26 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         when(gitProviderMock.getProjectRoot(any(Configuration.class))).thenReturn(PSEUDO_PROJECT_ROOT);
     }
 
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void logImpatcedTo_nothingChanged(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void nothingChanged() throws IOException {
         addModuleMock(AID_MODULE_B, false);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format);
+        assertPathLogFileContains(logFilePath);
     }
 
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void singleChanged(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void singleChanged() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format, changedModuleMock);
+        assertPathLogFileContains(logFilePath, changedModuleMock);
     }
 
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void singleChanged_withDownstream(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void singleChanged_withDownstream() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
         MavenProject dependentModuleMock = addModuleMock(AID_MODULE_C, false);
         MavenProject independentModuleMock = addModuleMock(AID_MODULE_D, false);
@@ -82,20 +75,18 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format, changedModuleMock, dependentModuleMock);
+        assertPathLogFileContains(logFilePath, changedModuleMock, dependentModuleMock);
     }
 
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void singleChanged_buildUpstream(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void singleChanged_buildUpstream() throws IOException {
         MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
 
         addGibProperty(Property.buildUpstream, "true");
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format, changedModuleMock);
+        assertPathLogFileContains(logFilePath, changedModuleMock);
     }
 
     @Test
@@ -110,37 +101,32 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
         assertThat(logFilePath).doesNotExist();
     }
 
-
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void onlySelectedModulesPresent(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void onlySelectedModulesPresent() throws IOException {
         addModuleMock(AID_MODULE_B, true);
         setProjectSelections(moduleA);
         overrideProjects(moduleA);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format, moduleA);
+        assertPathLogFileContains(logFilePath, moduleA);
     }
 
-    @ParameterizedTest
-    @EnumSource(LogImpactedFormat.class)
-    public void nonRecursive(LogImpactedFormat format) throws IOException {
-        addGibProperty(Property.logImpactedFormat, format.name().toLowerCase());
+    @Test
+    public void nonRecursive() throws IOException {
         addModuleMock(AID_MODULE_B, true);
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
 
         underTest.act(config());
 
-        assertLogFileContains(logFilePath, format, moduleA);
+        assertPathLogFileContains(logFilePath, moduleA);
     }
 
     @Test
     public void logImpactedNonExistingPath() throws IOException {
         Path nonExistingPath = Path.of("some", "unknown", "path", "impacted.log");
         Path customLogFilePath = tempDir.resolve(nonExistingPath);
-        assertThat(!Files.exists(customLogFilePath));
+        assertThat(customLogFilePath).doesNotExist();
 
         addGibProperty(Property.logImpactedTo, customLogFilePath.toAbsolutePath().toString());
 
@@ -148,32 +134,147 @@ public class UnchangedProjectsRemoverLogImpactedTest extends BaseUnchangedProjec
 
         underTest.act(config());
 
-        assertThat(Files.exists(customLogFilePath));
-        assertLogFileContains(customLogFilePath, LogImpactedFormat.PATH, changedModuleMock);
+        assertThat(customLogFilePath).exists();
+        assertPathLogFileContains(customLogFilePath, changedModuleMock);
     }
 
-    private void assertLogFileContains(Path logFilePath, LogImpactedFormat format, MavenProject... mavenProjects) throws IOException {
+    @Nested
+    class LogImpactedGavTo {
+
+        private Path gavLogFilePath;
+
+        @BeforeEach
+        void beforeGav() {
+            gavLogFilePath = tempDir.resolve("impacted-gavs.log");
+            addGibProperty(Property.logImpactedGavTo, gavLogFilePath.toAbsolutePath().toString());
+        }
+
+        @Test
+        public void nothingChanged() throws IOException {
+            addModuleMock(AID_MODULE_B, false);
+
+            underTest.act(config());
+
+            assertPathLogFileContains(logFilePath);
+            assertGavLogFileContains(gavLogFilePath);
+        }
+
+        @Test
+        public void singleChanged() throws IOException {
+            MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+            underTest.act(config());
+
+            assertPathLogFileContains(logFilePath, changedModuleMock);
+            assertGavLogFileContains(gavLogFilePath, changedModuleMock);
+        }
+
+        @Test
+        public void singleChanged_withDownstream() throws IOException {
+            MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+            MavenProject dependentModuleMock = addModuleMock(AID_MODULE_C, false);
+            MavenProject independentModuleMock = addModuleMock(AID_MODULE_D, false);
+
+            setUpstreamProjects(dependentModuleMock, changedModuleMock, moduleA);
+            setDownstreamProjectsNonTransitive(changedModuleMock, dependentModuleMock);
+            setUpstreamProjects(independentModuleMock, moduleA);
+
+            underTest.act(config());
+
+            assertPathLogFileContains(logFilePath, changedModuleMock, dependentModuleMock);
+            assertGavLogFileContains(gavLogFilePath, changedModuleMock, dependentModuleMock);
+        }
+
+        @Test
+        public void onlySelectedModulesPresent() throws IOException {
+            addModuleMock(AID_MODULE_B, true);
+            setProjectSelections(moduleA);
+            overrideProjects(moduleA);
+
+            underTest.act(config());
+
+            assertPathLogFileContains(logFilePath, moduleA);
+            assertGavLogFileContains(gavLogFilePath, moduleA);
+        }
+
+        @Test
+        public void nonRecursive() throws IOException {
+            addModuleMock(AID_MODULE_B, true);
+            when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
+
+            underTest.act(config());
+
+            assertPathLogFileContains(logFilePath, moduleA);
+            assertGavLogFileContains(gavLogFilePath, moduleA);
+        }
+
+        @Test
+        public void skipExecutionException() throws IOException {
+            addModuleMock(AID_MODULE_B, true);
+            Files.createFile(logFilePath);
+            Files.createFile(gavLogFilePath);
+            Configuration config = config();
+            when(changedProjectsMock.get(config)).thenThrow(new SkipExecutionException("deliberate test exception"));
+
+            assertThatThrownBy(() -> underTest.act(config)).isInstanceOf(SkipExecutionException.class);
+
+            assertThat(logFilePath).doesNotExist();
+            assertThat(gavLogFilePath).doesNotExist();
+        }
+
+        @Test
+        public void gavOnly() throws IOException {
+            addGibProperty(Property.logImpactedTo, "");
+            MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+            underTest.act(config());
+
+            assertThat(logFilePath).doesNotExist();
+            assertGavLogFileContains(gavLogFilePath, changedModuleMock);
+        }
+
+        @Test
+        public void nonExistingPath() throws IOException {
+            Path nonExistingPath = Path.of("some", "unknown", "path", "impacted-gavs.log");
+            Path customGavLogFilePath = tempDir.resolve(nonExistingPath);
+            assertThat(customGavLogFilePath).doesNotExist();
+
+            addGibProperty(Property.logImpactedGavTo, customGavLogFilePath.toAbsolutePath().toString());
+
+            MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+
+            underTest.act(config());
+
+            assertThat(customGavLogFilePath).exists();
+            assertGavLogFileContains(customGavLogFilePath, changedModuleMock);
+        }
+    }
+
+    private void assertPathLogFileContains(Path logFilePath, MavenProject... mavenProjects) throws IOException {
         assertThat(Files.isReadable(logFilePath))
                 .as(logFilePath + " is missing")
                 .isTrue();
 
+        List<String> expected = Arrays.stream(mavenProjects)
+                .map(proj -> proj.getBasedir().getName())
+                .collect(Collectors.toList());
+
         assertThat(Files.readAllLines(logFilePath))
                 .as("Unexpected content of " + logFilePath)
-                .isEqualTo(formatProjects(format, mavenProjects));
+                .isEqualTo(expected);
     }
 
-    private List<String> formatProjects(LogImpactedFormat format, MavenProject... mavenProjects) {
-        switch (format) {
-            case GAV:
-                return Arrays.stream(mavenProjects)
-                        .map(proj -> proj.getGroupId() + ":" + proj.getArtifactId() + ":" + proj.getVersion())
-                        .collect(Collectors.toList());
-            case PATH:
-                return Arrays.stream(mavenProjects)
-                        .map(proj -> proj.getBasedir().getName())
-                        .collect(Collectors.toList());
-            default:
-                throw new IllegalArgumentException("Unsupported LogImpactedFormat: " + format);
-        }
+    private void assertGavLogFileContains(Path logFilePath, MavenProject... mavenProjects) throws IOException {
+        assertThat(Files.isReadable(logFilePath))
+                .as(logFilePath + " is missing")
+                .isTrue();
+
+        List<String> expected = Arrays.stream(mavenProjects)
+                .map(proj -> proj.getGroupId() + ":" + proj.getArtifactId() + ":" + proj.getVersion())
+                .collect(Collectors.toList());
+
+        assertThat(Files.readAllLines(logFilePath))
+                .as("Unexpected content of " + logFilePath)
+                .isEqualTo(expected);
     }
 }

@@ -72,7 +72,7 @@ public class Configuration {
     public final boolean failOnError;
 
     public final Optional<Path> logImpactedTo;
-    public final LogImpactedFormat logImpactedFormat;
+    public final Optional<Path> logImpactedGavTo;
     public final Optional<Path> impactedDependenciesFrom;
     public final LogProjectsMode logProjectsMode;
 
@@ -132,7 +132,7 @@ public class Configuration {
 
             // log related
             logImpactedTo = null;
-            logImpactedFormat = null;
+            logImpactedGavTo = null;
             impactedDependenciesFrom = null;
             logProjectsMode = null;
 
@@ -200,8 +200,13 @@ public class Configuration {
         failOnError = Boolean.parseBoolean(Property.failOnError.getValue(pluginProperties, projectProperties));
 
         // log related
-        logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
-        logImpactedFormat = parseEnum(Property.logImpactedFormat, LogImpactedFormat.class, pluginProperties, projectProperties);
+        var deprecatedLogImpactedFormatIsGav =
+                parseEnum(Property.logImpactedFormat, LogImpactedFormat.class, pluginProperties, projectProperties) == LogImpactedFormat.GAV;
+        var logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        var logImpactedGavTo = Property.logImpactedGavTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        this.logImpactedTo = deprecatedLogImpactedFormatIsGav ? Optional.empty() : logImpactedTo;
+        this.logImpactedGavTo = logImpactedGavTo.or(() -> deprecatedLogImpactedFormatIsGav ? logImpactedTo : Optional.empty());
+
         impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
         logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
                 parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
@@ -339,7 +344,7 @@ public class Configuration {
         ALL
     }
 
-    public enum LogImpactedFormat {
+    private enum LogImpactedFormat {
         PATH,
         GAV
     }
