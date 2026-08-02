@@ -24,12 +24,15 @@ import java.util.stream.Stream;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.gitflowincrementalbuilder.LazyValue;
+import io.github.gitflowincrementalbuilder.ProjectDependencyGraphFactory;
 import io.github.gitflowincrementalbuilder.config.Property.ValueWithOriginContext;
 
 public class Configuration {
@@ -38,6 +41,7 @@ public class Configuration {
 
     public final MavenSession mavenSession;
     public final MavenProject currentProject;
+    public final LazyValue<ProjectDependencyGraph> projectDependencyGraph;
 
     public final boolean help;
     public final boolean disable;
@@ -67,6 +71,7 @@ public class Configuration {
     public final Map<Pattern, Pattern> forceBuildModulesConditionally;
     public final List<String> excludeDownstreamModulesPackagedAs;
     public final boolean disableSelectedProjectsHandling;
+    public final RebuildProjectDependencyGraphMode rebuildProjectDependencyGraphMode;
 
     public final boolean failOnMissingGitDir;
     public final boolean failOnError;
@@ -82,6 +87,7 @@ public class Configuration {
     public Configuration(MavenSession session) {
         this.mavenSession = session;
         this.currentProject = findCurrentProject(session);
+        projectDependencyGraph = new LazyValue<>(() -> ProjectDependencyGraphFactory.createGraph(mavenSession.getProjects(), Configuration.this, false));
 
         Properties[] properties = getProperties(currentProject, logger);
         Properties projectProperties = properties[0];
@@ -124,6 +130,7 @@ public class Configuration {
             excludeDownstreamModulesPackagedAs = null;
 
             disableSelectedProjectsHandling = false;
+            rebuildProjectDependencyGraphMode = null;
 
             // error handling config
 
@@ -193,6 +200,8 @@ public class Configuration {
                 .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
         disableSelectedProjectsHandling = Boolean.parseBoolean(Property.disableSelectedProjectsHandling.getValue(pluginProperties, projectProperties));
+        rebuildProjectDependencyGraphMode =
+                parseEnum(Property.rebuildProjectDependencyGraphMode, RebuildProjectDependencyGraphMode.class, pluginProperties, projectProperties);
 
         // error handling config
 
@@ -208,8 +217,7 @@ public class Configuration {
         this.logImpactedGavTo = logImpactedGavTo.or(() -> deprecatedLogImpactedFormatIsGav ? logImpactedTo : Optional.empty());
 
         impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
-        logProjectsMode = //parseLogProjectsMode(session, pluginProperties, projectProperties);
-                parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
+        logProjectsMode = parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }
 
     /**
@@ -342,6 +350,12 @@ public class Configuration {
         CHANGED,
         IMPACTED,
         ALL
+    }
+
+    public enum RebuildProjectDependencyGraphMode {
+        AUTO,
+        ON,
+        OFF
     }
 
     private enum LogImpactedFormat {
