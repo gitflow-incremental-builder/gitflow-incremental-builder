@@ -4,6 +4,7 @@ import static java.util.function.Predicate.not;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,9 +73,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         dep.setGroupId(SYNTHETIC_GROUP_ID);
         dep.setArtifactId(SYNTHETIC_ARTIFACT_ID);
         dep.setVersion(SYNTHETIC_VERSION);
-        // Use jar type instead of pom - even pom-packaged projects can have jar dependencies
-        // and jar dependencies in the reactor don't trigger the same resolution issues
-        dep.setType("jar");
+        dep.setType("pom");
         dep.setScope("compile");
         target.getModel().addDependency(dep);
 
@@ -83,79 +82,63 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
     }
 
     private MavenProject createSyntheticProject(MavenSession session) {
-        try {
             
-            // Create the Model programmatically  
-            Model model = new Model();
-            model.setModelVersion("4.0.0");
-            model.setGroupId(SYNTHETIC_GROUP_ID);
-            model.setArtifactId(SYNTHETIC_ARTIFACT_ID);
-            model.setVersion(SYNTHETIC_VERSION);
-            model.setPackaging("jar");
+        // Create the Model
+        Model model = new Model();
+        model.setModelVersion("4.0.0");
+        model.setGroupId(SYNTHETIC_GROUP_ID);
+        model.setArtifactId(SYNTHETIC_ARTIFACT_ID);
+        model.setVersion(SYNTHETIC_VERSION);
+        model.setPackaging("pom");
 
-            // Prepare the directory and files
-            File workDir = new File(session.getExecutionRootDirectory(), "target/it-synthetic-upstream");
-            mkdirs(workDir);
-            File pomFile = new File(workDir, "pom.xml");
-            
-            // Serialize the Model to pom.xml
-            MavenXpp3Writer writer = new MavenXpp3Writer();
+        // Prepare the directory and files
+        File workDir = new File(session.getExecutionRootDirectory(), "target/it-synthetic-upstream");
+        mkdirs(workDir);
+        File pomFile = new File(workDir, "pom.xml");
+
+        // Serialize the Model to pom.xml
+        MavenXpp3Writer writer = new MavenXpp3Writer();
+
+        try {
             writer.write(Files.newBufferedWriter(pomFile.toPath()), model);
-            
-            // Create an empty jar file so the artifact can be resolved
-            File jarFile = new File(workDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".jar");
-            createEmptyJarFile(jarFile);
             
             // Install to the local repository so Maven can resolve the dependency
             // This is critical - Maven's dependency resolution looks in the local repo
-            installToLocalRepository(session, pomFile, jarFile);
-            
-            // Create and return the MavenProject
-            MavenProject project = new MavenProject(model);
-            project.setFile(pomFile);
-            project.setGroupId(SYNTHETIC_GROUP_ID);
-            project.setArtifactId(SYNTHETIC_ARTIFACT_ID);
-            project.setVersion(SYNTHETIC_VERSION);
-            project.setPackaging("jar");
-            
-            // Create and set a proper Artifact pointing to the jar file
-            Artifact artifact = new DefaultArtifact(
-                SYNTHETIC_GROUP_ID,
-                SYNTHETIC_ARTIFACT_ID,
-                SYNTHETIC_VERSION,
-                "compile",
-                "jar",
-                null,
-                new DefaultArtifactHandler("jar")
-            );
-            artifact.setFile(jarFile);
-            artifact.setResolved(true);
-            project.setArtifact(artifact);
-            
-            return project;
+            installToLocalRepository(session, pomFile);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create synthetic project", e);
+            throw new UncheckedIOException("Failed to create synthetic project", e);
         }
+
+        // Create and return the MavenProject
+        MavenProject project = new MavenProject(model);
+        project.setFile(pomFile);
+        project.setGroupId(SYNTHETIC_GROUP_ID);
+        project.setArtifactId(SYNTHETIC_ARTIFACT_ID);
+        project.setVersion(SYNTHETIC_VERSION);
+        project.setPackaging("pom");
+
+        // Create and set a proper Artifact pointing to the pom file
+        Artifact artifact = new DefaultArtifact(
+            SYNTHETIC_GROUP_ID,
+            SYNTHETIC_ARTIFACT_ID,
+            SYNTHETIC_VERSION,
+            "compile",
+            "pom",
+            null,
+            new DefaultArtifactHandler("pom")
+        );
+        artifact.setFile(pomFile);
+        artifact.setResolved(true);
+        project.setArtifact(artifact);
+
+        return project;
     }
     
     /**
-     * Create an empty jar file so Maven's dependency resolution can find an artifact.
-     */
-    private void createEmptyJarFile(File jarFile) throws IOException {
-        // Create a minimal valid JAR file (which is a ZIP file with a MANIFEST.MF)
-        try (java.util.jar.JarOutputStream jos = new java.util.jar.JarOutputStream(
-                Files.newOutputStream(jarFile.toPath()), 
-                new java.util.jar.Manifest())) {
-            // Empty jar with just a manifest
-        }
-        logger.debug("Created empty jar file: {}", jarFile);
-    }
-    
-    /**
-     * Install the POM and JAR to the local repository used by integration tests.
+     * Install the POM to the local repository used by integration tests.
      * This mimics what 'mvn install' does, making the artifact available for dependency resolution.
      */
-    private void installToLocalRepository(MavenSession session, File pomFile, File jarFile) throws IOException {
+    private void installToLocalRepository(MavenSession session, File pomFile) throws IOException {
         File localRepo = session.getRequest().getLocalRepositoryPath();
 
         // Calculate the local repository path structure: groupId/artifactId/version/
@@ -167,11 +150,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         File localRepoPom = new File(artifactDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".pom");
         Files.copy(pomFile.toPath(), localRepoPom.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         
-        // Copy JAR file
-        File localRepoJar = new File(artifactDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".jar");
-        Files.copy(jarFile.toPath(), localRepoJar.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        
-        logger.info("Installed synthetic artifact to local repository: {}", localRepoJar);
+        logger.info("Installed synthetic artifact to local repository: {}", localRepoPom);
     }
 
     private static void mkdirs(File dir) {
