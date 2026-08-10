@@ -2,10 +2,12 @@ package io.github.gitflowincrementalbuilder.integration;
 
 import static java.util.function.Predicate.not;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -92,15 +94,15 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         model.setPackaging("pom");
 
         // Prepare the directory and files
-        File workDir = new File(session.getExecutionRootDirectory(), "target/it-synthetic-upstream");
+        Path workDir = Paths.get(session.getExecutionRootDirectory(), "target", "it-synthetic-upstream");
         mkdirs(workDir);
-        File pomFile = new File(workDir, "pom.xml");
+        Path pomFile = workDir.resolve("pom.xml");
 
         // Serialize the Model to pom.xml
         MavenXpp3Writer writer = new MavenXpp3Writer();
 
         try {
-            writer.write(Files.newBufferedWriter(pomFile.toPath()), model);
+            writer.write(Files.newBufferedWriter(pomFile), model);
             
             // Install to the local repository so Maven can resolve the dependency
             // This is critical - Maven's dependency resolution looks in the local repo
@@ -111,7 +113,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
 
         // Create and return the MavenProject
         MavenProject project = new MavenProject(model);
-        project.setFile(pomFile);
+        project.setFile(pomFile.toFile());
         project.setGroupId(SYNTHETIC_GROUP_ID);
         project.setArtifactId(SYNTHETIC_ARTIFACT_ID);
         project.setVersion(SYNTHETIC_VERSION);
@@ -127,7 +129,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
             null,
             new DefaultArtifactHandler("pom")
         );
-        artifact.setFile(pomFile);
+        artifact.setFile(pomFile.toFile());
         artifact.setResolved(true);
         project.setArtifact(artifact);
 
@@ -138,24 +140,26 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
      * Install the POM to the local repository used by integration tests.
      * This mimics what 'mvn install' does, making the artifact available for dependency resolution.
      */
-    private void installToLocalRepository(MavenSession session, File pomFile) throws IOException {
-        File localRepo = session.getRequest().getLocalRepositoryPath();
+    private void installToLocalRepository(MavenSession session, Path pomFile) throws IOException {
+        Path localRepo = session.getRequest().getLocalRepositoryPath().toPath();
 
         // Calculate the local repository path structure: groupId/artifactId/version/
         String groupPath = SYNTHETIC_GROUP_ID.replace('.', '/');
-        File artifactDir = new File(localRepo, groupPath + "/" + SYNTHETIC_ARTIFACT_ID + "/" + SYNTHETIC_VERSION);
+        Path artifactDir = localRepo.resolve(groupPath).resolve(SYNTHETIC_ARTIFACT_ID).resolve(SYNTHETIC_VERSION);
         mkdirs(artifactDir);
         
         // Copy POM file
-        File localRepoPom = new File(artifactDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".pom");
-        Files.copy(pomFile.toPath(), localRepoPom.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Path localRepoPom = artifactDir.resolve(SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".pom");
+        Files.copy(pomFile, localRepoPom, StandardCopyOption.REPLACE_EXISTING);
         
         logger.info("Installed synthetic artifact to local repository: {}", localRepoPom);
     }
 
-    private static void mkdirs(File dir) {
-        if (!dir.mkdirs() && !dir.isDirectory()) {
-            throw new IllegalStateException("Failed to create directory: " + dir);
+    private static void mkdirs(Path dir) {
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create directory: " + dir, e);
         }
     }
 }
