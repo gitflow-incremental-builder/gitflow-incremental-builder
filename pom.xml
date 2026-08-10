@@ -702,6 +702,26 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>pre-it-jar-support</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <attach>false</attach>
+                            <classifier>it-support</classifier>
+                            <includes>
+                                <include>**/AddUpstreamSyntheticProjectParticipant.class</include>
+                                <include>META-INF/sisu/javax.inject.Named</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-install-plugin</artifactId>
                 <executions>
                     <execution>
@@ -715,6 +735,23 @@
                             <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
                             <localRepositoryPath>${gibIntegrationTestRepoLocal}</localRepositoryPath>
                             <pomFile>${project.basedir}/pom.xml</pomFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pre-it-install-support</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <!-- no "skip" available -->
+                            <file>${project.build.directory}/${project.build.finalName}-it-support.${project.packaging}</file>
+                            <localRepositoryPath>${gibIntegrationTestRepoLocal}</localRepositoryPath>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}-it-support</artifactId>
+                            <packaging>jar</packaging>
+                            <version>${project.version}</version>
+                            <generatePom>true</generatePom>
                         </configuration>
                     </execution>
                 </executions>
