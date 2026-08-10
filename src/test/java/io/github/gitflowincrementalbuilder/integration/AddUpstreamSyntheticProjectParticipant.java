@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
 public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecycleParticipant {
 
     // If unset/blank => no-op
-    public static final String PROP_TARGET_ARTIFACT_ID = "it.inject.dep.targetArtifactId";
+    public static final String PROP_TARGET_ARTIFACT_ID = "it.synthetic.dep.targetArtifactId";
 
-    private static final String SYNTHETIC_GROUP_ID = "it.synthetic";
-    private static final String SYNTHETIC_ARTIFACT_ID = "added-upstream";
-    private static final String SYNTHETIC_VERSION = "1.0.0-SNAPSHOT";
+    public static final String SYNTHETIC_GROUP_ID = "it.synthetic";
+    public static final String SYNTHETIC_ARTIFACT_ID = "synthetically-added-upstream";
+    public static final String SYNTHETIC_VERSION = "1.0-SNAPSHOT";
     
     private Logger logger = LoggerFactory.getLogger(AddUpstreamSyntheticProjectParticipant.class);
 
@@ -50,22 +50,11 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         }
 
         List<MavenProject> projects = session.getProjects();
-        if (projects == null || projects.isEmpty()) {
-            return;
-        }
 
         MavenProject target = projects.stream()
                 .filter(p -> targetArtifactId.equals(p.getArtifactId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Target project with artifactId=" + targetArtifactId + " not found in reactor projects"));
-
-        // avoid duplicate synthetic project insertion
-        boolean syntheticExists = projects.stream().anyMatch(p ->
-                SYNTHETIC_GROUP_ID.equals(p.getGroupId())
-                        && SYNTHETIC_ARTIFACT_ID.equals(p.getArtifactId()));
-        if (syntheticExists) {
-            return;
-        }
 
         // create synthetic project from a programmatically built Model
         MavenProject synthetic = createSyntheticProject(session);
@@ -79,22 +68,15 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         session.setAllProjects(mutatedAll);
 
         // make target depend on synthetic => synthetic is upstream of target
-        boolean depAlreadyPresent = target.getDependencies().stream().anyMatch(d ->
-                SYNTHETIC_GROUP_ID.equals(d.getGroupId())
-                        && SYNTHETIC_ARTIFACT_ID.equals(d.getArtifactId())
-                        && SYNTHETIC_VERSION.equals(d.getVersion()));
-        if (!depAlreadyPresent) {
-            Dependency dep = new Dependency();
-            dep.setGroupId(SYNTHETIC_GROUP_ID);
-            dep.setArtifactId(SYNTHETIC_ARTIFACT_ID);
-            dep.setVersion(SYNTHETIC_VERSION);
-            // Use jar type instead of pom - even pom-packaged projects can have jar dependencies
-            // and jar dependencies in the reactor don't trigger the same resolution issues
-            dep.setType("jar");
-            dep.setScope("compile");
-            dep.setOptional(true);  // Optional to avoid strict resolution requirements
-            target.getModel().addDependency(dep);
-        }
+        Dependency dep = new Dependency();
+        dep.setGroupId(SYNTHETIC_GROUP_ID);
+        dep.setArtifactId(SYNTHETIC_ARTIFACT_ID);
+        dep.setVersion(SYNTHETIC_VERSION);
+        // Use jar type instead of pom - even pom-packaged projects can have jar dependencies
+        // and jar dependencies in the reactor don't trigger the same resolution issues
+        dep.setType("jar");
+        dep.setScope("compile");
+        target.getModel().addDependency(dep);
 
         logger.info("Added synthetic upstream project {}:{} and injected dependency into target {}:{}",
                 SYNTHETIC_GROUP_ID, SYNTHETIC_ARTIFACT_ID, target.getGroupId(), target.getArtifactId());
@@ -102,9 +84,6 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
 
     private MavenProject createSyntheticProject(MavenSession session) {
         try {
-            // Get the local repository path directly from the Maven request
-            File localRepo = session.getRequest().getLocalRepositoryPath();
-            logger.debug("Local repository: {}", localRepo.getAbsolutePath());
             
             // Create the Model programmatically  
             Model model = new Model();
@@ -112,25 +91,24 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
             model.setGroupId(SYNTHETIC_GROUP_ID);
             model.setArtifactId(SYNTHETIC_ARTIFACT_ID);
             model.setVersion(SYNTHETIC_VERSION);
-            model.setPackaging("jar");  // Use jar packaging so dependency resolution works
-            model.setName("IT Synthetic Upstream Project");
-            
-            // Prepare the directory and files in the local repository
-            File targetDir = new File(localRepo.getParentFile(), "it-synthetic-upstream");
-            targetDir.mkdirs();
-            File pomFile = new File(targetDir, "pom.xml");
+            model.setPackaging("jar");
+
+            // Prepare the directory and files
+            File workDir = new File(session.getExecutionRootDirectory(), "target/it-synthetic-upstream");
+            mkdirs(workDir);
+            File pomFile = new File(workDir, "pom.xml");
             
             // Serialize the Model to pom.xml
             MavenXpp3Writer writer = new MavenXpp3Writer();
             writer.write(Files.newBufferedWriter(pomFile.toPath()), model);
             
             // Create an empty jar file so the artifact can be resolved
-            File jarFile = new File(targetDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".jar");
+            File jarFile = new File(workDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".jar");
             createEmptyJarFile(jarFile);
             
             // Install to the local repository so Maven can resolve the dependency
             // This is critical - Maven's dependency resolution looks in the local repo
-            installToLocalRepository(localRepo, pomFile, jarFile);
+            installToLocalRepository(session, pomFile, jarFile);
             
             // Create and return the MavenProject
             MavenProject project = new MavenProject(model);
@@ -177,22 +155,28 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
      * Install the POM and JAR to the local repository used by integration tests.
      * This mimics what 'mvn install' does, making the artifact available for dependency resolution.
      */
-    private void installToLocalRepository(File localRepo, File pomFile, File jarFile) throws IOException {
+    private void installToLocalRepository(MavenSession session, File pomFile, File jarFile) throws IOException {
+        File localRepo = session.getRequest().getLocalRepositoryPath();
+
         // Calculate the local repository path structure: groupId/artifactId/version/
         String groupPath = SYNTHETIC_GROUP_ID.replace('.', '/');
         File artifactDir = new File(localRepo, groupPath + "/" + SYNTHETIC_ARTIFACT_ID + "/" + SYNTHETIC_VERSION);
-        artifactDir.mkdirs();
+        mkdirs(artifactDir);
         
         // Copy POM file
         File localRepoPom = new File(artifactDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".pom");
-        Files.copy(pomFile.toPath(), localRepoPom.toPath(), 
-                   java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(pomFile.toPath(), localRepoPom.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         
         // Copy JAR file
         File localRepoJar = new File(artifactDir, SYNTHETIC_ARTIFACT_ID + "-" + SYNTHETIC_VERSION + ".jar");
-        Files.copy(jarFile.toPath(), localRepoJar.toPath(), 
-                   java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(jarFile.toPath(), localRepoJar.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         
         logger.info("Installed synthetic artifact to local repository: {}", localRepoJar);
+    }
+
+    private static void mkdirs(File dir) {
+        if (!dir.mkdirs() && !dir.isDirectory()) {
+            throw new IllegalStateException("Failed to create directory: " + dir);
+        }
     }
 }

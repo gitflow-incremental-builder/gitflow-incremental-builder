@@ -79,7 +79,7 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
                 .contains("Building child4")
                 .contains("Building subchild41")
                 .contains("Building child6")
-                .contains("Building IT Synthetic Upstream Project 1.0.0-SNAPSHOT");
+                .contains("Building " + AddUpstreamSyntheticProjectParticipant.SYNTHETIC_ARTIFACT_ID);
     }
 
     private void writeExtensionsXml() throws IOException {
