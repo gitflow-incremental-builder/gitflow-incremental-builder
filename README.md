@@ -51,6 +51,7 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
   - [gib.forceBuildModules](#gibforcebuildmodules)
   - [gib.excludeDownstreamModulesPackagedAs](#gibexcludedownstreammodulespackagedas)
   - [gib.disableSelectedProjectsHandling](#gibdisableselectedprojectshandling)
+  - [gib.rebuildProjectDependencyGraphMode](#gibrebuildprojectdependencygraphmode)
   - [gib.failOnMissingGitDir](#failonmissinggitdir)
   - [gib.failOnError](#gibfailonerror)
   - [gib.logImpactedTo](#giblogimpactedto)
@@ -363,6 +364,7 @@ Maven pom properties configuration with default values is below:
     <gib.forceBuildModules></gib.forceBuildModules>                                    <!-- or -Dgib.fbm=...   -->
     <gib.excludeDownstreamModulesPackagedAs></gib.excludeDownstreamModulesPackagedAs>  <!-- or -Dgib.edmpa=... -->
     <gib.disableSelectedProjectsHandling>false</gib.disableSelectedProjectsHandling>   <!-- or -Dgib.dsph=...  -->
+    <gib.rebuildProjectDependencyGraphMode>auto</gib.rebuildProjectDependencyGraphMode><!-- or -Dgib.rpdgm=... -->
     <gib.failOnMissingGitDir>true</gib.failOnMissingGitDir>                            <!-- or -Dgib.fomgd=... -->
     <gib.failOnError>true</gib.failOnError>                                            <!-- or -Dgib.foe=...   -->
     <gib.logImpactedTo></gib.logImpactedTo>                                            <!-- or -Dgib.lit=...   -->
@@ -672,6 +674,23 @@ This can come in handy if you select just one module with `-pl` but you only wan
 if the selected module itself is changed or one of its (non-selected) upstream modules.
 
 Since: 3.12.0
+
+### gib.rebuildProjectDependencyGraphMode
+
+Controls whether or not to rebuild the project dependency graph instead of using the one provided by MavenSession.
+
+This makes sure that GIB is picking up project mutations (especially dependency additions) performed by other extensions _that ran before it_ (if any).
+
+Available modes are:
+
+- `auto` (default value): rebuild and log a hint of how to disable rebuild if it takes more than 1s
+- `on`: rebuild and never log a hint, regardless of how long the rebuild takes
+- `off`: no rebuild (pre 4.7.0 behaviour)
+
+Please note that GIB has been performing a special kind graph rebuild since 4.3.0 to properly calculate downstream modules if e.g. `-pl` is used.<br/>
+This special `allProjects` rebuild is _not_ controlled by this property and GIB will do it as it sees fit.
+
+Since 4.7.0
 
 ### gib.failOnMissingGitDir
 

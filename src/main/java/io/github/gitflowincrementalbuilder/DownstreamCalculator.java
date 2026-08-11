@@ -19,18 +19,15 @@ import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
-import org.apache.maven.graph.DefaultProjectDependencyGraph;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.TypeAwareExpressionEvaluator;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,18 +56,9 @@ class DownstreamCalculator {
                 // The reactor has been trimmed/filtered, most likely because of -pl and so the default ProjectDependencyGraph
                 // will not give us any downstream dependencies for modules that are not part of the trimmed reactor.
                 // Therefore we need to create a separate graph that contains all modules.
-                try {
-                    try {
-                        graph = new DefaultProjectDependencyGraph(allProjects);
-                    } catch (NoClassDefFoundError err) {
-                        // cannot use DPDG in maven < 3.8.8 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
-                        graph = new Maven38DefaultDependencyGraph(allProjects);
-                    }
-                } catch (CycleDetectedException | DuplicateProjectException e) {
-                    throw new IllegalStateException(e); // extremely unlikely
-                }
+                graph = ProjectDependencyGraphFactory.createGraph(allProjects, config, true);
             } else {
-                graph = config.mavenSession.getProjectDependencyGraph();
+                graph = config.projectDependencyGraph.get();
             }
         }
         boolean testOnly = ChangedProjects.isTestOnly(project);

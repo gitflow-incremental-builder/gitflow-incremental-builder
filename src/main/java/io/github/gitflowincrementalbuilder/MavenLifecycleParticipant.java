@@ -50,6 +50,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }
 
         // check prerequisites
+        // config.projectDependencyGraph is not used here deliberately, because it doesn't make sense to build our own graph if even Maven doesn't provide one
         if (session.getProjectDependencyGraph() == null) {
             logger.warn("Execution of gitflow-incremental-builder is not supported in this environment: "
                     + "Current MavenSession does not provide a ProjectDependencyGraph. "

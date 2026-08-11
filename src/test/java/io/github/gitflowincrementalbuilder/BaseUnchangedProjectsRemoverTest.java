@@ -2,7 +2,10 @@ package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
@@ -27,11 +30,13 @@ import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
@@ -86,6 +91,8 @@ abstract class BaseUnchangedProjectsRemoverTest {
     @InjectMocks
     protected UnchangedProjectsRemover underTest;
 
+    private MockedStatic<ProjectDependencyGraphFactory> mockedStaticGraphFactory;
+
     protected final Set<MavenProject> changedProjects = new LinkedHashSet<>();
 
     /**
@@ -117,11 +124,21 @@ abstract class BaseUnchangedProjectsRemoverTest {
         when(mavenSessionMock.getRequest()).thenReturn(mavenExecutionRequestMock);
         when(mavenSessionMock.getProjects()).thenReturn(projects);
         when(mavenSessionMock.getAllProjects()).thenReturn(allProjects);
-        when(mavenSessionMock.getProjectDependencyGraph()).thenReturn(projectDependencyGraphMock);
         when(changedProjectsMock.get(any(Configuration.class))).thenReturn(changedProjects);
         when(impactedDependencies.get(any(Configuration.class))).thenReturn(changedProjects);
 
         when(mavenSessionMock.getGoals()).thenReturn(new ArrayList<>());
+
+        mockedStaticGraphFactory = mockStatic(ProjectDependencyGraphFactory.class);
+        mockedStaticGraphFactory.when(() -> ProjectDependencyGraphFactory.createGraph(anyCollection(), any(Configuration.class), anyBoolean()))
+                .thenReturn(projectDependencyGraphMock);
+    }
+
+    @AfterEach
+    void after() {
+        if (mockedStaticGraphFactory != null) {
+            mockedStaticGraphFactory.close();
+        }
     }
 
     protected MavenProject addModuleMock(String moduleArtifactId, boolean addToChanged) {

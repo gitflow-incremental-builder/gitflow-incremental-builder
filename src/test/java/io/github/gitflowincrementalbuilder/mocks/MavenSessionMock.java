@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.mockito.quality.Strictness;
@@ -44,8 +43,6 @@ public class MavenSessionMock {
         when(mavenSession.getRequest()).thenReturn(request);
         when(mavenSession.getAllProjects()).thenReturn(projects);
         when(mavenSession.getProjects()).thenReturn(projects);
-        ProjectDependencyGraph dependencyGraphMock = mock(ProjectDependencyGraph.class);
-        when(mavenSession.getProjectDependencyGraph()).thenReturn(dependencyGraphMock);
         return mavenSession;
     }
 

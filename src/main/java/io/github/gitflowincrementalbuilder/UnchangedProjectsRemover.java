@@ -300,7 +300,7 @@ class UnchangedProjectsRemover {
                 throw new IllegalStateException("Unsupported BuildUpstreamMode: " + buildUpstreamMode);
         }
         Set<MavenProject> upstreamProjects = upstreamRequiringProjects.stream()
-                .flatMap(proj -> streamUpstreamProjects(proj, config.mavenSession))
+                .flatMap(proj -> streamUpstreamProjects(proj, config))
                 .filter(not(impacted::contains))
                 .peek(proj -> applyUpstreamModuleArgs(proj, config))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -360,8 +360,8 @@ class UnchangedProjectsRemover {
         logger.info("------------------------------------------------------------------------");
     }
 
-    private Stream<MavenProject> streamUpstreamProjects(MavenProject project, MavenSession mavenSession) {
-        return mavenSession.getProjectDependencyGraph().getUpstreamProjects(project, true).stream();
+    private Stream<MavenProject> streamUpstreamProjects(MavenProject project, Configuration config) {
+        return config.projectDependencyGraph.get().getUpstreamProjects(project, true).stream();
     }
 
     private boolean matchesAny(final String str, Collection<Pattern> patterns) {

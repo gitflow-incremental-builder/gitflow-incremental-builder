@@ -129,6 +129,10 @@ public enum Property {
      * Disables special handling of explicitly selected projects (-pl, -f etc.).
      */
     disableSelectedProjectsHandling("false", "dsph", true),
+    /**
+     * Controls whether or not to rebuild the project dependency graph instead of using the one provided by MavenSession.
+     */
+    rebuildProjectDependencyGraphMode("auto", "rpdgm"),
 
     /**
      * Controls whether or not to fail on missing .git directory.

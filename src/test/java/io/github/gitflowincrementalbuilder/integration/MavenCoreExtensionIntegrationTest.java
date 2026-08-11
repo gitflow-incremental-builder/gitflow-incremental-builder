@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}
@@ -66,6 +67,28 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
         }
     }
 
+    @Test
+    public void afterOtherExtension() throws Exception {
+
+        String syntheticProjectTargetProperty =  "-D" + AddUpstreamSyntheticProjectParticipant.PROP_TARGET_ARTIFACT_ID + "=child3";
+        // sanity check:
+        assertThat(executeBuild(false, false,"-am", syntheticProjectTargetProperty, prop(Property.rebuildProjectDependencyGraphMode, "off")))
+                .doesNotContain("Building " + AddUpstreamSyntheticProjectParticipant.SYNTHETIC_ARTIFACT_ID);
+
+        final String output = executeBuild("-am", syntheticProjectTargetProperty);
+
+        assertThat(output).doesNotContain("Building child1")
+                .doesNotContain("Building child2")
+                .doesNotContain("Building subchild1")
+                .doesNotContain("Building subchild42")
+                .contains("Building subchild2")
+                .contains("Building child3")
+                .contains("Building child4")
+                .contains("Building subchild41")
+                .contains("Building child6")
+                .contains("Building " + AddUpstreamSyntheticProjectParticipant.SYNTHETIC_ARTIFACT_ID);
+    }
+
     private void writeExtensionsXml() throws IOException {
         String[] pluginGA = Configuration.PLUGIN_KEY.split(":");
         String extensionXml =
@@ -76,6 +99,12 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
                 "    <artifactId>" + pluginGA[1] + "</artifactId>\n" +
                 "    <version>" + gibVersion + "</version>\n" +
                 (classLoadingStrategyElementSupported ? "    <classLoadingStrategy>plugin</classLoadingStrategy>\n" : "") +
+                "  </extension>\n" +
+                // for AddUpstreamSyntheticProjectParticipant, must be defined after GIB to be executed first (sic!)
+                "  <extension>\n" +
+                "    <groupId>" + pluginGA[0] + "</groupId>\n" +
+                "    <artifactId>" + pluginGA[1] + "-it-support</artifactId>\n" +
+                "    <version>" + gibVersion + "</version>\n" +
                 "  </extension>\n" +
                 "</extensions>";
         Path extensionsPath = Files.createDirectory(repoPath.resolve(".mvn")).resolve("extensions.xml");
