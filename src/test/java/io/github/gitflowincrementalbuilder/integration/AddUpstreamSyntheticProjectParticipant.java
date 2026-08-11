@@ -28,6 +28,13 @@ import org.apache.maven.project.MavenProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Maven lifecycle participant that adds a synthetic upstream project to the reactor and injects a dependency into a target project.<br/>
+ * To be used only in GIB's own integrations tests!
+ * <p/>
+ * This actually went quite a bit beyond adding a project <i>that is already part of the reactor</i> as a new dependency to another project in the reactor (as issue #1183 described).
+ * Instead, this participant <i>creates a new synthetic project on the fly, adds it to the reactor</i>, and injects a dependency into the target project.
+ */
 @Named
 @Singleton
 public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecycleParticipant {
