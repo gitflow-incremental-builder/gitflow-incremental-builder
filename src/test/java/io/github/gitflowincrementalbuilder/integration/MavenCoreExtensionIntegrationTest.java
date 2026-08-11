@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
+import io.github.gitflowincrementalbuilder.config.Property;
 
 /**
  * Integration test running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}
@@ -68,7 +69,13 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
 
     @Test
     public void afterOtherExtension() throws Exception {
-        final String output = executeBuild("-am", "-D" + AddUpstreamSyntheticProjectParticipant.PROP_TARGET_ARTIFACT_ID + "=child3", "-Dgib.rpdgm=auto");
+
+        String syntheticProjectTargetProperty =  "-D" + AddUpstreamSyntheticProjectParticipant.PROP_TARGET_ARTIFACT_ID + "=child3";
+        // sanity check:
+        assertThat(executeBuild(false, false,"-am", syntheticProjectTargetProperty, prop(Property.rebuildProjectDependencyGraphMode, "off")))
+                .doesNotContain("Building " + AddUpstreamSyntheticProjectParticipant.SYNTHETIC_ARTIFACT_ID);
+
+        final String output = executeBuild("-am", syntheticProjectTargetProperty);
 
         assertThat(output).doesNotContain("Building child1")
                 .doesNotContain("Building child2")
