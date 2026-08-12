@@ -100,7 +100,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.6.0</version>
+            <version>4.7.0</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -131,7 +131,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.6.0</version>
+            <version>4.7.0</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -193,7 +193,7 @@ $ cat pom.xml
             <extension>
                 <groupId>io.github.gitflow-incremental-builder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>4.6.0</version>
+                <version>4.7.0</version>
             </extension>
         </extensions>
     </build>
