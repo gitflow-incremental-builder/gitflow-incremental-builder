@@ -86,10 +86,15 @@ public class GitProvider {
 
     private static boolean isWorktree(FileRepositoryBuilder builder) {
         return Optional.ofNullable(builder.getGitDir().toPath().getParent())
-                .filter(parent -> parent.getFileName().toString().equals("worktrees"))
+                .filter(parent -> fileNameEquals(parent, "worktrees"))
                 .map(Path::getParent)
                 .filter(Objects::nonNull)
-                .map(parentParent -> parentParent.getFileName().toString().equals(".git"))
+                .map(parentParent -> fileNameEquals(parentParent, ".git"))
                 .orElse(false);
+    }
+
+    private static boolean fileNameEquals(Path path, String fileName) {
+        Path fileNameAsPath = path.getFileName();
+        return fileNameAsPath != null && fileNameAsPath.toString().equals(fileName);
     }
 }

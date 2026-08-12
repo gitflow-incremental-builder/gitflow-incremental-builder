@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 /**
  * A lazy value that is initialized on first access. Not thread-safe and for internal use only.
  */
-public class LazyValue<T> implements Supplier<T> {
+public final class LazyValue<T> implements Supplier<T> {
 
     private T value;
     private Supplier<T> initializer;
