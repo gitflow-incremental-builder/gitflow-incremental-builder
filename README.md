@@ -685,7 +685,9 @@ Available modes are:
 
 - `auto` (default value): rebuild and log a hint of how to disable rebuild if it takes more than 1s
 - `on`: rebuild and never log a hint, regardless of how long the rebuild takes
-- `off`: no rebuild (pre 4.7.0 behaviour)
+- `off`: no rebuild (pre 4.7.0 behavior)
+
+Hint: GIB might need to be defined _before_ another extension to actually run _after_ it. This is Maven core behavior and GIB cannot do anything about it.
 
 Please note that GIB has been performing a special kind graph rebuild since 4.3.0 to properly calculate downstream modules if e.g. `-pl` is used.<br/>
 This special `allProjects` rebuild is _not_ controlled by this property and GIB will do it as it sees fit.
@@ -724,7 +726,7 @@ Since: 3.10.1
 Defines an optional logfile which GIB shall write all "impacted" module GAVs (`GroupId:ArtifactId:Version`) to, one per line.
 Can be used independently of or together with [gib.logImpactedTo](#giblogimpactedto).
 
-The same file handling behaviour as [gib.logImpactedTo](#giblogimpactedto) applies (overwrite, empty file on no changes, cleanup on skip, etc.).
+The same file handling behavior as [gib.logImpactedTo](#giblogimpactedto) applies (overwrite, empty file on no changes, cleanup on skip, etc.).
 
 Since: 4.7.0
 
