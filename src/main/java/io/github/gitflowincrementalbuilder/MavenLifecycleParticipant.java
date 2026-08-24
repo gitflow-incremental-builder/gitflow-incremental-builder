@@ -81,7 +81,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
             }
 
             logger.info("gitflow-incremental-builder {} starting...", implVersion);
-            warnIfBuggyOrUnsupportedMavenVersion(MavenSession.class.getPackage().getImplementationVersion(), config);
+            warnIfBuggyOrUnsupportedMavenVersion(MavenSession.class.getPackage().getImplementationVersion());
             unchangedProjectsRemover.act(config);
         } catch (Exception e) {
             boolean isSkipExecException = e instanceof SkipExecutionException;
@@ -114,7 +114,7 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
         }).orElse(false);
     }
 
-    void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion, Configuration config) {
+    void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion) {
         if (mavenVersion == null) {
             logger.warn("Could not get Maven version.");
         } else if (!mavenVersion.startsWith("3.8.") && !mavenVersion.startsWith("3.9") && !mavenVersion.equals("3.6.3")) {

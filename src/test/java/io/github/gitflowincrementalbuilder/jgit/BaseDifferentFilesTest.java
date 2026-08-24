@@ -76,7 +76,9 @@ abstract class BaseDifferentFilesTest extends BaseRepoTest {
         Git remoteGit = localRepoMock.getRemoteRepo().getGit();
         remoteGit.reset().setMode(ResetCommand.ResetType.HARD).call();
         remoteGit.checkout().setName(DEVELOP).call();
-        remoteGit.getRepository().getDirectory().toPath().resolve(newFileNameAndMessage).toFile().createNewFile();
+        if (!remoteGit.getRepository().getDirectory().toPath().resolve(newFileNameAndMessage).toFile().createNewFile()) {
+            throw new IllegalStateException("Failed to create new file in remote repo: " + newFileNameAndMessage);
+        }
         remoteGit.add().addFilepattern(".").call();
         remoteGit.commit().setMessage(newFileNameAndMessage).call();
         assertCommitExists(newFileNameAndMessage, remoteGit);
