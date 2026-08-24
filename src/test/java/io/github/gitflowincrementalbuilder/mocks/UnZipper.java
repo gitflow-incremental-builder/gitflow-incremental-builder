@@ -24,11 +24,10 @@ public class UnZipper {
     }
 
     public void act(Path zip, Path outputFolder) {
-        try{
+        try {
             createOutputFolder(outputFolder);
             try (ZipInputStream zis = createZipInputStream(zip)) {
                 process(outputFolder, zis);
-                zis.closeEntry();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -46,10 +45,10 @@ public class UnZipper {
                 throw new IOException("Bad zip entry: " + fileName);
             }
 
-            createParentDirectories(newFile);
             if (ze.isDirectory()) {
-                Files.createDirectory(newFile);
+                Files.createDirectories(newFile);
             } else {
+                Files.createDirectories(newFile.getParent());
                 writeToFile(zis, newFile);
             }
             Files.setLastModifiedTime(newFile, FileTime.fromMillis(ze.getLastModifiedTime().toMillis()));
@@ -65,10 +64,6 @@ public class UnZipper {
                 fos.write(buffer, 0, len);
             }
         }
-    }
-
-    private void createParentDirectories(Path newFile) throws IOException {
-        Files.createDirectories(newFile.getParent());
     }
 
     private ZipInputStream createZipInputStream(Path zip) throws IOException {
