@@ -97,7 +97,7 @@
         <version.maven-gpg-plugin>3.2.8</version.maven-gpg-plugin>
         <version.central-publishing-maven-plugin>0.11.0</version.central-publishing-maven-plugin>
         <version.maven-release-plugin>3.3.1</version.maven-release-plugin>
-        <version.spotbugs-maven-plugin>4.10.3.0</version.spotbugs-maven-plugin>
+        <version.spotbugs-maven-plugin>4.10.4.0</version.spotbugs-maven-plugin>
         <version.spotbugs>4.10.3</version.spotbugs>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
@@ -112,6 +112,8 @@
 
         <!-- See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html for empty argLine -->
         <argLine />
+
+        <spotbugs.phase>verify</spotbugs.phase>
     </properties>
     <dependencies>
         <dependency>
@@ -792,6 +794,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>${spotbugs.phase}</phase>
                         <?m2e ignore?>
                     </execution>
                 </executions>
@@ -811,7 +814,7 @@
                 <jacoco.skip>true</jacoco.skip>
                 <maven.test.skip>true</maven.test.skip>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
-                <spotbugs.skip>true</spotbugs.skip>
+                <spotbugs.phase>none</spotbugs.phase>
             </properties>
             <build>
                 <defaultGoal>clean install</defaultGoal>
@@ -850,6 +853,18 @@
             </activation>
             <properties>
                 <jacoco.skip.test>true</jacoco.skip.test>
+            </properties>
+        </profile>
+        <profile>
+            <id>spotbugs-skip-hard</id>
+            <activation>
+                <property>
+                    <name>spotbugs.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <spotbugs.phase>none</spotbugs.phase>
             </properties>
         </profile>
         <profile>
