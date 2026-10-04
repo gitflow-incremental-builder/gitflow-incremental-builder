@@ -237,6 +237,20 @@ public class MavenLifecycleParticipantTest {
     }
 
     @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_3100() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.10.0");
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
+    public void warnIfBuggyOrUnsupportedMavenVersion_3916() {
+        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.9.16");
+
+        verifyNoInteractions(loggerSpy);
+    }
+
+    @Test
     public void warnIfBuggyOrUnsupportedMavenVersion_387() {
         underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.7");
 

@@ -117,7 +117,8 @@ public class MavenLifecycleParticipant extends AbstractMavenLifecycleParticipant
     void warnIfBuggyOrUnsupportedMavenVersion(String mavenVersion) {
         if (mavenVersion == null) {
             logger.warn("Could not get Maven version.");
-        } else if (!mavenVersion.startsWith("3.8.") && !mavenVersion.startsWith("3.9") && !mavenVersion.equals("3.6.3")) {
+        } else if (!mavenVersion.startsWith("3.8.") && !mavenVersion.startsWith("3.9.")
+                && !mavenVersion.startsWith("3.10.") && !mavenVersion.equals("3.6.3")) {
             logger.warn("Detected Maven {} was not tested with gitflow-incremental-builder.", mavenVersion);
         }
     }
