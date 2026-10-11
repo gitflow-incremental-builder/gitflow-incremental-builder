@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,6 +58,9 @@ class UnchangedProjectsRemover {
 
     @Inject private GitProvider gitProvider;
 
+    // note: "[4,)" would NOT match pre-releases like 4.0.0-rc-7 (qualifiers sort before the release), hence "4-alpha"
+    static final String MAVEN_4_OR_LATER = "[4-alpha,)";
+
     @Inject private RuntimeInformation runtimeInformation;
 
     public void act(Configuration config) {
@@ -80,7 +82,7 @@ class UnchangedProjectsRemover {
         if (config.disableSelectedProjectsHandling) {
             selected = Collections.emptySet();
         } else {
-            selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession, runtimeInformation.isMavenVersion("[4,)"));
+            selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession, runtimeInformation.isMavenVersion(MAVEN_4_OR_LATER));
 
             // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
             if (onlySelectedModulesPresent(selected, config.mavenSession)) {
@@ -150,7 +152,8 @@ class UnchangedProjectsRemover {
     }
 
     private boolean onlySelectedModulesPresent(Set<MavenProject> selected, MavenSession mavenSession) {
-        return !selected.isEmpty() && mavenSession.getProjects().equals(new ArrayList<>(selected));
+        List<MavenProject> projects = mavenSession.getProjects();
+        return !selected.isEmpty() && projects.size() == selected.size() && selected.containsAll(projects);
     }
 
     private boolean onlySingleLeafModulePresent(Configuration config) {
