@@ -114,6 +114,11 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
      */
     @BeforeEach
     void initialInstall(TestInfo testInfo) throws Exception {
+        // aid Maven 4 in finding the root project (prevents warning)
+        Files.createDirectory(repoPath.resolve(".mvn"));
+
+        beforeInitialInstall(testInfo);
+
         testDisplayName = testInfo.getDisplayName();
         String disableGib = prop(Property.disable, "true");
         Class<?> testClass = testInfo.getTestClass().get();
@@ -133,6 +138,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 INITIAL_INSTALL_DONE.add(cacheKey);
             }
         }
+    }
+
+    protected void beforeInitialInstall(TestInfo testInfo) throws Exception {
+        // for subclasses to override
     }
 
     private void copyCommonBuildParentPom() throws URISyntaxException, IOException {

@@ -19,7 +19,7 @@ Note: Releases and SNAPSHOTs are deployed via [`central-publishing-maven-plugin`
         <profile>
           <id>publish</id>
           <properties>
-            <gpg.executable>C:\Program Files (x86)\GnuPG\bin\gpg.exe</gpg.executable>
+            <!-- if not on PATH: <gpg.executable>...</gpg.executable> -->
             <gpg.keyname>your-key-fingerprint</gpg.keyname>
           </properties>
         </profile>
@@ -35,7 +35,7 @@ Note: Releases and SNAPSHOTs are deployed via [`central-publishing-maven-plugin`
       ```xml
       <servers>
         <server>
-          <id>central</id>
+          <id>sonatype</id>
           <username>your-central-token-username</username>
           <password>your-central-token-password</password>
         </server>

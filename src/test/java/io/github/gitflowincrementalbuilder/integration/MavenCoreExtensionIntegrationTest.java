@@ -46,13 +46,10 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
     }
 
     @Override
-    @BeforeEach
-    void initialInstall(TestInfo testInfo) throws Exception {
+    protected void beforeInitialInstall(TestInfo testInfo) throws Exception {
         Files.move(repoPath.resolve("build-parent/pom-none.xml"), repoPath.resolve("build-parent/pom.xml"), StandardCopyOption.REPLACE_EXISTING);
 
         writeExtensionsXml();
-
-        super.initialInstall(testInfo);
     }
 
     @Test
@@ -107,7 +104,7 @@ public class MavenCoreExtensionIntegrationTest extends MavenIntegrationTestBase 
                 "    <version>" + gibVersion + "</version>\n" +
                 "  </extension>\n" +
                 "</extensions>";
-        Path extensionsPath = Files.createDirectory(repoPath.resolve(".mvn")).resolve("extensions.xml");
+        Path extensionsPath = repoPath.resolve(".mvn").resolve("extensions.xml");
         Files.write(extensionsPath, extensionXml.getBytes(StandardCharsets.UTF_8));
     }
 }
