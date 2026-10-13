@@ -31,7 +31,6 @@ import javax.inject.Singleton;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.rtinfo.RuntimeInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +57,7 @@ class UnchangedProjectsRemover {
 
     @Inject private GitProvider gitProvider;
 
-    // note: "[4,)" would NOT match pre-releases like 4.0.0-rc-7 (qualifiers sort before the release), hence "4-alpha"
-    static final String MAVEN_4_OR_LATER = "[4-alpha,)";
-
-    @Inject private RuntimeInformation runtimeInformation;
+    @Inject private MavenVersion mavenVersion;
 
     public void act(Configuration config) {
         try {
@@ -82,7 +78,7 @@ class UnchangedProjectsRemover {
         if (config.disableSelectedProjectsHandling) {
             selected = Collections.emptySet();
         } else {
-            selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession, runtimeInformation.isMavenVersion(MAVEN_4_OR_LATER));
+            selected = ProjectSelectionUtil.gatherSelectedProjects(config.mavenSession, mavenVersion.isMaven4OrHigher());
 
             // before checking for any changes, check whether there are _only_ explicitly selected projects (-pl) which have the highest priority
             if (onlySelectedModulesPresent(selected, config.mavenSession)) {

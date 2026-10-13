@@ -807,7 +807,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // Maven 4: mvn -pl :module-B (also pulls in the declared modules of B into the session)
     @Test
     public void nothingChanged_maven4_selectedWithModule() {
-        when(runtimeInformationMock.isMavenVersion(UnchangedProjectsRemover.MAVEN_4_OR_LATER)).thenReturn(true);
+        when(mavenVersionMock.isMaven4OrHigher()).thenReturn(true);
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleB1 = addModuleMock("module-B1", false);
         moduleB.getModel().addModule("../" + moduleB1.getArtifactId());
@@ -825,7 +825,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     // Maven 4: mvn -pl :module-B -N (modules must not be treated as selected)
     @Test
     public void nothingChanged_maven4_selectedWithModule_nonRecursive() {
-        when(runtimeInformationMock.isMavenVersion(UnchangedProjectsRemover.MAVEN_4_OR_LATER)).thenReturn(true);
+        when(mavenVersionMock.isMaven4OrHigher()).thenReturn(true);
         when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleB1 = addModuleMock("module-B1", false);
