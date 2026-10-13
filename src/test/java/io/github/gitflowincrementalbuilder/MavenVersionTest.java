@@ -65,6 +65,7 @@ class MavenVersionTest {
             "'',false",
             "4.0.0,true",
             "4.0.0-rc7,true",
+            "4.0.0-rc6,false",
             "3.10.0,true",
             "3.11.0,false",
             "3.12.0,false",

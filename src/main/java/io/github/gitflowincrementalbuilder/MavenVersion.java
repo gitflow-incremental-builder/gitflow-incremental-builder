@@ -21,7 +21,7 @@ class MavenVersion {
     private static final String SUPPORTED_MAVEN_3_MINOR_RANGE = "[3.6.3,3.11-alpha)";
 
     // note: use "4.1-alpha" as exclusive upper bound so that 4.0 pre-releases are included but 4.1+ is excluded
-    private static final String SUPPORTED_MAVEN_4_MINOR_RANGE = "[4-alpha,4.1-alpha)";
+    private static final String SUPPORTED_MAVEN_4_MINOR_RANGE = "[4.0.0-rc-7,4.1-alpha)";
 
     @Inject private RuntimeInformation runtimeInformation;
 
