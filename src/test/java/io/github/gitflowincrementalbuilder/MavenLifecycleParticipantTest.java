@@ -238,7 +238,8 @@ public class MavenLifecycleParticipantTest {
 
         underTest.warnIfBuggyOrUnsupportedMavenVersion();
 
-        verify(loggerSpy).warn(contains("Could not get Maven version"));
+        verifyNoInteractions(loggerSpy);
+        verify(mavenVersionMock, never()).isSupported();
     }
 
     @Test

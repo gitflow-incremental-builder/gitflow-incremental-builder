@@ -5,10 +5,14 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Named
 class MavenVersion {
+
+    private Logger logger = LoggerFactory.getLogger(MavenVersion.class);
 
     // note: "[4,)" would NOT match pre-releases like 4.0.0-rc-7 (qualifiers sort before the release), hence "4-alpha"
     private static final String MAVEN_4_OR_LATER = "[4-alpha,)";
@@ -19,11 +23,16 @@ class MavenVersion {
     @Inject private RuntimeInformation runtimeInformation;
 
     boolean isMaven4OrHigher() {
-        return runtimeInformation.isMavenVersion(MAVEN_4_OR_LATER);
+        return getVersionString() != null && runtimeInformation.isMavenVersion(MAVEN_4_OR_LATER);
     }
 
     String getVersionString() {
-        return runtimeInformation.getMavenVersion();
+        String mavenVersion = runtimeInformation.getMavenVersion();
+        if (mavenVersion == null || mavenVersion.isBlank()) {
+            logger.warn("Could not determine Maven version.");
+            return null;
+        }
+        return mavenVersion;
     }
 
     boolean isSupported() {

@@ -1,17 +1,27 @@
 package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import org.apache.maven.rtinfo.internal.DefaultRuntimeInformation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+
+import io.github.gitflowincrementalbuilder.util.LoggerSpyUtil;
 
 @ExtendWith(MockitoExtension.class)
 class MavenVersionTest {
+
+    private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenVersion.class);
 
     @Spy
     private DefaultRuntimeInformation runtimeInformation;
@@ -19,18 +29,19 @@ class MavenVersionTest {
     @InjectMocks
     private MavenVersion underTest;
 
-    @Test
-    void isMaven4OrHigher_positive() {
-        doReturn("4.0.0-rc-7").when(runtimeInformation).getMavenVersion();
+    @ParameterizedTest(name = "isMaven4OrHigher({0}) = {1}")
+    @CsvSource({
+            "'',false",
+            "3.10.0,false",
+            "4.0.0-alpha-1,true",
+            "4.0.0-rc-7,true",
+            "4.0.0,true",
+            "4.1.0,true"
+    })
+    void isMaven4OrHigher_versions(String version, boolean expected) {
+        doReturn(version).when(runtimeInformation).getMavenVersion();
 
-        assertThat(underTest.isMaven4OrHigher()).isTrue();
-    }
-
-    @Test
-    void isMaven4OrHigher_negative() {
-        doReturn("3.10.0").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isMaven4OrHigher()).isFalse();
+        assertThat(underTest.isMaven4OrHigher()).isEqualTo(expected);
     }
 
     @Test
@@ -40,80 +51,32 @@ class MavenVersionTest {
         assertThat(underTest.getVersionString()).isEqualTo("3.9.9");
     }
 
-    @Test
-    void isSupported_null() {
-        doReturn(null).when(runtimeInformation).getMavenVersion();
+    @ParameterizedTest
+    @NullAndEmptySource
+    void getVersionString_invalid(String version) {
+        doReturn(version).when(runtimeInformation).getMavenVersion();
 
-        assertThat(underTest.isSupported()).isFalse();
+        assertThat(underTest.getVersionString()).isNull();
+        verify(loggerSpy).warn(contains("Could not determine Maven version"));
     }
 
-    @Test
-    void isSupported_maven40() {
-        doReturn("4.0.0").when(runtimeInformation).getMavenVersion();
+    @ParameterizedTest(name = "isSupported({0}) = {1}")
+    @CsvSource({
+            "'',false",
+            "4.0.0,true",
+            "4.0.0-rc7,true",
+            "3.10.0,true",
+            "3.9.16,true",
+            "3.8.9,true",
+            "3.6.3,true",
+            "4.1.0,false",
+            "4.1.0-alpha-1,false",
+            "4.1.0-rc-1,false",
+            "3.6.2,false"
+    })
+    void isSupported_versions(String version, boolean expectedSupported) {
+        doReturn(version).when(runtimeInformation).getMavenVersion();
 
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven40rc() {
-        doReturn("4.0.0-rc7").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven310() {
-        doReturn("3.10.0").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven39() {
-        doReturn("3.9.16").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven38() {
-        doReturn("3.8.9").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven363() {
-        doReturn("3.6.3").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isTrue();
-    }
-
-    @Test
-    void isSupported_maven41() {
-        doReturn("4.1.0").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isFalse();
-    }
-    
-    @Test
-    void isSupported_maven41alpha() {
-        doReturn("4.1.0-alpha-1").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isFalse();
-    }
-
-    @Test
-    void isSupported_maven41rc() {
-        doReturn("4.1.0-rc-1").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isFalse();
-    }
-
-    @Test
-    void isSupported_unsupported() {
-        doReturn("3.6.2").when(runtimeInformation).getMavenVersion();
-
-        assertThat(underTest.isSupported()).isFalse();
+        assertThat(underTest.isSupported()).isEqualTo(expectedSupported);
     }
 }
