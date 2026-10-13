@@ -11,7 +11,10 @@ import org.apache.maven.rtinfo.RuntimeInformation;
 class MavenVersion {
 
     // note: "[4,)" would NOT match pre-releases like 4.0.0-rc-7 (qualifiers sort before the release), hence "4-alpha"
-    static final String MAVEN_4_OR_LATER = "[4-alpha,)";
+    private static final String MAVEN_4_OR_LATER = "[4-alpha,)";
+
+    // note: use "4.1-alpha" as exclusive upper bound so that 4.0 pre-releases are included but 4.1+ is excluded
+    private static final String SUPPORTED_MAVEN_VERSIONS = "[3.6.3,4.1-alpha)";
 
     @Inject private RuntimeInformation runtimeInformation;
 
@@ -24,12 +27,6 @@ class MavenVersion {
     }
 
     boolean isSupported() {
-        String mavenVersion = getVersionString();
-        return mavenVersion != null
-                && (mavenVersion.startsWith("3.9.")
-                || mavenVersion.startsWith("3.10.")
-                || mavenVersion.startsWith("4.0.")
-                || mavenVersion.startsWith("3.8.")
-                || mavenVersion.equals("3.6.3"));
+        return getVersionString() != null && runtimeInformation.isMavenVersion(SUPPORTED_MAVEN_VERSIONS);
     }
 }
