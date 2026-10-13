@@ -101,8 +101,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         model.setPackaging("pom");
 
         // Prepare the directory and files
-        Path workDir = Paths.get(session.getExecutionRootDirectory(), "target", "it-synthetic-upstream");
-        mkdirs(workDir);
+        Path workDir = mkdirs(Paths.get(session.getExecutionRootDirectory(), "target", "it-synthetic-upstream"));
         Path pomFile = workDir.resolve("pom.xml");
 
         // Serialize the Model to pom.xml
@@ -125,6 +124,9 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         project.setArtifactId(SYNTHETIC_ARTIFACT_ID);
         project.setVersion(SYNTHETIC_VERSION);
         project.setPackaging("pom");
+        // prevent NPE here:
+        // https://github.com/apache/maven/blob/maven-4.0.0-rc-7/impl/maven-core/src/main/java/org/apache/maven/internal/transformation/impl/ConsumerPomArtifactTransformer.java#L86
+        project.getBuild().setDirectory(mkdirs(workDir.resolve("target")).toString());
 
         // Create and set a proper Artifact pointing to the pom file
         Artifact artifact = new DefaultArtifact(
@@ -162,9 +164,9 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         logger.info("Installed synthetic artifact to local repository: {}", localRepoPom);
     }
 
-    private static void mkdirs(Path dir) {
+    private static Path mkdirs(Path dir) {
         try {
-            Files.createDirectories(dir);
+            return Files.createDirectories(dir);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to create directory: " + dir, e);
         }

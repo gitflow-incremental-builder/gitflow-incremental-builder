@@ -9,11 +9,13 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,10 +63,82 @@ class ModulesTest {
                 entry(Paths.get("proj2+3").toAbsolutePath(), Arrays.asList(projMock2, projMock3)));
     }
 
+    @Test
+    void collectModulesOf_none() {
+        MavenProject parent = mockModule("parent");
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent))).isEmpty();
+    }
+
+    @Test
+    void collectModulesOf_directAndRecursive() {
+        MavenProject parent = mockModule("parent", "child1", "child2");
+        MavenProject child1 = mockModule("parent/child1", "sub");
+        MavenProject child2 = mockModule("parent/child2");
+        MavenProject sub = mockModule("parent/child1/sub");
+        MavenProject unrelated = mockModule("unrelated");
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent, child1, child2, sub, unrelated)))
+                .containsExactlyInAnyOrder(child1, child2, sub);
+    }
+
+    @Test
+    void collectModulesOf_outOfTree() {
+        MavenProject parent = mockModule("parent", "../other");
+        MavenProject other = mockModule("other", "nested");
+        MavenProject nested = mockModule("other/nested");
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent, other, nested)))
+                .containsExactlyInAnyOrder(other, nested);
+    }
+
+    @Test
+    void collectModulesOf_dirBelowParentButNotDeclared() {
+        MavenProject parent = mockModule("parent", "child1");
+        MavenProject child1 = mockModule("parent/child1");
+        MavenProject notDeclared = mockModule("parent/child2");
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent, child1, notDeclared)))
+                .containsExactly(child1);
+    }
+
+    @Test
+    void collectModulesOf_pomFileReference() {
+        MavenProject parent = mockModule("parent", "child1/special-pom.xml");
+        MavenProject child1 = mockModule("parent/child1");
+        when(child1.getFile()).thenReturn(new File("parent/child1/special-pom.xml"));
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent, child1))).containsExactly(child1);
+    }
+
+    @Test
+    void collectModulesOf_candidatesOnly() {
+        MavenProject parent = mockModule("parent", "child1", "child2");
+        MavenProject child1 = mockModule("parent/child1");
+
+        assertThat(Modules.collectModulesOf(parent, Arrays.asList(parent, child1))).containsExactly(child1);
+    }
+
+    @Test
+    void collectModulesOf_cycle() {
+        MavenProject a = mockModule("a", "../b");
+        MavenProject b = mockModule("b", "../a");
+
+        assertThat(Modules.collectModulesOf(a, Arrays.asList(a, b))).containsExactlyInAnyOrder(a, b);
+    }
 
     public MavenProject mockProject(String dirName) {
         MavenProject projMock = Mockito.mock(MavenProject.class);
         when(projMock.getBasedir()).thenReturn(new File(dirName));
+        return projMock;
+    }
+
+    private MavenProject mockModule(String dirName, String... modules) {
+        MavenProject projMock = Mockito.mock(MavenProject.class, Mockito.withSettings().strictness(Strictness.LENIENT));
+        when(projMock.getBasedir()).thenReturn(new File(dirName));
+        Model model = new Model();
+        Arrays.stream(modules).forEach(model::addModule);
+        when(projMock.getModel()).thenReturn(model);
         return projMock;
     }
 }

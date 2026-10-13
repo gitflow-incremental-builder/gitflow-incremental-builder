@@ -53,6 +53,9 @@ public class MavenLifecycleParticipantTest {
     @Mock
     private GitProvider gitProviderMock;
 
+    @Mock
+    private MavenVersion mavenVersionMock;
+
     @InjectMocks
     private MavenLifecycleParticipant underTest = new MavenLifecycleParticipant(TEST_IMPL_VERSION);
 
@@ -231,78 +234,31 @@ public class MavenLifecycleParticipantTest {
 
     @Test
     public void warnIfBuggyOrUnsupportedMavenVersion_null() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion(null);
+        when(mavenVersionMock.getVersionString()).thenReturn(null);
 
-        verify(loggerSpy).warn(contains("Could not get Maven version"));
+        underTest.warnIfBuggyOrUnsupportedMavenVersion();
+
+        verifyNoInteractions(loggerSpy);
+        verify(mavenVersionMock, never()).isSupported();
     }
 
     @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_3100() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.10.0");
+    public void warnIfBuggyOrUnsupportedMavenVersion_supported() {
+        when(mavenVersionMock.getVersionString()).thenReturn("3.9.16");
+        when(mavenVersionMock.isSupported()).thenReturn(true);
+
+        underTest.warnIfBuggyOrUnsupportedMavenVersion();
 
         verifyNoInteractions(loggerSpy);
     }
 
     @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_3916() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.9.16");
+    public void warnIfBuggyOrUnsupportedMavenVersion_unsupported() {
+        when(mavenVersionMock.getVersionString()).thenReturn("3.6.2");
+        when(mavenVersionMock.isSupported()).thenReturn(false);
 
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_387() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.7");
-
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_388() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.8");
-
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_381() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.8.1");
-
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_363() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.6.3");
-
-        verifyNoInteractions(loggerSpy);
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_362() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.6.2");
+        underTest.warnIfBuggyOrUnsupportedMavenVersion();
 
         verify(loggerSpy).warn(contains("not tested"), eq("3.6.2"));
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_354() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.5.4");
-
-        verify(loggerSpy).warn(contains("not tested"), eq("3.5.4"));
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_339() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("3.3.9");
-
-        verify(loggerSpy).warn(contains("not tested"), eq("3.3.9"));
-    }
-
-    @Test
-    public void warnIfBuggyOrUnsupportedMavenVersion_400() {
-        underTest.warnIfBuggyOrUnsupportedMavenVersion("4.0.0");
-
-        verify(loggerSpy).warn(contains("not tested"), eq("4.0.0"));
     }
 }

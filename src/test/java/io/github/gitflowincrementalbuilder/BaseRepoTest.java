@@ -1,5 +1,6 @@
 package io.github.gitflowincrementalbuilder;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -95,7 +96,7 @@ public abstract class BaseRepoTest {
         }
     }
 
-    protected MavenSession getMavenSessionMock() throws Exception {
+    protected MavenSession getMavenSessionMock() throws IOException {
         return MavenSessionMock.get(repoPath, projectProperties);
     }
 

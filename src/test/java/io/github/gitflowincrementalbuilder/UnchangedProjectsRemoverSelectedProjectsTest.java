@@ -441,6 +441,7 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
     public void moduleAChanged_deselectedA() {
         MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
         MavenProject moduleC = addModuleMock(AID_MODULE_C, false);
+        //setUpstreamProjects(moduleB, moduleA);
         setUpstreamProjects(moduleC, moduleB, moduleA);
         setDownstreamProjectsNonTransitive(moduleB, moduleC);
         setDownstreamProjectsNonTransitive(moduleA, moduleB);
@@ -801,5 +802,40 @@ public class UnchangedProjectsRemoverSelectedProjectsTest extends BaseUnchangedP
 
         assertProjectPropertiesEqual(moduleB);
         assertProjectPropertiesEqual(moduleC);
+    }
+
+    // Maven 4: mvn -pl :module-B (also pulls in the declared modules of B into the session)
+    @Test
+    public void nothingChanged_maven4_selectedWithModule() {
+        when(mavenVersionMock.isMaven4OrHigher()).thenReturn(true);
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleB1 = addModuleMock("module-B1", false);
+        moduleB.getModel().addModule("../" + moduleB1.getArtifactId());
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB, moduleB1);
+
+        underTest.act(config());
+
+        assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
+        verify(mavenSessionMock, never()).setProjects(anyList());
+        assertProjectPropertiesEqual(moduleB);
+        assertProjectPropertiesEqual(moduleB1);
+    }
+
+    // Maven 4: mvn -pl :module-B -N (modules must not be treated as selected)
+    @Test
+    public void nothingChanged_maven4_selectedWithModule_nonRecursive() {
+        when(mavenVersionMock.isMaven4OrHigher()).thenReturn(true);
+        when(mavenExecutionRequestMock.isRecursive()).thenReturn(false);
+        MavenProject moduleB = addModuleMock(AID_MODULE_B, false);
+        MavenProject moduleB1 = addModuleMock("module-B1", false);
+        moduleB.getModel().addModule("../" + moduleB1.getArtifactId());
+        setProjectSelections(moduleB);
+        overrideProjects(moduleB);
+
+        underTest.act(config());
+
+        verify(mavenSessionMock, never()).setProjects(anyList());
+        assertProjectPropertiesEqual(moduleB);
     }
 }

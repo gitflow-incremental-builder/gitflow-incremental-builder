@@ -4,9 +4,7 @@ import java.util.Collection;
 
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.graph.DefaultProjectDependencyGraph;
-import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,18 +26,20 @@ public class ProjectDependencyGraphFactory {
         var start = System.currentTimeMillis();
         try {
             try {
-                return new DefaultProjectDependencyGraph(projects);
-            } catch (NoClassDefFoundError err) {
-                // cannot use DPDG in maven < 3.8.8 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
-                return new Maven38DefaultDependencyGraph(projects);
+                try {
+                    return new DefaultProjectDependencyGraph(projects);
+                } catch (NoClassDefFoundError err) {
+                    // cannot use DPDG in maven < 3.8.8 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
+                    return new Maven38DefaultDependencyGraph(projects);
+                }
+            } catch (Exception e) { // actually CycleDetectedException | DuplicateProjectException, but CDE moved in Maven 4 so don't catch directly
+                if (forceCreation) {
+                    throw new IllegalStateException("Failed to build project dependency graph for allProjects", e);
+                }
+                logger.warn("Failed to rebuild project dependency graph, falling back to session graph. "
+                        + "Projects added or modified by previous extensions will not be picked up!", e);
+                return config.mavenSession.getProjectDependencyGraph();
             }
-        } catch (CycleDetectedException | DuplicateProjectException e) {
-            if (forceCreation) {
-                throw new IllegalStateException("Failed to build project dependency graph for allProjects", e);
-            }
-            logger.warn("Failed to rebuild project dependency graph, falling back to session graph. "
-                    + "Projects added or modified by previous extensions will not be picked up!", e);
-            return config.mavenSession.getProjectDependencyGraph();
         } finally {
             var duration = System.currentTimeMillis() - start;
             if (!forceCreation && config.rebuildProjectDependencyGraphMode == RebuildProjectDependencyGraphMode.AUTO

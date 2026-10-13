@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.gitflow-incremental-builder</groupId>
     <artifactId>gitflow-incremental-builder</artifactId>
-    <version>4.7.1-SNAPSHOT</version>
+    <version>4.8.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Maven extension for incremental building of multi-module projects when using Git Flow (or Git in general).</description>
     <url>https://github.com/gitflow-incremental-builder/gitflow-incremental-builder</url>
@@ -43,11 +43,11 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>central</id>
+            <id>sonatype</id>
             <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>central</id>
+            <id>sonatype</id>
             <url>https://central.sonatype.com</url>
         </repository>
     </distributionManagement>
@@ -340,6 +340,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${version.maven-surefire-plugin}</version>
                     <configuration>
+                        <argLine>@{argLine} -Xshare:off</argLine>
                         <skipTests>${skipUTs}</skipTests>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
                         <excludes>
@@ -394,6 +395,7 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${version.maven-failsafe-plugin}</version>
                     <configuration>
+                        <argLine>@{argLine} -Xshare:off</argLine>
                         <skipTests>${skipTests}</skipTests>
                         <skipITs>${skipITs}</skipITs>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
@@ -874,7 +876,7 @@
                         <artifactId>central-publishing-maven-plugin</artifactId>
                         <extensions>true</extensions>
                         <configuration>
-                            <publishingServerId>central</publishingServerId>
+                            <publishingServerId>sonatype</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
                         </configuration>

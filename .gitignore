@@ -1,4 +1,5 @@
 /.idea
+/.mvn/target/
 /target/
 !/target/*.zip
 *.iml

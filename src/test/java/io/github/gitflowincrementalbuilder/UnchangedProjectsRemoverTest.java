@@ -114,7 +114,7 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
         assertThat(mavenSessionMock.getGoals()).as("Unexpected goals").isEqualTo(Collections.emptyList());
 
         verify(mavenSessionMock, never()).setProjects(anyList());
-        verify(moduleB).getModel();
+        verify(moduleB.getModel()).getModules();
 
         assertProjectPropertiesEqual(moduleA);
         assertProjectPropertiesEqual(moduleB);

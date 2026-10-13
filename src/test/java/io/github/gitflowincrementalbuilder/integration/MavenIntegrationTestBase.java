@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ import io.github.gitflowincrementalbuilder.util.ProcessUtils;
 /**
  * Integration test base running the {@code mvn} command on a test project with active {@code gitflow-incremental-builder}.
  * <p/>
- * Tests extending this base class are expected to be called via {@code maven-failsafe-plugin}, dependends on {@code settings-it.xml} and requires two system
+ * Tests extending this base class are expected to be called via {@code maven-failsafe-plugin}, depends on {@code settings-it.xml} and requires two system
  * properties:
  * <ul>
  * <li>{@code settings.localRepository} defining the path to the regular local Maven repo (containing the all the basic dependencies and plugins)
@@ -113,6 +114,11 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
      */
     @BeforeEach
     void initialInstall(TestInfo testInfo) throws Exception {
+        // aid Maven 4 in finding the root project (prevents warning)
+        Files.createDirectory(repoPath.resolve(".mvn"));
+
+        beforeInitialInstall(testInfo);
+
         testDisplayName = testInfo.getDisplayName();
         String disableGib = prop(Property.disable, "true");
         Class<?> testClass = testInfo.getTestClass().get();
@@ -132,6 +138,10 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
                 INITIAL_INSTALL_DONE.add(cacheKey);
             }
         }
+    }
+
+    protected void beforeInitialInstall(TestInfo testInfo) throws Exception {
+        // for subclasses to override
     }
 
     private void copyCommonBuildParentPom() throws URISyntaxException, IOException {
@@ -275,6 +285,36 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         checkout(Branch.DEVELOP);
 
         final String output = executeBuild("-pl", "child2", prop(Property.disableBranchComparison, "true"));
+
+        assertThat(output).doesNotContain("Building child1")
+                .contains("Building child2")
+                .doesNotContain("Building subchild42")
+                .doesNotContain("Building child3")
+                .doesNotContain("Building child4")
+                .doesNotContain("Building subchild41")
+                .doesNotContain("Building child6")
+                .doesNotContain("Building testJarDependency")
+                .doesNotContain("Building testJarDependent")
+                .contains("Building explicitly selected projects");
+
+        if (System.getProperty("maven.version").startsWith("3.")) {
+            // Maven 3 builds selected modules non-recursively by default
+            assertThat(output)
+                    .doesNotContain("Building subchild1")
+                    .doesNotContain("Building subchild2");
+        } else {
+            assertThat(output)
+                    .contains("Building subchild1")
+                    .contains("Building subchild2");
+        }
+    }
+
+    @Test
+    @DisabledIfSystemProperty(named = "maven.version", matches = "^3[.].*", disabledReason = "-pl and -N are not supported together in Maven 3")
+    public void buildWithSingleSelectedModule_nonRecursive() throws Exception {
+        checkout(Branch.DEVELOP);
+
+        final String output = executeBuild("-pl", "child2", "-N", prop(Property.disableBranchComparison, "true"));
 
         assertThat(output).doesNotContain("Building child1")
                 .contains("Building child2")

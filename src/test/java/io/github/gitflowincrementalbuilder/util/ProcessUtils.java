@@ -31,7 +31,9 @@ public class ProcessUtils {
     }
 
     public static String startAndWaitForProcess(List<String> args, Path dir, Predicate<String> lineFilterPredicate) throws InterruptedException, IOException {
-        final Process process = new ProcessBuilder(cmdArgs(args))
+        var command = cmdArgs(args);
+        LOGGER.info("Executing command: {}", String.join(" ", command));
+        final Process process = new ProcessBuilder(command)
                 .redirectErrorStream(true)
                 .directory(dir.toFile())
                 .start();

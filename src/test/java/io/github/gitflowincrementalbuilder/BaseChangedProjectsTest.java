@@ -1,6 +1,7 @@
 package io.github.gitflowincrementalbuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
@@ -57,23 +59,19 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @Spy
     private GitProvider gitProviderSpy;
 
-    private MavenSession mavenSessionMock;
-
     public BaseChangedProjectsTest(boolean useSymLinkedFolder) {
         super(useSymLinkedFolder, "src");   // src for #446
     }
 
     @BeforeEach
     void initMavenSessionMock() throws Exception {
-        mavenSessionMock = getMavenSessionMock();
-
         // spy the modules path map
         doAnswer(invocation -> {
             @SuppressWarnings("unchecked")
             Map<Path, List<MavenProject>> map = (Map<Path, List<MavenProject>>) invocation.callRealMethod();
             modulesPathMapSpy = spy(map);
             return modulesPathMapSpy;
-        }).when(modulesSpy).createPathMap(mavenSessionMock);
+        }).when(modulesSpy).createPathMap(any(MavenSession.class));
     }
 
     @AfterEach
@@ -84,7 +82,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void list() {
+    public void list() throws IOException{
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get("parent/child2/subchild2"),
                 Paths.get("parent/child3"),
@@ -97,10 +95,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     }
 
     @Test
-    public void list_ignoreChangedNonReactorModule() {
-        // remove child3 (which contains changes) from the reactor/session
-        mavenSessionMock.getAllProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
-        mavenSessionMock.getProjects().removeIf(proj -> proj.getArtifactId().equals("child3"));
+    public void list_ignoreChangedNonReactorModule() throws Exception {
 
         final Set<Path> expected = new HashSet<>(Arrays.asList(
                 Paths.get("parent/child2/subchild2"),
@@ -108,7 +103,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
                 Paths.get("parent/testJarDependent")
         ));
 
-        final List<MavenProject> projects = assertExpectedProjectsFound(expected);
+        final List<MavenProject> projects = assertExpectedProjectsFound(expected, mavenSessionMock -> removeModuleFromReactor(mavenSessionMock, "child3"));
         assertThat(projects).noneMatch(project -> project.getContextValue(ChangedProjects.CTX_TEST_ONLY) == Boolean.TRUE);
     }
 
@@ -155,7 +150,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
         final Set<Path> expected = Collections.emptySet();
 
-        assertExpectedProjectsFound(expected);
+        assertExpectedProjectsFound(expected, mavenSessionMock -> removeModuleFromReactor(mavenSessionMock, "foo"));
 
         verify(modulesPathMapSpy, times(2)).get(fooModule);
     }
@@ -170,17 +165,24 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
 
         final Set<Path> expected = Collections.emptySet();
 
-        assertExpectedProjectsFound(expected);
+        assertExpectedProjectsFound(expected, mavenSessionMock -> removeModuleFromReactor(mavenSessionMock, "java"));
 
         verify(modulesPathMapSpy).get(testProjectPath);
     }
 
-    private List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) {
-        Set<MavenProject> foundProjects = underTest.get(config());
+    private List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected) throws IOException {
+        return assertExpectedProjectsFound(expected, s -> {});
+    }
+
+    private List<MavenProject> assertExpectedProjectsFound(final Set<Path> expected, Consumer<MavenSession> mavenSessionMockConsumer) throws IOException {
+        var mavenSessionMock = getMavenSessionMock();
+        mavenSessionMockConsumer.accept(mavenSessionMock);
+        Set<MavenProject> foundProjects = underTest.get(new Configuration(mavenSessionMock));
         final Set<Path> actual = foundProjects.stream()
+                //.map(MavenProject::getBaseDirectory)
                 .map(MavenProject::getBasedir)
-                    .map(File::toPath)
-                    .map(localRepoMock.getRepoDir()::relativize)
+                .map(File::toPath)
+                .map(localRepoMock.getRepoDir()::relativize)
                 .collect(Collectors.toSet());
 
         assertThat(actual).isEqualTo(expected);
@@ -188,7 +190,8 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
         return new ArrayList<>(foundProjects);
     }
 
-    protected Configuration config() {
-        return new Configuration(mavenSessionMock);
+    private void removeModuleFromReactor(MavenSession mavenSession, String artifactId) {
+        mavenSession.getAllProjects().removeIf(proj -> proj.getArtifactId().equals(artifactId));
+        mavenSession.getProjects().removeIf(proj -> proj.getArtifactId().equals(artifactId));
     }
 }
