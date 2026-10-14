@@ -8,11 +8,10 @@
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 ----
-> ### :warning: GIB 3.x is now in low maintenance mode! :warning:
-> **With the release of GIB 4.0.0, GIB 3 will not receive any major changes anymore.**
-> While criticial bugs might still be addressed, users are *strongly* encouraged to upgrade to 4.0.0+ (see [`main` branch](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder)).
+> ### :warning: GIB 3.x has reached end of life! :warning:
+> **It will not receive any changes anymore.**
+> Users are *strongly* encouraged to upgrade to 4.x (see [`main` branch](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder)).
 > GIB 3.x should only be used if support for Maven <= 3.6.2 and/or Java < 11 is required.
-> Although GIB 3.x also supports Java 11, it's recommended to use GIB 4.5.x instead of 3.x if Java 11 support is needed (and Maven > 3.6.2 is in use).
 ----
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
