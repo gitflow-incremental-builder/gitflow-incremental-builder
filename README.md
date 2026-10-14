@@ -84,7 +84,7 @@ To be able to use GIB, your project must use:
 
 - **Java 11** (or higher)
 
-ℹ️ If you need support for Maven <= 3.6.2 and/or Java < 11, you might want to consider using [version 3 of GIB](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/tree/3.x).
+ℹ️ If you absolutely need support for Maven <= 3.6.2 and/or Java < 11, you might want to consider using [version 3 of GIB](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/tree/3.x). But beware that GIB 3 has reached **end of life**!
 
 ## Usage
 
