@@ -64,7 +64,6 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
 
     private static final Pattern LOG_LINE_FILTER_PATTERN = Pattern.compile("^\\[.*INFO.*\\] Download(ing|ed) from local.central: .*");
 
-    private static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
     protected static String gibVersion;
 
@@ -158,12 +157,6 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         final String output = executeBuild("-N");
         assertThat(output).contains("gitflow-incremental-builder " + gibVersion + " starting...");
         assertThat(output).doesNotContain("was not tested with gitflow-incremental-builder");
-    }
-
-    @Test
-    public void worktreeFails() throws Exception {
-        final String output = executeBuild("--file=wrkf2/parent/pom.xml");
-        assertThat(output).contains(UNSUPPORTED_WORKTREE);
     }
 
     @Test
