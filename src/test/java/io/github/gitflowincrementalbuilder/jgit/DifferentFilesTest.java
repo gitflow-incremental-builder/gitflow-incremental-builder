@@ -1,7 +1,6 @@
 package io.github.gitflowincrementalbuilder.jgit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
@@ -35,14 +34,6 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
 
     public DifferentFilesTest() {
         super(TestServerType.GIT_PROTOCOL);
-    }
-
-    @Test
-    public void worktree() throws Exception {
-        Path workDir = repoBaseDir.resolve("tmp/repo/wrkf2");
-
-        assertThatExceptionOfType(SkipExecutionException.class).isThrownBy(
-                () -> invokeUnderTest(MavenSessionMock.get(workDir, projectProperties)));
     }
 
     @Test

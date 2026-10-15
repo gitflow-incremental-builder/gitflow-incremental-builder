@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Optional;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -21,8 +19,6 @@ import io.github.gitflowincrementalbuilder.config.Configuration;
 @Singleton
 @Named
 public class GitProvider {
-
-    private static final String UNSUPPORTED_WORKTREE = "JGit unsupported separate worktree checkout detected from current git dir path: ";
 
     private Logger logger = LoggerFactory.getLogger(GitProvider.class);
 
@@ -46,7 +42,7 @@ public class GitProvider {
     }
 
     public Path getProjectRoot(Configuration config) {
-        return get(config).getRepository().getDirectory().toPath().getParent();
+        return get(config).getRepository().getWorkTree().toPath();
     }
 
     public String getCurrentBranch(Configuration config) {
@@ -83,23 +79,6 @@ public class GitProvider {
                 throw new SkipExecutionException(gitDirNotFoundMessage);
             }
         }
-        if (isWorktree(builder)) {
-            throw new SkipExecutionException(UNSUPPORTED_WORKTREE + builder.getGitDir());
-        }
         return Git.wrap(builder.build());
-    }
-
-    private static boolean isWorktree(FileRepositoryBuilder builder) {
-        return Optional.ofNullable(builder.getGitDir().toPath().getParent())
-                .filter(parent -> fileNameEquals(parent, "worktrees"))
-                .map(Path::getParent)
-                .filter(Objects::nonNull)
-                .map(parentParent -> fileNameEquals(parentParent, ".git"))
-                .orElse(false);
-    }
-
-    private static boolean fileNameEquals(Path path, String fileName) {
-        Path fileNameAsPath = path.getFileName();
-        return fileNameAsPath != null && fileNameAsPath.toString().equals(fileName);
     }
 }
