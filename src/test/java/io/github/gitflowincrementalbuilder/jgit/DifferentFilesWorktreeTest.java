@@ -12,9 +12,10 @@ import java.util.Set;
 import org.eclipse.jgit.util.FS;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,22 +26,39 @@ import io.github.gitflowincrementalbuilder.mocks.MavenSessionMock;
 import io.github.gitflowincrementalbuilder.mocks.UnZipper;
 
 /**
- * Tests a linked worktree of a <b>bare</b> repository, see
+ * Tests linked worktrees of a <b>bare</b> and of a <b>regular</b> repository, see
  * <a href="https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/issues/1238">#1238</a>.
  * <p>
- * <code>bare-worktree-template.zip</code> contains:
+ * <code>worktree-template.zip</code> contains:
  * <ul>
  * <li><code>bare.git</code>: bare repo with branches <code>master</code> (2 child modules) and <code>feature</code>
  *     (adds <code>child1/feature-file.txt</code>)</li>
- * <li><code>wt</code>: linked worktree of <code>bare.git</code>, checked out at <code>feature</code></li>
+ * <li><code>bare-wt</code>: linked worktree of <code>bare.git</code>, checked out at <code>feature</code></li>
+ * <li><code>normal</code>: regular repo with the same history, checked out at <code>master</code></li>
+ * <li><code>normal-wt</code>: linked worktree of <code>normal</code>, checked out at <code>feature</code></li>
  * </ul>
- * How the zip was created: see <code>bare-worktree-template.README.md</code> next to it in <code>src/test/resources</code>.
+ * How the zip was created: see <code>worktree-template.README.md</code> next to it in <code>src/test/resources</code>.
  * <p>
- * The worktree links are absolute paths (<code>wt/.git</code> and <code>bare.git/worktrees/wt/gitdir</code>), so they
+ * The worktree links are absolute paths (<code>*-wt/.git</code> and <code>GITDIR/worktrees/*-wt/gitdir</code>), so they
  * are rewritten after unzipping, everything else is untouched.
  */
 @ExtendWith(MockitoExtension.class)
-public class DifferentFilesBareRepoWorktreeTest {
+public class DifferentFilesWorktreeTest {
+
+    enum Flavor {
+        /** Linked worktree of a bare repo. */
+        BARE("bare.git", "bare-wt"),
+        /** Linked worktree of a regular repo. */
+        NORMAL("normal/.git", "normal-wt");
+
+        final String gitDir;
+        final String worktreeDir;
+
+        Flavor(String gitDir, String worktreeDir) {
+            this.gitDir = gitDir;
+            this.worktreeDir = worktreeDir;
+        }
+    }
 
     @TempDir
     Path baseDir;
@@ -52,26 +70,26 @@ public class DifferentFilesBareRepoWorktreeTest {
     @InjectMocks
     private DifferentFiles underTest;
 
-    private Path bareRepo;
-    private Path worktree;
-    private Path userHome;
     private java.io.File jGitUserHomeBackup;
 
     @BeforeEach
     void before() throws Exception {
         jGitUserHomeBackup = FS.DETECTED.userHome();
-        userHome = Files.createDirectory(baseDir.resolve("userHome"));
+        Path userHome = Files.createDirectory(baseDir.resolve("userHome"));
         FS.DETECTED.setUserHome(userHome.toFile());
+    }
 
+    /** Unzips the template and rewrites the absolute links of the worktree of the given flavor, returns the worktree path. */
+    private Path prepareWorktree(Flavor flavor) throws Exception {
         Path unzipped = Files.createDirectory(baseDir.resolve("unzipped"));
-        new UnZipper().act(Paths.get(getClass().getClassLoader().getResource("bare-worktree-template.zip").toURI()), unzipped);
-        bareRepo = unzipped.resolve("bare.git").toRealPath();
-        worktree = unzipped.resolve("wt").toRealPath();
+        new UnZipper().act(Paths.get(getClass().getClassLoader().getResource("worktree-template.zip").toURI()), unzipped);
+        Path gitDir = unzipped.resolve(flavor.gitDir).toRealPath();
+        Path worktree = unzipped.resolve(flavor.worktreeDir).toRealPath();
+        Path worktreeGitDir = gitDir.resolve("worktrees").resolve(flavor.worktreeDir);
 
-        // rewrite the absolute links (both are the only thing that depends on the location of the unzipped files)
-        Files.write(worktree.resolve(".git"), ("gitdir: " + bareRepo.resolve("worktrees").resolve("wt") + "\n").getBytes(StandardCharsets.UTF_8));
-        Files.write(bareRepo.resolve("worktrees").resolve("wt").resolve("gitdir"),
-                (worktree.resolve(".git") + "\n").getBytes(StandardCharsets.UTF_8));
+        Files.write(worktree.resolve(".git"), ("gitdir: " + worktreeGitDir + "\n").getBytes(StandardCharsets.UTF_8));
+        Files.write(worktreeGitDir.resolve("gitdir"), (worktree.resolve(".git") + "\n").getBytes(StandardCharsets.UTF_8));
+        return worktree;
     }
 
     @AfterEach
@@ -82,18 +100,31 @@ public class DifferentFilesBareRepoWorktreeTest {
         }
     }
 
-    @Test
-    void projectRoot() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void projectRoot(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
         assertThat(gitProviderSpy.getProjectRoot(config(worktree, new Properties()))).isEqualTo(worktree);
     }
 
-    @Test
-    void currentBranch() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void projectRoot_fromSubModule(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
+        assertThat(gitProviderSpy.getProjectRoot(config(worktree.resolve("child2"), new Properties()))).isEqualTo(worktree);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void currentBranch(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
         assertThat(gitProviderSpy.getCurrentBranch(config(worktree, new Properties()))).isEqualTo("feature");
     }
 
-    @Test
-    void branchDiff() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void branchDiff(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
         Properties props = new Properties();
         props.setProperty(Property.referenceBranch.prefixedName(), "refs/heads/master");
 
@@ -102,8 +133,10 @@ public class DifferentFilesBareRepoWorktreeTest {
         assertThat(result).containsExactly(worktree.resolve("child1").resolve("feature-file.txt"));
     }
 
-    @Test
-    void branchDiff_fromSubModule() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void branchDiff_fromSubModule(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
         Properties props = new Properties();
         props.setProperty(Property.referenceBranch.prefixedName(), "refs/heads/master");
 
@@ -113,8 +146,10 @@ public class DifferentFilesBareRepoWorktreeTest {
         assertThat(result).containsExactly(worktree.resolve("child1").resolve("feature-file.txt"));
     }
 
-    @Test
-    void untrackedAndUncommitted() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Flavor.class)
+    void untrackedAndUncommitted(Flavor flavor) throws Exception {
+        Path worktree = prepareWorktree(flavor);
         Properties props = new Properties();
         props.setProperty(Property.disableBranchComparison.prefixedName(), "true");
         Path untracked = Files.write(worktree.resolve("child2").resolve("untracked.txt"), "x".getBytes(StandardCharsets.UTF_8));
