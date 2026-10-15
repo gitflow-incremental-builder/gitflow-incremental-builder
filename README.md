@@ -4,7 +4,7 @@
 [![CI](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/workflows/CI/badge.svg)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://app.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gitflow-incremental-builder/gitflow-incremental-builder&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/2a74eedd5e0c4694ac8cf44b315cfb5a)](https://app.codacy.com/gh/gitflow-incremental-builder/gitflow-incremental-builder/dashboard?utm_source=github.com&utm_medium=referral&utm_content=gitflow-incremental-builder/gitflow-incremental-builder&utm_campaign=Badge_Coverage)
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-11_17_21_25-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-17_21_25-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
@@ -76,15 +76,15 @@ This extension is **not limited to Git Flow setups!** The [extensive configurati
 
 To be able to use GIB, your project must use:
 
-- **Apache Maven** build tool, version 3.9.16 (or higher) is recommended
+- **Apache Maven** build tool, version 3.10.0 (or higher) is recommended
   - Maven 4.0 is supported as of 4.0.0-rc-7
-  - The minimum Maven version is 3.6.3 due to [MNG-6580](https://issues.apache.org/jira/browse/MNG-6580)
+  - The minimum Maven version is 3.9.6 due to [MNG-7913](https://github.com/apache/maven/issues/8732)
 
 - **Git** version control
 
-- **Java 11** (or higher)
+- **Java 17** (or higher)
 
-ℹ️ If you absolutely need support for Maven <= 3.6.2 and/or Java < 11, you might want to consider using [version 3 of GIB](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/tree/3.x). But beware that GIB 3 has reached **end of life**!
+ℹ️ If you need support for Maven < 3.9.6 and/or Java < 17, you might want to consider using [version 4 of GIB](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/tree/4.x).
 
 ## Usage
 
@@ -101,7 +101,7 @@ Add to (root) `pom.xml`:
         <plugin>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.8.1</version>
+            <version>5.0.0</version>
             <extensions>true</extensions>
             <configuration>
                 <!-- ... -->
@@ -132,7 +132,7 @@ Add to (root) `pom.xml`:
         <extension>
             <groupId>io.github.gitflow-incremental-builder</groupId>
             <artifactId>gitflow-incremental-builder</artifactId>
-            <version>4.8.1</version>
+            <version>5.0.0</version>
         </extension>
     </extensions>
     <!-- ... -->
@@ -194,7 +194,7 @@ $ cat pom.xml
             <extension>
                 <groupId>io.github.gitflow-incremental-builder</groupId>
                 <artifactId>gitflow-incremental-builder</artifactId>
-                <version>4.8.1</version>
+                <version>5.0.0</version>
             </extension>
         </extensions>
     </build>

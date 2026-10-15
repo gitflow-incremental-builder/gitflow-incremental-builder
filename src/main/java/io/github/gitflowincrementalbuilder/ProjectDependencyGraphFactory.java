@@ -26,12 +26,7 @@ public class ProjectDependencyGraphFactory {
         var start = System.currentTimeMillis();
         try {
             try {
-                try {
-                    return new DefaultProjectDependencyGraph(projects);
-                } catch (NoClassDefFoundError err) {
-                    // cannot use DPDG in maven < 3.8.8 (https://issues.apache.org/jira/browse/MNG-6972) so use our own copy
-                    return new Maven38DefaultDependencyGraph(projects);
-                }
+                return new DefaultProjectDependencyGraph(projects);
             } catch (Exception e) { // actually CycleDetectedException | DuplicateProjectException, but CDE moved in Maven 4 so don't catch directly
                 if (forceCreation) {
                     throw new IllegalStateException("Failed to build project dependency graph for allProjects", e);

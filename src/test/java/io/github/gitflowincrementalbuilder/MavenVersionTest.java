@@ -24,7 +24,7 @@ class MavenVersionTest {
     private Logger loggerSpy = LoggerSpyUtil.buildSpiedLoggerFor(MavenVersion.class);
 
     @Spy
-    private DefaultRuntimeInformation runtimeInformation;
+    private DefaultRuntimeInformation runtimeInformation = new DefaultRuntimeInformation();
 
     @InjectMocks
     private MavenVersion underTest;
@@ -70,8 +70,10 @@ class MavenVersionTest {
             "3.11.0,false",
             "3.12.0,false",
             "3.9.16,true",
-            "3.8.9,true",
-            "3.6.3,true",
+            "3.9.6,true",
+            "3.9.5,false",
+            "3.8.9,false",
+            "3.6.3,false",
             "4.1.0,false",
             "4.1.0-alpha-1,false",
             "4.1.0-rc-1,false",
