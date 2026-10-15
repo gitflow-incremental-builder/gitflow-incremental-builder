@@ -58,6 +58,10 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
 
         String knownHostEntry = String.format("[%s]:%s %s", repoUri.getHost(), repoUri.getPort(), TestServerType.SSH_PROTOCOL.getServerPublicKey());
         Files.write(sshDir.resolve("known_hosts"), Collections.singleton(knownHostEntry));
+
+        // only use public key auth: avoids noisy (harmless) GSS-API/Kerberos failures in the logs
+        Files.write(sshDir.resolve("config"), Collections.singleton(
+                String.format("Host %s\n  PreferredAuthentications publickey", repoUri.getHost())));
     }
 
     @AfterEach
@@ -77,7 +81,7 @@ public class DifferentFilesSshFetchTest extends BaseDifferentFilesTest {
         Path privateKeyPath = writePrivateKey("my_key", TestServerType.SSH_PROTOCOL.getUserSecret());
         // add .ssh/config pointing to custom key
         String sshConfigEntry = String.format("Host %s\n  IdentityFile %s", repoUri.getHost(), privateKeyPath);
-        Files.write(sshDir.resolve("config"), Collections.singleton(sshConfigEntry));
+        Files.write(sshDir.resolve("config"), Collections.singleton(sshConfigEntry), java.nio.file.StandardOpenOption.APPEND);
 
         test();
     }
