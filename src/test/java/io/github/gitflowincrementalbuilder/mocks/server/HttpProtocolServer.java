@@ -4,12 +4,12 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Collections;
 
-import org.eclipse.jetty.ee8.nested.ServletConstraint;
-import org.eclipse.jetty.ee8.security.ConstraintMapping;
-import org.eclipse.jetty.ee8.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.ee8.security.authentication.BasicAuthenticator;
-import org.eclipse.jetty.ee8.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee8.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.server.Server;
@@ -80,9 +80,7 @@ class HttpProtocolServer implements TestServer {
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();
         security.setAuthenticator(new BasicAuthenticator());
 
-        ServletConstraint constraint = new ServletConstraint();
-        constraint.setAuthenticate(true);
-        constraint.setRoles(ROLES);
+        Constraint constraint = Constraint.from(ROLES);
         ConstraintMapping mapping = new ConstraintMapping();
         mapping.setPathSpec("/*");
         mapping.setConstraint(constraint);
