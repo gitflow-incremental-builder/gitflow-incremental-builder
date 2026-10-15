@@ -4,15 +4,15 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Collections;
 
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee8.nested.ServletConstraint;
+import org.eclipse.jetty.ee8.security.ConstraintMapping;
+import org.eclipse.jetty.ee8.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee8.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.ee8.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee8.servlet.ServletHolder;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jgit.http.server.GitServlet;
 import org.eclipse.jgit.lib.Repository;
@@ -56,30 +56,31 @@ class HttpProtocolServer implements TestServer {
 
     private void configureServer(Server server, Repository repo) {
 
-        server.setHandler(buildServletHandler(repo));
-        
+        ServletContextHandler context = buildServletContextHandler(repo);
         if (username != null) {
-            addBasicAuth(server);
+            addBasicAuth(server, context);
         }
+        server.setHandler(context);
     }
 
-    private ServletHandler buildServletHandler(Repository repo) {
+    private ServletContextHandler buildServletContextHandler(Repository repo) {
         GitServlet gitServlet = new GitServlet();
         gitServlet.setRepositoryResolver(new SinglePredefinedRepoResolver<>(repo));
 
         ServletHolder holder = new ServletHolder(gitServlet);
-        ServletHandler servletHandler = new ServletHandler();
-        servletHandler.addServletWithMapping(holder, "/*");
-        return servletHandler;
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(holder, "/*");
+        return context;
     }
 
     // https://www.eclipse.org/jetty/documentation/current/configuring-security.html#_authentication_and_authorization_with_embedded_jetty
-    private void addBasicAuth(Server server) {
+    private void addBasicAuth(Server server, ServletContextHandler context) {
         
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();
         security.setAuthenticator(new BasicAuthenticator());
 
-        Constraint constraint = new Constraint();
+        ServletConstraint constraint = new ServletConstraint();
         constraint.setAuthenticate(true);
         constraint.setRoles(ROLES);
         ConstraintMapping mapping = new ConstraintMapping();
@@ -92,8 +93,7 @@ class HttpProtocolServer implements TestServer {
         server.addBean(loginService);
         security.setLoginService(loginService);
 
-        security.setHandler(server.getHandler());
-        server.setHandler(security);
+        context.setSecurityHandler(security);
     }
 
     private UserStore buildUserStore() {

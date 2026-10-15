@@ -73,7 +73,7 @@
         <version.archunit>1.5.1</version.archunit>
         <version.assertj>3.27.7</version.assertj>
         <version.mockito>5.24.0</version.mockito>
-        <version.jetty>10.0.26</version.jetty>
+        <version.jetty>12.1.14</version.jetty>
         <version.commons-lang3>3.21.0</version.commons-lang3>
 
         <!-- Plugin versions -->
@@ -244,8 +244,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
+            <groupId>org.eclipse.jetty.ee8</groupId>
+            <artifactId>jetty-ee8-servlet</artifactId>
             <version>${version.jetty}</version>
             <scope>test</scope>
         </dependency>
