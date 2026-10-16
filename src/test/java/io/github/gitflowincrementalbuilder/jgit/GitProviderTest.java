@@ -77,4 +77,18 @@ public class GitProviderTest {
             assertThat(underTest.getProjectRoot(new Configuration(mavenSessionMock))).isEqualTo(emptyLocalRepoMock.getRepoDir());
         });
     }
+
+    // a long-lived JVM like mvnd reuses this singleton for builds in other repositories
+    @Test
+    public void getProjectRoot_otherRepoAfterClose() throws IOException, URISyntaxException, GitAPIException {
+        try (EmptyLocalRepoMock firstRepoMock = new EmptyLocalRepoMock(tempDir.resolve("first"));
+                EmptyLocalRepoMock secondRepoMock = new EmptyLocalRepoMock(tempDir.resolve("second"))) {
+            when(currentProjectMock.getBasedir()).thenReturn(firstRepoMock.getRepoDir().toFile());
+            assertThat(underTest.getProjectRoot(new Configuration(mavenSessionMock))).isEqualTo(firstRepoMock.getRepoDir());
+            underTest.close();
+
+            when(currentProjectMock.getBasedir()).thenReturn(secondRepoMock.getRepoDir().toFile());
+            assertThat(underTest.getProjectRoot(new Configuration(mavenSessionMock))).isEqualTo(secondRepoMock.getRepoDir());
+        }
+    }
 }
