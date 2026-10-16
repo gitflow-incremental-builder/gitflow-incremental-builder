@@ -29,7 +29,7 @@ public class GitProvider {
     private Git git;
 
     /**
-     * Returns a {@link Git} instance which is constructed when first called. Subsequent calls will return the same instance.
+     * Returns a {@link Git} instance which is constructed when first called. Subsequent calls will return the same instance until {@link #close()}.
      *
      * @param config the configuration
      * @return a {@link Git} instance
@@ -59,8 +59,13 @@ public class GitProvider {
 
     public void close() {
         if (git != null) {
-            git.close();
-            git.getRepository().close();
+            try {
+                git.close();
+                git.getRepository().close();
+            } finally {
+                // this singleton outlives the build in long-lived JVMs (e.g. mvnd), the next build can be in another repository
+                git = null;
+            }
         }
     }
 
