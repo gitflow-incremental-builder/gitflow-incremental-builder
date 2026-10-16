@@ -398,7 +398,6 @@
                     <version>${version.maven-failsafe-plugin}</version>
                     <configuration>
                         <argLine>@{argLine} -Xshare:off</argLine>
-                        <skipTests>${skipTests}</skipTests>
                         <skipITs>${skipITs}</skipITs>
                         <trimStackTrace>false</trimStackTrace> <!-- https://issues.apache.org/jira/browse/SUREFIRE-1457 -->
                         <includes>
