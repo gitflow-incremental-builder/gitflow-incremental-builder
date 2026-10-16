@@ -814,7 +814,7 @@
             <properties>
                 <enforcer.skip>true</enforcer.skip>
                 <jacoco.skip>true</jacoco.skip>
-                <maven.test.skip>true</maven.test.skip>
+                <skipTests>true</skipTests>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
                 <spotbugs.phase>none</spotbugs.phase>
             </properties>
