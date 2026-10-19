@@ -80,7 +80,6 @@
         <version.maven-enforcer-plugin>3.6.3</version.maven-enforcer-plugin>
         <version.maven-clean-plugin>3.5.0</version.maven-clean-plugin>
         <version.jacoco-maven-plugin>0.8.15</version.jacoco-maven-plugin>    <!-- note: try to keep in line with https://www.eclemma.org/changes.html -->
-        <version.maven-replacer-plugin>1.5.3</version.maven-replacer-plugin>
         <version.sisu-maven-plugin>1.1.0</version.sisu-maven-plugin>
         <version.maven-resources-plugin>3.5.0</version.maven-resources-plugin>
         <version.maven-compiler-plugin>3.16.0</version.maven-compiler-plugin>
@@ -98,6 +97,8 @@
         <version.maven-release-plugin>3.3.1</version.maven-release-plugin>
         <version.spotbugs-maven-plugin>4.10.5.0</version.spotbugs-maven-plugin>
         <version.spotbugs>4.10.5</version.spotbugs>
+        <version.xml-maven-plugin>1.2.2</version.xml-maven-plugin>
+        <version.saxon>13.1</version.saxon>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
 
@@ -296,17 +297,15 @@
                     <version>${version.maven-plugin}</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.google.code.maven-replacer-plugin</groupId>
-                    <artifactId>replacer</artifactId>
-                    <version>${version.maven-replacer-plugin}</version>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>${version.xml-maven-plugin}</version>
                     <dependencies>
-                        <!-- Saxon for XPath 2.0 support -->
+                        <!-- Saxon for XSLT 2.0 support -->
                         <dependency>
                             <groupId>net.sf.saxon</groupId>
                             <artifactId>Saxon-HE</artifactId>
-                            <!-- This really old version 9.5 is the last version providing automatic discovery via XPathFactory,
-                                 see also: https://www.saxonica.com/html/documentation/xpath-api/jaxp-xpath/factory.html -->
-                            <version>9.5.1-8</version>
+                            <version>${version.saxon}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -536,71 +535,31 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- replace in plugin.xml and plugin-help.xml all io.github.gitflowincrementalbuilder.config.Property types with java.lang.String or boolean -->
+            <!-- transform plugin.xml and plugin-help.xml to expose usable config parameter types -->
             <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
                 <configuration>
-                    <replacements>
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/implementation/text()</xpath>
-                            <token>^.*$</token>
-                            <value>io.github.gitflowincrementalbuilder.mojo.FakeMojo</value>
-                        </replacement>
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/description/text()</xpath>
-                            <token>(?s)^.*$</token>
-                            <value>This fake goal only exposes the general config properties/parameters. DO NOT EXECUTE!</value>
-                        </replacement>
-                        <!-- set proper parameter types (instead of io.github.gitflowincrementalbuilder.config.Property) -->
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*/@implementation</xpath>
-                            <token>^.*$</token>
-                            <value>java.lang.String</value>
-                        </replacement>
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/configuration/*[@default-value='true' or @default-value='false']/@implementation</xpath>
-                            <token>^.*$</token>
-                            <value>boolean</value>
-                        </replacement>
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter/type/text()</xpath>
-                            <token>^.*$</token>
-                            <value>java.lang.String</value>
-                        </replacement>
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter[name/text() = ../../configuration/*[@implementation='boolean']/name()]/type/text()</xpath>
-                            <token>^.*$</token>
-                            <value>boolean</value>
-                        </replacement>
-                        <!-- add link to GH config documentation to each parameter description -->
-                        <replacement>
-                            <xpath>/plugin/mojos/mojo[goal/text() = 'config-do-not-execute']/parameters/parameter/description/text()</xpath>
-                            <token>^.*$</token>
-                            <value>$0&lt;br&gt;&lt;br&gt;See also: https://git.io/JJn42</value>
-                        </replacement>
-                    </replacements>
+                    <transformationSets>
+                        <transformationSet>
+                            <dir>${project.build.outputDirectory}/META-INF/maven</dir>
+                            <includes>
+                                <include>plugin.xml</include>
+                                <include>${project.groupId}/${project.artifactId}/plugin-help.xml</include>
+                            </includes>
+                            <outputDir>${project.build.outputDirectory}/META-INF/maven</outputDir>
+                            <addedToClasspath>false</addedToClasspath>
+                            <stylesheet>${project.basedir}/src/build/plugin-descriptor.xsl</stylesheet>
+                        </transformationSet>
+                    </transformationSets>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>modify-plugin-xml</id>
+                        <id>modify-plugin-descriptors</id>
                         <phase>process-classes</phase>
                         <goals>
-                            <goal>replace</goal>
+                            <goal>transform</goal>
                         </goals>
-                        <configuration>
-                            <file>${project.build.outputDirectory}/META-INF/maven/plugin.xml</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>modify-plugin-help-xml</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${project.build.outputDirectory}/META-INF/maven/${project.groupId}/${project.artifactId}/plugin-help.xml</file>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -951,11 +910,11 @@
                                         </pluginExecution>
                                         <pluginExecution>
                                             <pluginExecutionFilter>
-                                                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                                                <artifactId>replacer</artifactId>
-                                                <versionRange>[${version.maven-replacer-plugin},)</versionRange>
+                                                <groupId>org.codehaus.mojo</groupId>
+                                                <artifactId>xml-maven-plugin</artifactId>
+                                                <versionRange>[${version.xml-maven-plugin},)</versionRange>
                                                 <goals>
-                                                    <goal>replace</goal>
+                                                    <goal>transform</goal>
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
