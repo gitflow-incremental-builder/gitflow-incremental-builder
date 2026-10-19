@@ -65,7 +65,6 @@
         <version.maven-plugin>3.16.0</version.maven-plugin>
         <version.slf4j>1.7.36</version.slf4j>   <!-- must match the version that is provided by maven -->
         <version.logback>1.2.13</version.logback>    <!-- the latest that appears to work properly with above slf4j version -->
-        <version.javax.inject>1</version.javax.inject>
         <version.plexus-utils>4.1.0</version.plexus-utils>
         <version.plexus-xml>3.1.0</version.plexus-xml>
         <version.bytebuddy>1.18.15</version.bytebuddy>
@@ -163,12 +162,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${version.slf4j}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>${version.javax.inject}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
