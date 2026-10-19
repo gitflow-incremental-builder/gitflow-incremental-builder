@@ -147,17 +147,7 @@ public enum Property {
      * Defines an optional logfile which GIB shall write all "impacted" module paths to.
      */
     logImpactedTo("", "lit"),
-    /**
-     * Controls the output format of the logfile defined by {@link #logImpactedTo}: {@code path} (default) for relative module paths or {@code gav} for GroupId:ArtifactId:Version.
-     * @deprecated Use {@link #logImpactedGavTo} (or {@link #logImpactedTo}) instead.
-     */
-    @Deprecated
-    logImpactedFormat("path", "lif") {
-        @Override
-        public Optional<Property> getPropertyToMigrateTo(String value) {
-            return logImpactedFormat.getDefaultValue().equalsIgnoreCase(value) ? Optional.of(logImpactedTo) : Optional.of(logImpactedGavTo);
-        }
-    },
+
     /**
      * Defines an optional logfile which GIB shall write all "impacted" module GAVs (GroupId:ArtifactId:Version) to.
      */

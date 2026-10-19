@@ -504,28 +504,6 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void deprecatedLogImpactedFormat_gav() {
-        System.setProperty(Property.logImpactedFormat.prefixedName(), "gav");
-        System.setProperty(Property.logImpactedTo.prefixedName(), "foo.txt");
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertThat(configuration.logImpactedTo).isEmpty();
-        assertThat(configuration.logImpactedGavTo).hasValue(Path.of("foo.txt"));
-    }
-
-    @Test
-    public void deprecatedLogImpactedFormat_path() {
-        System.setProperty(Property.logImpactedFormat.prefixedName(), "path");
-        System.setProperty(Property.logImpactedTo.prefixedName(), "foo.txt");
-
-        Configuration configuration = new Configuration(mavenSessionMock);
-
-        assertThat(configuration.logImpactedTo).hasValue(Path.of("foo.txt"));
-        assertThat(configuration.logImpactedGavTo).isEmpty();
-    }
-
-    @Test
     public void deprecatedLogImpactedFormat_notSet() {
         System.setProperty(Property.logImpactedTo.prefixedName(), "foo1.txt");
         System.setProperty(Property.logImpactedGavTo.prefixedName(), "foo2.txt");
