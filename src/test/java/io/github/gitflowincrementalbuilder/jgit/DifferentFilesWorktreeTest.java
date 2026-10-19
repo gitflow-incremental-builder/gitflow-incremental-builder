@@ -9,9 +9,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Set;
 
-import org.eclipse.jgit.util.FS;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.github.gitflowincrementalbuilder.config.Configuration;
 import io.github.gitflowincrementalbuilder.config.Property;
+import io.github.gitflowincrementalbuilder.mocks.JGitIsolation;
 import io.github.gitflowincrementalbuilder.mocks.MavenSessionMock;
 import io.github.gitflowincrementalbuilder.mocks.UnZipper;
 
@@ -45,23 +44,12 @@ import io.github.gitflowincrementalbuilder.mocks.UnZipper;
 @ExtendWith(MockitoExtension.class)
 public class DifferentFilesWorktreeTest {
 
-    enum Flavor {
-        /** Linked worktree of a bare repo. */
-        BARE("bare.git", "bare-wt"),
-        /** Linked worktree of a regular repo. */
-        NORMAL("normal/.git", "normal-wt");
-
-        final String gitDir;
-        final String worktreeDir;
-
-        Flavor(String gitDir, String worktreeDir) {
-            this.gitDir = gitDir;
-            this.worktreeDir = worktreeDir;
-        }
+    static {
+        JGitIsolation.ensureIsolatedFromSystemAndUserConfig();
     }
 
     @TempDir
-    Path baseDir;
+    private Path baseDir;
 
     @Spy
     private GitProvider gitProviderSpy;
@@ -70,31 +58,8 @@ public class DifferentFilesWorktreeTest {
     @InjectMocks
     private DifferentFiles underTest;
 
-    private java.io.File jGitUserHomeBackup;
-
-    @BeforeEach
-    void before() throws Exception {
-        jGitUserHomeBackup = FS.DETECTED.userHome();
-        Path userHome = Files.createDirectory(baseDir.resolve("userHome"));
-        FS.DETECTED.setUserHome(userHome.toFile());
-    }
-
-    /** Unzips the template and rewrites the absolute links of the worktree of the given flavor, returns the worktree path. */
-    private Path prepareWorktree(Flavor flavor) throws Exception {
-        Path unzipped = Files.createDirectory(baseDir.resolve("unzipped"));
-        new UnZipper().act(Paths.get(getClass().getClassLoader().getResource("worktree-template.zip").toURI()), unzipped);
-        Path gitDir = unzipped.resolve(flavor.gitDir).toRealPath();
-        Path worktree = unzipped.resolve(flavor.worktreeDir).toRealPath();
-        Path worktreeGitDir = gitDir.resolve("worktrees").resolve(flavor.worktreeDir);
-
-        Files.write(worktree.resolve(".git"), ("gitdir: " + worktreeGitDir + "\n").getBytes(StandardCharsets.UTF_8));
-        Files.write(worktreeGitDir.resolve("gitdir"), (worktree.resolve(".git") + "\n").getBytes(StandardCharsets.UTF_8));
-        return worktree;
-    }
-
     @AfterEach
     void after() {
-        FS.DETECTED.setUserHome(jGitUserHomeBackup);
         if (gitProviderSpy != null) {
             gitProviderSpy.close();
         }
@@ -161,9 +126,37 @@ public class DifferentFilesWorktreeTest {
         assertThat(result).containsExactlyInAnyOrder(untracked, modified);
     }
 
+    /** Unzips the template and rewrites the absolute links of the worktree of the given flavor, returns the worktree path. */
+    private Path prepareWorktree(Flavor flavor) throws Exception {
+        Path unzipped = Files.createDirectory(baseDir.resolve("unzipped"));
+        new UnZipper().act(Paths.get(getClass().getClassLoader().getResource("worktree-template.zip").toURI()), unzipped);
+        Path gitDir = unzipped.resolve(flavor.gitDir).toRealPath();
+        Path worktree = unzipped.resolve(flavor.worktreeDir).toRealPath();
+        Path worktreeGitDir = gitDir.resolve("worktrees").resolve(flavor.worktreeDir);
+
+        Files.write(worktree.resolve(".git"), ("gitdir: " + worktreeGitDir + "\n").getBytes(StandardCharsets.UTF_8));
+        Files.write(worktreeGitDir.resolve("gitdir"), (worktree.resolve(".git") + "\n").getBytes(StandardCharsets.UTF_8));
+        return worktree;
+    }
+
     private Configuration config(Path workDir, Properties topLevelProjectProperties) throws Exception {
         var session = MavenSessionMock.get(workDir, topLevelProjectProperties);
         session.getCurrentProject().getProperties().putAll(topLevelProjectProperties);
         return new Configuration(session);
+    }
+
+    enum Flavor {
+        /** Linked worktree of a bare repo. */
+        BARE("bare.git", "bare-wt"),
+        /** Linked worktree of a regular repo. */
+        NORMAL("normal/.git", "normal-wt");
+
+        final String gitDir;
+        final String worktreeDir;
+
+        Flavor(String gitDir, String worktreeDir) {
+            this.gitDir = gitDir;
+            this.worktreeDir = worktreeDir;
+        }
     }
 }
