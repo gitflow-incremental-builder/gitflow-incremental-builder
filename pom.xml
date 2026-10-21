@@ -501,6 +501,10 @@
                                 </transformation>
                             </transformations>
                         </configuration>
+                        <!-- Eclipse tries to resolve our custom bytebuddy plugin from local repo instead of target
+                             which yields unexpected results, so we better ignore that alltogether and all other executions
+                             that work with the bytebuddy transformed classes. -->
+                        <?m2e ignore?>
                     </execution>
                 </executions>
                 <dependencies>
@@ -532,6 +536,7 @@
                         <configuration>
                             <goalPrefix>gitflow-incremental-builder</goalPrefix>
                         </configuration>
+                        <?m2e ignore?>
                     </execution>
                 </executions>
             </plugin>
@@ -560,6 +565,7 @@
                         <goals>
                             <goal>transform</goal>
                         </goals>
+                        <?m2e ignore?>
                     </execution>
                 </executions>
             </plugin>
@@ -859,75 +865,6 @@
                 <!-- quickfix until something better is available: https://github.com/mockito/mockito/issues/3037 -->
                 <argLine>-XX:+EnableDynamicAgentLoading</argLine>
             </properties>
-        </profile>
-        <profile>
-            <id>eclipse</id>
-            <activation>
-                <property>
-                    <name>m2e.version</name>
-                </property>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
-                        <!-- Need to use this pseudo plugin instead of <?m2e ... ?> due to https://issues.apache.org/jira/browse/MNG-6204 -->
-                        <plugin>
-                            <groupId>org.eclipse.m2e</groupId>
-                            <artifactId>lifecycle-mapping</artifactId>
-                            <version>1.0.0</version>
-                            <configuration>
-                                <lifecycleMappingMetadata>
-                                    <pluginExecutions>
-                                        <!-- Eclipse tries to resolve our custom bytebuddy plugin from local repo instead of target
-                                             which yields unexpected results, so we better ignore that alltogether and all other executions
-                                             that work with the bytebuddy transformed classes. -->
-                                        <pluginExecution>
-                                            <pluginExecutionFilter>
-                                                <groupId>net.bytebuddy</groupId>
-                                                <artifactId>byte-buddy-maven-plugin</artifactId>
-                                                <versionRange>[${version.bytebuddy},)</versionRange>
-                                                <goals>
-                                                    <goal>transform</goal>
-                                                </goals>
-                                            </pluginExecutionFilter>
-                                            <action>
-                                                <ignore />
-                                            </action>
-                                        </pluginExecution>
-                                        <pluginExecution>
-                                            <pluginExecutionFilter>
-                                                <groupId>org.apache.maven.plugins</groupId>
-                                                <artifactId>maven-plugin-plugin</artifactId>
-                                                <versionRange>[${version.maven-plugin},)</versionRange>
-                                                <goals>
-                                                    <goal>descriptor</goal>
-                                                </goals>
-                                            </pluginExecutionFilter>
-                                            <action>
-                                                <ignore />
-                                            </action>
-                                        </pluginExecution>
-                                        <pluginExecution>
-                                            <pluginExecutionFilter>
-                                                <groupId>org.codehaus.mojo</groupId>
-                                                <artifactId>xml-maven-plugin</artifactId>
-                                                <versionRange>[${version.xml-maven-plugin},)</versionRange>
-                                                <goals>
-                                                    <goal>transform</goal>
-                                                </goals>
-                                            </pluginExecutionFilter>
-                                            <action>
-                                                <ignore />
-                                            </action>
-                                        </pluginExecution>
-                                    </pluginExecutions>
-                                </lifecycleMappingMetadata>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
     </profiles>
 </project>
