@@ -52,7 +52,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Set quickly if on fork main
-      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && (endsWith(github.ref, '/main') || endsWith(github.ref, '/5.x')) && github.event.inputs.runSecondary != 'yes'
+      if: github.repository != 'gitflow-incremental-builder/gitflow-incremental-builder' && (endsWith(github.ref, '/main') || endsWith(github.ref, '/4.x')) && github.event.inputs.runSecondary != 'yes'
       shell: bash
       run: echo "MVN_DEFAULT_ARGS=${MVN_DEFAULT_ARGS} -Dquickly" >> $GITHUB_ENV
     - name: Maven test
