@@ -7,6 +7,13 @@
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-11_17_21_25-brightgreen.svg?logo=Java)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/actions?query=workflow%3A%22CI%22+branch%3Amain)
 [![GitHub Discussions](https://img.shields.io/github/discussions/gitflow-incremental-builder/gitflow-incremental-builder)](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder/discussions)
 
+----
+> ### :information_source: GIB 4.x is now in maintenance mode. :information_source:
+> **With the release of GIB 5.0.0, GIB 4 will not receive any major changes anymore.**
+> While criticial bugs might still be addressed, users are *strongly* encouraged to upgrade to 5.0.0+ (see [`main` branch](https://github.com/gitflow-incremental-builder/gitflow-incremental-builder)).
+> GIB 4.x should only be used if support for Maven <= 3.9.5 and/or Java 11 is required.
+----
+
 A maven extension for incremental building of multi-module projects when using [feature branches (Git Flow)](http://nvie.com/posts/a-successful-git-branching-model/).
 Builds or tests only changed maven modules compared to reference branch in Git (e.g. origin/develop) and all their dependents.<br/>
 Powered by [JGit](https://www.eclipse.org/jgit/).
