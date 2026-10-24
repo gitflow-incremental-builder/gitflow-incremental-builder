@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +26,7 @@ public class ProcessUtils {
     private static final String LINE_PREFIX = "> ";
 
     public static String startAndWaitForProcess(String... args) throws InterruptedException, IOException {
-        return startAndWaitForProcess(Arrays.asList(args), Paths.get("."), line -> true);
+        return startAndWaitForProcess(Arrays.asList(args), Path.of("."), line -> true);
     }
 
     public static String startAndWaitForProcess(List<String> args, Path dir, Predicate<String> lineFilterPredicate) throws InterruptedException, IOException {

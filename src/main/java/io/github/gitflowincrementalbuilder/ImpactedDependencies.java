@@ -1,7 +1,6 @@
 package io.github.gitflowincrementalbuilder;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -40,7 +39,7 @@ class ImpactedDependencies {
 
         try {
             // Read all GAVs from the file
-            Set<String> impactedGAVs = Files.readAllLines(impactedDepsFile, StandardCharsets.UTF_8)
+            Set<String> impactedGAVs = Files.readAllLines(impactedDepsFile)
                     .stream()
                     .map(String::trim)
                     .filter(line -> !line.isEmpty() && !line.startsWith("#"))

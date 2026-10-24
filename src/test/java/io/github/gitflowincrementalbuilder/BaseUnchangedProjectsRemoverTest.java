@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +53,7 @@ import io.github.gitflowincrementalbuilder.util.LoggerSpyUtil;
 @ExtendWith(MockitoExtension.class)
 abstract class BaseUnchangedProjectsRemoverTest {
 
-    protected static final Path PSEUDO_PROJECT_ROOT = Paths.get(".").toAbsolutePath();
+    protected static final Path PSEUDO_PROJECT_ROOT = Path.of(".").toAbsolutePath();
 
     protected static final String AID_MODULE_A = "module-A";
     protected static final String AID_MODULE_B = "module-B";

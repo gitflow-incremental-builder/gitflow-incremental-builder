@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -16,7 +15,7 @@ public class UnZipper {
 
     static {
         try {
-            TEMPLATE_PROJECT_ZIP = Paths.get(
+            TEMPLATE_PROJECT_ZIP = Path.of(
                     UnZipper.class.getClassLoader().getResource("template.zip").toURI());
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Failed to get template.zip", e);

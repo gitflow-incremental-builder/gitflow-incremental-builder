@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Set;
 
@@ -129,7 +128,7 @@ public class DifferentFilesWorktreeTest {
     /** Unzips the template and rewrites the absolute links of the worktree of the given flavor, returns the worktree path. */
     private Path prepareWorktree(Flavor flavor) throws Exception {
         Path unzipped = Files.createDirectory(baseDir.resolve("unzipped"));
-        new UnZipper().act(Paths.get(getClass().getClassLoader().getResource("worktree-template.zip").toURI()), unzipped);
+        new UnZipper().act(Path.of(getClass().getClassLoader().getResource("worktree-template.zip").toURI()), unzipped);
         Path gitDir = unzipped.resolve(flavor.gitDir).toRealPath();
         Path worktree = unzipped.resolve(flavor.worktreeDir).toRealPath();
         Path worktreeGitDir = gitDir.resolve("worktrees").resolve(flavor.worktreeDir);

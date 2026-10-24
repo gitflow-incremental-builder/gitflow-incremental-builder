@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -249,7 +248,7 @@ class UnchangedProjectsRemover {
             if (parentDir != null && !Files.exists(parentDir)) {
                 Files.createDirectories(parentDir);
             }
-            Files.write(logFilePath, lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(logFilePath, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write impacted " + label + " to " + logFilePath + ": " + impacted, e);
         }

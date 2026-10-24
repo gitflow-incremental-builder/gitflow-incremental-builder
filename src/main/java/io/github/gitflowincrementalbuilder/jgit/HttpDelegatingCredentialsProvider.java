@@ -83,12 +83,12 @@ class HttpDelegatingCredentialsProvider extends CredentialsProvider {
 
         // map extracted credentials to CredentialItems, see also: org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
         for (CredentialItem item : items) {
-            if (item instanceof CredentialItem.Username) {
-                ((CredentialItem.Username) item).setValue(credentialsPair.username);
-            } else if (item instanceof CredentialItem.Password) {
-                ((CredentialItem.Password) item).setValue(credentialsPair.password);
-            } else if (item instanceof CredentialItem.StringType && item.getPromptText().equals("Password: ")) {
-                ((CredentialItem.StringType) item).setValue(new String(credentialsPair.password));
+            if (item instanceof CredentialItem.Username username) {
+                username.setValue(credentialsPair.username);
+            } else if (item instanceof CredentialItem.Password password) {
+                password.setValue(credentialsPair.password);
+            } else if (item instanceof CredentialItem.StringType type && item.getPromptText().equals("Password: ")) {
+                type.setValue(new String(credentialsPair.password));
             } else {
                 throw new UnsupportedCredentialItem(uri, item.getClass().getName() + ":" + item.getPromptText());
             }

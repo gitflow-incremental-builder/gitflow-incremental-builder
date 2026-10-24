@@ -2,7 +2,6 @@ package io.github.gitflowincrementalbuilder.jgit;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -181,7 +180,7 @@ public class DifferentFiles {
         private Set<Path> getDiff(TreeWalk treeWalk, Path gitDir) throws IOException {
             final Set<Path> paths = new HashSet<>();
             while (treeWalk.next()) {
-                Path path = Paths.get(treeWalk.getPathString()).normalize();
+                Path path = Path.of(treeWalk.getPathString()).normalize();
                 if (pathIncluded(path)) {
                     paths.add(gitDir.resolve(path));
                 }
@@ -229,7 +228,7 @@ public class DifferentFiles {
                 changes.addAll(status.getUntracked());
             }
             return changes.stream()
-                    .map(Paths::get)
+                    .map(Path::of)
                     .map(Path::normalize)
                     .filter(this::pathIncluded)
                     .map(workTree::resolve)

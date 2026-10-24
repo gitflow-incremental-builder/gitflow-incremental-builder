@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -77,7 +76,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
         moduleB.getArtifacts().add(artifact);
 
         // Write the impacted dependencies file
-        Files.write(impactedDepsFile, Arrays.asList(externalGav), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList(externalGav));
 
         addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
@@ -103,7 +102,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
         // moduleC is not affected
 
         // Write the impacted dependencies file with multiple GAVs
-        Files.write(impactedDepsFile, Arrays.asList(impactedGav1, impactedGav2), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList(impactedGav1, impactedGav2));
 
         addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
@@ -126,7 +125,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
                 impactedGav,
                 "# Another comment",
                 ""
-        ), StandardCharsets.UTF_8);
+        ));
 
         addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
@@ -148,7 +147,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
         // moduleC depends on moduleB (downstream)
         setDownstreamProjectsNonTransitive(moduleB, moduleC);
 
-        Files.write(impactedDepsFile, Arrays.asList(impactedGav), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList(impactedGav));
 
         addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 
@@ -161,7 +160,7 @@ public class UnchangedProjectsRemoverImpactedDependenciesFromTest extends BaseUn
     @Test
     public void noProjectsWithMatchingDependencies() throws IOException {
         // Write impacted dependencies file with GAVs that no project has
-        Files.write(impactedDepsFile, Arrays.asList("com.example:unknown:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:unknown:1.0"));
 
         addGibProperty(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString());
 

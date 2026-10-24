@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -160,7 +159,7 @@ public class FakeMojoTest {
     private ImmutablePair<List<String>, List<String>> parseDescriptors(String expression) {
         // lazy init (not in @BeforeAll because it is offtopic for allFieldsPresent())
         if (pluginXmlDocument == null) {
-            Path pluginXmlPath = Paths.get("target", "classes", "META-INF", "maven", "plugin.xml");
+            Path pluginXmlPath = Path.of("target", "classes", "META-INF", "maven", "plugin.xml");
             assertThat(pluginXmlPath).exists();
 
             String[] pluginGA = Configuration.PLUGIN_KEY.split(":");

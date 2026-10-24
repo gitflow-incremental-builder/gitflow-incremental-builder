@@ -6,10 +6,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,12 +89,12 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     private static String createPathToSettingsXml() throws URISyntaxException {
         URL settingsUrl = Validate.notNull(
                 Thread.currentThread().getContextClassLoader().getResource("settings-it.xml"), "settings-it.xml not found on classpath");
-        return Paths.get(settingsUrl.toURI()).toAbsolutePath().toString();
+        return Path.of(settingsUrl.toURI()).toAbsolutePath().toString();
     }
 
     private static String createUrlToRemoteRepo() throws MalformedURLException {
         String regularLocalRepo = Validate.notEmpty(System.getProperty("settings.localRepository"), "settings.localRepository not set");
-        return Paths.get(regularLocalRepo).toUri().toURL().toString();
+        return Path.of(regularLocalRepo).toUri().toURL().toString();
     }
 
     /**
@@ -147,7 +145,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
         String relativePath = "build-parent/pom-common.xml";
         URL buildParentURL = Validate.notNull(
                 Thread.currentThread().getContextClassLoader().getResource(relativePath),"%s not found on classpath", relativePath);
-        Path source = Paths.get(buildParentURL.toURI()).toAbsolutePath();
+        Path source = Path.of(buildParentURL.toURI()).toAbsolutePath();
         Path target = localRepoMock.getRepoDir().resolve(relativePath);
         Files.copy(source, target);
     }
@@ -465,7 +463,7 @@ public abstract class MavenIntegrationTestBase extends BaseRepoTest {
     public void loadImpactedDependenciesFrom() throws Exception {
         Path impactedDepsFile = Files.createTempFile("impacted-deps", ".txt");
         // slightly crooked way as child6 is not an external dependency, but that doesn't matter for this test because we just want to verify the basic functionality
-        Files.write(impactedDepsFile, List.of("child6:child6:1.0-SNAPSHOT"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, List.of("child6:child6:1.0-SNAPSHOT"));
 
         final String output = executeBuild(prop(Property.loadImpactedDependenciesFrom, impactedDepsFile.toAbsolutePath().toString()));
 
