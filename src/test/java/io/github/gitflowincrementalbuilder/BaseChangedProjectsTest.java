@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,10 +83,10 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     @Test
     public void list() throws IOException{
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get("parent/child2/subchild2"),
-                Paths.get("parent/child3"),
-                Paths.get("parent/child4"),
-                Paths.get("parent/testJarDependent")
+                Path.of("parent/child2/subchild2"),
+                Path.of("parent/child3"),
+                Path.of("parent/child4"),
+                Path.of("parent/testJarDependent")
         ));
 
         final List<MavenProject> projects = assertExpectedProjectsFound(expected);
@@ -98,9 +97,9 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
     public void list_ignoreChangedNonReactorModule() throws Exception {
 
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get("parent/child2/subchild2"),
-                Paths.get("parent/child4"),
-                Paths.get("parent/testJarDependent")
+                Path.of("parent/child2/subchild2"),
+                Path.of("parent/child4"),
+                Path.of("parent/testJarDependent")
         ));
 
         final List<MavenProject> projects = assertExpectedProjectsFound(expected, mavenSessionMock -> removeModuleFromReactor(mavenSessionMock, "child3"));
@@ -114,7 +113,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
         Path testJavaPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/java"));
         Files.createFile(testJavaPath.resolve("FooTest.java"));
 
-        final Set<Path> expected = Collections.singleton(Paths.get("parent/child6"));
+        final Set<Path> expected = Collections.singleton(Path.of("parent/child6"));
 
         MavenProject project = assertExpectedProjectsFound(expected).get(0);
         assertThat(project.getContextValue(ChangedProjects.CTX_TEST_ONLY)).isSameAs(Boolean.TRUE);
@@ -133,7 +132,7 @@ abstract class BaseChangedProjectsTest extends BaseRepoTest {
         Path testProjectPath = Files.createDirectories(localRepoMock.getRepoDir().resolve("parent/child6/src/test/resources/project"));
         Files.createFile(testProjectPath.resolve("pom.xml"));
 
-        final Set<Path> expected = Collections.singleton(Paths.get("parent/child6"));
+        final Set<Path> expected = Collections.singleton(Path.of("parent/child6"));
 
         assertExpectedProjectsFound(expected);
     }

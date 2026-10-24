@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +100,7 @@ public class AddUpstreamSyntheticProjectParticipant extends AbstractMavenLifecyc
         model.setPackaging("pom");
 
         // Prepare the directory and files
-        Path workDir = mkdirs(Paths.get(session.getExecutionRootDirectory(), "target", "it-synthetic-upstream"));
+        Path workDir = mkdirs(Path.of(session.getExecutionRootDirectory(), "target", "it-synthetic-upstream"));
         Path pomFile = workDir.resolve("pom.xml");
 
         // Serialize the Model to pom.xml

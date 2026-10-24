@@ -4,7 +4,6 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -209,10 +208,10 @@ public class Configuration {
         failOnError = Boolean.parseBoolean(Property.failOnError.getValue(pluginProperties, projectProperties));
 
         // log related
-        this.logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
-        this.logImpactedGavTo = Property.logImpactedGavTo.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        this.logImpactedTo = Property.logImpactedTo.getValueOpt(pluginProperties, projectProperties).map(Path::of);
+        this.logImpactedGavTo = Property.logImpactedGavTo.getValueOpt(pluginProperties, projectProperties).map(Path::of);
 
-        impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Paths::get);
+        impactedDependenciesFrom = Property.loadImpactedDependenciesFrom.getValueOpt(pluginProperties, projectProperties).map(Path::of);
         logProjectsMode = parseEnum(Property.logProjectsMode, LogProjectsMode.class, pluginProperties, projectProperties);
     }
 

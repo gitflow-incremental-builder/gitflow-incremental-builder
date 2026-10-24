@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,11 +98,11 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     @Test
     public void list() throws Exception {
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
-                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22"),
-                Paths.get(repoPath + "/parent/child3/src/resources/file1"),
-                Paths.get(repoPath + "/parent/child4/pom.xml"),
-                Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
+                Path.of(repoPath + "/parent/child2/subchild2/src/resources/file2"),
+                Path.of(repoPath + "/parent/child2/subchild2/src/resources/file22"),
+                Path.of(repoPath + "/parent/child3/src/resources/file1"),
+                Path.of(repoPath + "/parent/child4/pom.xml"),
+                Path.of(repoPath + "/parent/testJarDependent/src/resources/file5")
                 ));
 
         assertThat(invokeUnderTest()).isEqualTo(expected);
@@ -130,9 +129,9 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void listExcluding() throws Exception {
         projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(repoPath + "/parent/child3/src/resources/file1"),
-                Paths.get(repoPath + "/parent/child4/pom.xml"),
-                Paths.get(repoPath + "/parent/testJarDependent/src/resources/file5")
+                Path.of(repoPath + "/parent/child3/src/resources/file1"),
+                Path.of(repoPath + "/parent/child4/pom.xml"),
+                Path.of(repoPath + "/parent/testJarDependent/src/resources/file5")
         ));
 
         assertThat(invokeUnderTest()).isEqualTo(expected);
@@ -142,8 +141,8 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
     public void listIncluding() throws Exception {
         projectProperties.setProperty(Property.includePathsMatching.prefixedName(), ".*file2.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2"),
-                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file22")
+                Path.of(repoPath + "/parent/child2/subchild2/src/resources/file2"),
+                Path.of(repoPath + "/parent/child2/subchild2/src/resources/file22")
                 ));
 
         assertThat(invokeUnderTest()).isEqualTo(expected);
@@ -154,7 +153,7 @@ public class DifferentFilesTest extends BaseDifferentFilesTest {
         projectProperties.setProperty(Property.includePathsMatching.prefixedName(), ".*file2.*");
         projectProperties.setProperty(Property.excludePathsMatching.prefixedName(), ".*file22.*");
         final Set<Path> expected = new HashSet<>(Arrays.asList(
-                Paths.get(repoPath + "/parent/child2/subchild2/src/resources/file2")
+                Path.of(repoPath + "/parent/child2/subchild2/src/resources/file2")
                 ));
 
         assertThat(invokeUnderTest()).isEqualTo(expected);

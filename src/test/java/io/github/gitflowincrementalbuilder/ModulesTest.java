@@ -5,7 +5,7 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import org.apache.maven.execution.MavenSession;
@@ -37,7 +37,7 @@ class ModulesTest {
         when(sessionMock.getAllProjects()).thenReturn(Arrays.asList(projMock));
 
         assertThat(underTest.createPathMap(sessionMock)).containsOnly(
-                entry(Paths.get("proj").toAbsolutePath(), Arrays.asList(projMock)));
+                entry(Path.of("proj").toAbsolutePath(), Arrays.asList(projMock)));
     }
 
     @Test
@@ -47,8 +47,8 @@ class ModulesTest {
         when(sessionMock.getAllProjects()).thenReturn(Arrays.asList(projMock1, projMock2));
 
         assertThat(underTest.createPathMap(sessionMock)).containsOnly(
-                entry(Paths.get("proj1").toAbsolutePath(), Arrays.asList(projMock1)),
-                entry(Paths.get("proj2").toAbsolutePath(), Arrays.asList(projMock2)));
+                entry(Path.of("proj1").toAbsolutePath(), Arrays.asList(projMock1)),
+                entry(Path.of("proj2").toAbsolutePath(), Arrays.asList(projMock2)));
     }
 
     @Test
@@ -59,8 +59,8 @@ class ModulesTest {
         when(sessionMock.getAllProjects()).thenReturn(Arrays.asList(projMock1, projMock2, projMock3));
 
         assertThat(underTest.createPathMap(sessionMock)).containsOnly(
-                entry(Paths.get("proj1").toAbsolutePath(), Arrays.asList(projMock1)),
-                entry(Paths.get("proj2+3").toAbsolutePath(), Arrays.asList(projMock2, projMock3)));
+                entry(Path.of("proj1").toAbsolutePath(), Arrays.asList(projMock1)),
+                entry(Path.of("proj2+3").toAbsolutePath(), Arrays.asList(projMock2, projMock3)));
     }
 
     @Test

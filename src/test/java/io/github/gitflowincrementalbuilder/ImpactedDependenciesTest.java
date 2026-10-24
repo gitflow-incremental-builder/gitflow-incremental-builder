@@ -6,10 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,7 +40,7 @@ import io.github.gitflowincrementalbuilder.config.Property;
 @ExtendWith(MockitoExtension.class)
 class ImpactedDependenciesTest {
 
-    private static final Path PSEUDO_PROJECT_ROOT = Paths.get(".").toAbsolutePath();
+    private static final Path PSEUDO_PROJECT_ROOT = Path.of(".").toAbsolutePath();
 
     @TempDir
     Path tempDir;
@@ -108,7 +106,7 @@ class ImpactedDependenciesTest {
 
     @Test
     void fileWithOnlyWhitespace_returnsEmptySet() throws IOException {
-        Files.write(impactedDepsFile, Arrays.asList("", "   ", "\t"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("", "   ", "\t"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -123,7 +121,7 @@ class ImpactedDependenciesTest {
                 "# This is a comment",
                 "# Another comment",
                 "#com.example:lib:1.0"
-        ), StandardCharsets.UTF_8);
+        ));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -139,7 +137,7 @@ class ImpactedDependenciesTest {
         project.getModel().setDependencies(Arrays.asList(dep));
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -155,7 +153,7 @@ class ImpactedDependenciesTest {
         project.getArtifacts().add(artifact);
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -171,7 +169,7 @@ class ImpactedDependenciesTest {
         project.getArtifacts().add(artifact);
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -197,7 +195,7 @@ class ImpactedDependenciesTest {
         Files.write(impactedDepsFile, Arrays.asList(
                 "com.example:lib1:1.0",
                 "com.example:lib2:2.0"
-        ), StandardCharsets.UTF_8);
+        ));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -214,7 +212,7 @@ class ImpactedDependenciesTest {
         project.getArtifacts().add(createArtifact("com.other", "lib3", "3.0"));
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib2:2.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib2:2.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -236,7 +234,7 @@ class ImpactedDependenciesTest {
                 "   ",
                 "# Comment in the middle",
                 ""
-        ), StandardCharsets.UTF_8);
+        ));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -251,7 +249,7 @@ class ImpactedDependenciesTest {
         project.getModel().setDependencies(null);
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -268,7 +266,7 @@ class ImpactedDependenciesTest {
         when(project.getArtifacts()).thenReturn(null);
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -287,7 +285,7 @@ class ImpactedDependenciesTest {
         project2.getArtifacts().add(createArtifact("com.example", "lib", "1.0"));
         projects.add(project2);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -306,7 +304,7 @@ class ImpactedDependenciesTest {
                 "com.example:lib:1.0",
                 "com.example:lib:1.0",
                 "com.example:lib:1.0"
-        ), StandardCharsets.UTF_8);
+        ));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -337,7 +335,7 @@ class ImpactedDependenciesTest {
         // Artifacts set is empty (not null)
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
@@ -352,7 +350,7 @@ class ImpactedDependenciesTest {
         project.getArtifacts().add(createArtifact("com.example", "lib", "2.0"));
         projects.add(project);
 
-        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"), StandardCharsets.UTF_8);
+        Files.write(impactedDepsFile, Arrays.asList("com.example:lib:1.0"));
         setImpactedDependenciesFromProperty(impactedDepsFile.toAbsolutePath().toString());
         Configuration config = new Configuration(mavenSessionMock);
 
