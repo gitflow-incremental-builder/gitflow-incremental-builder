@@ -815,6 +815,9 @@ To close this "gap", GIB adds downstream detection for BOM modules so that your 
 If a module contains changes only within `src/test`, GIB will **not** build any of its downstream modules _unless_ that module defines a
 [test-jar goal and those downstream modules are depending on that jar](https://maven.apache.org/guides/mini/guide-attached-tests.html#guide-to-using-attached-tests).
 
+A downstream module that depends on a changed module only with scope `test` is built, but its own downstream modules are not, since
+only its tests are affected.
+
 ## Authentication
 
 When using `gib.fetchBaseBranch` or `gib.fetchReferenceBranch`, GIB provides basic support to authenticate against a possibly protected remote repository.

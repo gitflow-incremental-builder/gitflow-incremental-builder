@@ -500,7 +500,55 @@ public class UnchangedProjectsRemoverTest extends BaseUnchangedProjectsRemoverTe
 
         underTest.act(config());
 
-        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock));
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testOnly_testJarGoal_testDep_transitiveCompileTestJarDep() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        when(changedModuleMock.getContextValue(ChangedProjects.CTX_TEST_ONLY)).thenReturn(Boolean.TRUE);
+        addMockedTestJarExecution(changedModuleMock);
+        Dependency dep = buildTestJarDependency(changedModuleMock);
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(dep));
+
+        addMockedTestJarExecution(dependentModuleMock);
+        Dependency depTransitive = buildTestJarDependency(dependentModuleMock);
+        depTransitive.setScope("compile");
+        when(transitiveDependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depTransitive));
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
+    }
+
+    @Test
+    public void singleChanged_buildDownstream_testDep_transitiveTestJarDep() {
+        MavenProject changedModuleMock = addModuleMock(AID_MODULE_B, true);
+        MavenProject dependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar", false);
+        MavenProject transitiveDependentModuleMock = addModuleMock(AID_MODULE_B + "-dependent-jar-transitive", false);
+
+        setUpAndDownstreamsForThreeChainedModules(changedModuleMock, dependentModuleMock, transitiveDependentModuleMock);
+
+        // buildDownstream is enabled by default!
+
+        Dependency depToChangedModuleMock = buildDependency(changedModuleMock, "test");
+        when(dependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depToChangedModuleMock));
+
+        addMockedTestJarExecution(dependentModuleMock);
+        Dependency depTransitive = buildTestJarDependency(dependentModuleMock);
+        depTransitive.setScope("compile");
+        when(transitiveDependentModuleMock.getDependencies()).thenReturn(Collections.singletonList(depTransitive));
+
+        underTest.act(config());
+
+        verify(mavenSessionMock).setProjects(Arrays.asList(changedModuleMock, dependentModuleMock));
     }
 
     @Test

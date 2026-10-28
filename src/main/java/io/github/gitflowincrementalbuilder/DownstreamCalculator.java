@@ -81,10 +81,14 @@ class DownstreamCalculator {
             for (MavenProject downstreamProj : unfilteredDownstream) {
                 ActualDependentState state = getActualDependentState(downstreamProj, project, testOnly);
                 logger.debug("{} -> {} :: {} [testOnly={}]", downstreamProj.getArtifactId(), project.getArtifactId(), state, testOnly);
-                if (state != ActualDependentState.NONE) {
-                    streamProjectWithDownstreamProjects(downstreamProj, state == ActualDependentState.TEST, config)
+                if (state == ActualDependentState.MAIN) {
+                    streamProjectWithDownstreamProjects(downstreamProj, false, config)
                             .filter(proj -> isDownstreamModuleNotExcluded(proj, config))
                             .forEach(downstream::add);
+                } else if (state == ActualDependentState.TEST && isDownstreamModuleNotExcluded(downstreamProj, config)) {
+                    // only the test classpath of downstreamProj is affected, its artifacts (incl. test-jar) are not
+                    // and test scope is not transitive, so its own downstream modules are not affected via this path
+                    downstream.add(downstreamProj);
                 }
             }
         }
