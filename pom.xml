@@ -97,7 +97,7 @@
         <version.maven-release-plugin>3.3.1</version.maven-release-plugin>
         <version.spotbugs-maven-plugin>4.10.5.0</version.spotbugs-maven-plugin>
         <version.spotbugs>4.10.5</version.spotbugs>
-        <version.xml-maven-plugin>1.2.2</version.xml-maven-plugin>
+        <version.xml-maven-plugin>1.4.0</version.xml-maven-plugin>
         <version.saxon>13.1</version.saxon>
 
         <gibIntegrationTestRepoLocal>${project.build.directory}${file.separator}it${file.separator}repo</gibIntegrationTestRepoLocal>
