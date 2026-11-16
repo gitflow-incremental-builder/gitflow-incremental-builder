@@ -43,7 +43,7 @@ jobs:
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5.1
       with:
-        maven-version: 3.10.0
+        maven-version: 3.10.1
     - name: Cache Maven Repository
       uses: actions/cache@v6
       with:
@@ -108,7 +108,7 @@ jobs:
           - {
             name: "JDK 17 & Maven 3.10",
             java-version: 17,
-            maven-version: 3.10.0
+            maven-version: 3.10.1
           }
           - {
             name: "JDK 21 & Maven 3.9",
@@ -118,7 +118,7 @@ jobs:
           - {
             name: "JDK 21 & Maven 3.10",
             java-version: 21,
-            maven-version: 3.10.0
+            maven-version: 3.10.1
           }
           - {
             name: "JDK 21 & Maven 4.0",
@@ -143,7 +143,7 @@ jobs:
           - {
             name: "JDK 28 EA & Maven 3.10",
             java-version: 28-ea,
-            maven-version: 3.10.0
+            maven-version: 3.10.1
           }
 
     steps:
